@@ -312,6 +312,8 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Sunberry Village](https://www.nexusmods.com/stardewvalley/mods/11111)
 - [Visit Mount Vapius](https://www.nexusmods.com/stardewvalley/mods/9600)
 - [Sword & Sorcery](https://www.nexusmods.com/stardewvalley/mods/12369)
+- [Farm Type Manager](https://www.nexusmods.com/stardewvalley/mods/3231)
+- [Archaeology Skill](https://www.nexusmods.com/stardewvalley/mods/22199)
 - [Daily Tasks Report Plus](https://www.nexusmods.com/stardewvalley/mods/20871)
 - [Full Inventory View](https://www.nexusmods.com/stardewvalley/mods/32625)
 
