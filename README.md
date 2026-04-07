@@ -60,6 +60,7 @@
   - [Walk of Life](https://www.nexusmods.com/stardewvalley/mods/24355) compatibility:
     - Experience bar supports prestige levels (11-20) with correct XP curve
     - Ecologist/Gemologist quality predictions on forageable/mineral tooltips
+    - Angler/Producer sale bonus shown on item hover tooltip
   - Add ground mineral tooltip in caves/mines (gems, minerals)
   - [Better Junimos](https://www.nexusmods.com/stardewvalley/mods/2221) compatibility: ([#1](https://github.com/dazuki/UIInfoSuite2Alt/pull/1)) [@PaulEndri](https://github.com/PaulEndri)
     - Junimo hut range uses configured radius
