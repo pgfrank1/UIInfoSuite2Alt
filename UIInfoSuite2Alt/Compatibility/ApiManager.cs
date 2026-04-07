@@ -30,6 +30,10 @@ public static class ModCompat
   public const string ArchaeologySkill = "moonslime.ArchaeologySkill";
   public const string BetterJunimos = "hawkfalcon.BetterJunimos";
   public const string WalkOfLife = "DaLion.Professions";
+  public const string AnimalHusbandry = "DIGUS.ANIMALHUSBANDRYMOD";
+  public const string BiggerBackpack = "spacechase0.BiggerBackpack";
+  public const string FullInventoryView = "CpdnCristiano.FullInventoryView";
+  public const string CatValley = "RimeNovi.CatValley";
 
   // original UIInfoSuite variants
   public const string UIInfoSuite2 = "Annosz.UiInfoSuite2";

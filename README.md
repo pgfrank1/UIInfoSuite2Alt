@@ -56,6 +56,9 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.16**
+  - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538) compatibility:
+    - Queen of Sauce icon shows Meat Friday recipes on Fridays when the player hasn't learned them yet
 - **v2.8.15**
   - [Walk of Life](https://www.nexusmods.com/stardewvalley/mods/24355) compatibility:
     - Experience bar supports prestige levels (11-20) with correct XP curve
@@ -316,6 +319,7 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Archaeology Skill](https://www.nexusmods.com/stardewvalley/mods/22199)
 - [Daily Tasks Report Plus](https://www.nexusmods.com/stardewvalley/mods/20871)
 - [Full Inventory View](https://www.nexusmods.com/stardewvalley/mods/32625)
+- [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538)
 
 <p align="center">
   <a href="https://ko-fi.com/dazuki89" target="_BLANK">

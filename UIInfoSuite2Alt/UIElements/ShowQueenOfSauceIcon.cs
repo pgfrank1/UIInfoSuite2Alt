@@ -8,6 +8,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Infrastructure;
 using UIInfoSuite2Alt.Infrastructure.Extensions;
 
@@ -33,6 +34,23 @@ internal class ShowQueenOfSauceIcon : IDisposable
 
   private readonly PerScreen<ClickableTextureComponent> _icon = new();
 
+  // Meat Friday (Animal Husbandry mod) support
+  private static readonly Dictionary<int, string> MeatFridayRecipes = new()
+  {
+    { 2, "Roast Duck" },
+    { 3, "Bacon" },
+    { 4, "Summer Sausage" },
+    { 5, "Orange Chicken" },
+    { 6, "Steak Fajitas" },
+    { 7, "Rabbit au Vin" },
+    { 8, "Winter Duck" },
+  };
+
+  private CraftingRecipe? _meatFridayRecipe;
+  private readonly PerScreen<bool> _drawMeatFridayIcon = new();
+  private readonly PerScreen<ClickableTextureComponent> _meatFridayIconComponent = new();
+  private bool _hasAnimalHusbandry;
+
   private readonly IModHelper _helper;
   #endregion
 
@@ -54,10 +72,13 @@ internal class ShowQueenOfSauceIcon : IDisposable
     _helper.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
     _helper.Events.GameLoop.SaveLoaded -= OnSaveLoaded;
 
+    _hasAnimalHusbandry = _helper.ModRegistry.IsLoaded(ModCompat.AnimalHusbandry);
+
     if (showQueenOfSauceIcon)
     {
       LoadRecipes();
       CheckForNewRecipe();
+      CheckForMeatFriday();
 
       _helper.Events.GameLoop.DayStarted += OnDayStarted;
       _helper.Events.Display.RenderingHud += OnRenderingHud;
@@ -76,91 +97,132 @@ internal class ShowQueenOfSauceIcon : IDisposable
   private void OnDayStarted(object? sender, DayStartedEventArgs e)
   {
     CheckForNewRecipe();
+    CheckForMeatFriday();
   }
 
   private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
   {
     CheckForNewRecipe();
+    CheckForMeatFriday();
   }
 
   private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
   {
+    if (!e.IsOneSecond)
+    {
+      return;
+    }
+
     if (
-      e.IsOneSecond
-      && _drawQueenOfSauceIcon.Value
+      _drawQueenOfSauceIcon.Value
       && _todaysRecipe != null
       && Game1.player.knowsRecipe(_todaysRecipe.name)
     )
     {
       _drawQueenOfSauceIcon.Value = false;
     }
+
+    if (
+      _drawMeatFridayIcon.Value
+      && _meatFridayRecipe != null
+      && Game1.player.knowsRecipe(_meatFridayRecipe.name)
+    )
+    {
+      _drawMeatFridayIcon.Value = false;
+    }
   }
 
   private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
   {
-    if (
-      UIElementUtils.IsRenderingNormally()
-      && _drawQueenOfSauceIcon.Value
-      && _todaysRecipe != null
-    )
+    if (!UIElementUtils.IsRenderingNormally())
     {
-      IconHandler.Handler.EnqueueIcon(
+      return;
+    }
+
+    if (_drawQueenOfSauceIcon.Value && _todaysRecipe != null)
+    {
+      EnqueueRecipeIcon(
         "QueenOfSauce",
-        (batch, pos) =>
-        {
-          if (_showRecipeItemIcon)
-          {
-            var itemData = _todaysRecipe.GetItemData(useFirst: true);
-            Texture2D itemTexture = itemData.GetTexture();
-            Rectangle itemSourceRect = itemData.GetSourceRect();
-
-            _icon.Value = new ClickableTextureComponent(
-              new Rectangle(pos.X, pos.Y, 40, 40),
-              itemTexture,
-              itemSourceRect,
-              2.5f
-            );
-            _icon.Value.draw(batch);
-
-            batch.Draw(
-              Game1.mouseCursors,
-              new Vector2(pos.X + 18, pos.Y + 18),
-              new Rectangle(609, 361, 28, 28),
-              Color.White,
-              0f,
-              Vector2.Zero,
-              0.8f,
-              SpriteEffects.None,
-              1f
-            );
-          }
-          else
-          {
-            _icon.Value = new ClickableTextureComponent(
-              new Rectangle(pos.X, pos.Y, 40, 40),
-              Game1.mouseCursors,
-              new Rectangle(609, 361, 28, 28),
-              1.3f
-            );
-            _icon.Value.draw(batch);
-          }
-        },
-        batch =>
-        {
-          if (
-            !Game1.IsFakedBlackScreen()
-            && (_icon.Value?.containsPoint(Game1.getMouseX(), Game1.getMouseY()) ?? false)
-          )
-          {
-            IClickableMenu.drawHoverText(
-              batch,
-              I18n.TodaysRecipe() + _todaysRecipe?.DisplayName,
-              Game1.dialogueFont
-            );
-          }
-        }
+        _todaysRecipe,
+        _icon,
+        I18n.TodaysRecipe() + _todaysRecipe.DisplayName
       );
     }
+
+    if (_drawMeatFridayIcon.Value)
+    {
+      string hoverText = _meatFridayRecipe != null
+        ? I18n.TodaysMeatRecipe() + _meatFridayRecipe.DisplayName
+        : I18n.TodaysMeatRecipe();
+
+      EnqueueRecipeIcon(
+        "MeatFriday",
+        _meatFridayRecipe,
+        _meatFridayIconComponent,
+        hoverText
+      );
+    }
+  }
+
+  private void EnqueueRecipeIcon(
+    string iconKey,
+    CraftingRecipe? recipe,
+    PerScreen<ClickableTextureComponent> iconComponent,
+    string hoverText
+  )
+  {
+    IconHandler.Handler.EnqueueIcon(
+      iconKey,
+      (batch, pos) =>
+      {
+        if (_showRecipeItemIcon && recipe != null)
+        {
+          var itemData = recipe.GetItemData(useFirst: true);
+          Texture2D itemTexture = itemData.GetTexture();
+          Rectangle itemSourceRect = itemData.GetSourceRect();
+
+          iconComponent.Value = new ClickableTextureComponent(
+            new Rectangle(pos.X, pos.Y, 40, 40),
+            itemTexture,
+            itemSourceRect,
+            2.5f
+          );
+          iconComponent.Value.draw(batch);
+
+          batch.Draw(
+            Game1.mouseCursors,
+            new Vector2(pos.X + 18, pos.Y + 18),
+            new Rectangle(609, 361, 28, 28),
+            Color.White,
+            0f,
+            Vector2.Zero,
+            0.8f,
+            SpriteEffects.None,
+            1f
+          );
+        }
+        else
+        {
+          iconComponent.Value = new ClickableTextureComponent(
+            new Rectangle(pos.X, pos.Y, 40, 40),
+            Game1.mouseCursors,
+            new Rectangle(609, 361, 28, 28),
+            1.3f
+          );
+          iconComponent.Value.draw(batch);
+        }
+      },
+      batch =>
+      {
+        if (
+          !Game1.IsFakedBlackScreen()
+          && (iconComponent.Value?.containsPoint(Game1.getMouseX(), Game1.getMouseY()) ?? false)
+        )
+        {
+          IClickableMenu.drawHoverText(batch, hoverText, Game1.dialogueFont);
+        }
+      }
+    );
   }
   #endregion
 
@@ -203,6 +265,49 @@ internal class ShowQueenOfSauceIcon : IDisposable
       (Game1.dayOfMonth % 7 == 0 || (Game1.dayOfMonth - 3) % 7 == 0)
       && Game1.stats.DaysPlayed > 5
       && !Game1.player.knowsRecipe(_todaysRecipe.name);
+  }
+
+  private void CheckForMeatFriday()
+  {
+    _meatFridayRecipe = null;
+    _drawMeatFridayIcon.Value = false;
+
+    if (!_hasAnimalHusbandry)
+    {
+      return;
+    }
+
+    // Meat Friday airs on Fridays only
+    if (Game1.Date.DayOfWeek != DayOfWeek.Friday)
+    {
+      return;
+    }
+
+    // Replicate Animal Husbandry rotation: (DaysPlayed % 112 / 14) + 1
+    // Keys 2-8 map to recipes; key 1 means no episode this week
+    int recipeNumber = (int)(Game1.stats.DaysPlayed % 112U / 14) + 1;
+    if (recipeNumber < 2)
+    {
+      return;
+    }
+
+    if (!MeatFridayRecipes.TryGetValue(recipeNumber, out string? recipeName))
+    {
+      // Unknown recipe number - could be a new recipe added by the mod.
+      // Show generic TV icon so the player still gets a reminder.
+      _drawMeatFridayIcon.Value = true;
+      return;
+    }
+
+    // Verify the recipe exists in game data (mod might have changed names)
+    if (!CraftingRecipe.cookingRecipes.ContainsKey(recipeName))
+    {
+      _drawMeatFridayIcon.Value = true;
+      return;
+    }
+
+    _meatFridayRecipe = new CraftingRecipe(recipeName, true);
+    _drawMeatFridayIcon.Value = !Game1.player.knowsRecipe(_meatFridayRecipe.name);
   }
   #endregion
 }

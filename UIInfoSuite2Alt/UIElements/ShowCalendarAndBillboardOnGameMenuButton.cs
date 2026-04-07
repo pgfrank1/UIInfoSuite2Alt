@@ -90,9 +90,9 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
     _hasSunberryVillage = helper.ModRegistry.IsLoaded(ModCompat.SunberryVillage);
     _hasEscasModdingPlugins = helper.ModRegistry.IsLoaded(ModCompat.EscasModdingPlugins);
     _hasSwordAndSorcery = helper.ModRegistry.IsLoaded(ModCompat.SwordAndSorcery);
-    _hasBiggerBackpack = helper.ModRegistry.IsLoaded("spacechase0.BiggerBackpack");
-    _hasFullInventoryView = helper.ModRegistry.IsLoaded("CpdnCristiano.FullInventoryView");
-    _hasCpCatValley = helper.ModRegistry.IsLoaded("RimeNovi.CatValley");
+    _hasBiggerBackpack = helper.ModRegistry.IsLoaded(ModCompat.BiggerBackpack);
+    _hasFullInventoryView = helper.ModRegistry.IsLoaded(ModCompat.FullInventoryView);
+    _hasCpCatValley = helper.ModRegistry.IsLoaded(ModCompat.CatValley);
   }
 
   public void Dispose()
