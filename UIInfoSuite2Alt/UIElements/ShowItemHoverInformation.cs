@@ -6,7 +6,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Tools;
 using UIInfoSuite2Alt.Compatibility;
@@ -15,6 +14,7 @@ using UIInfoSuite2Alt.Infrastructure;
 using UIInfoSuite2Alt.Infrastructure.Extensions;
 using UIInfoSuite2Alt.Infrastructure.Helpers;
 using UIInfoSuite2Alt.Options;
+using UIInfoSuite2Alt.UIElements.DonationIcons;
 using Object = StardewValley.Object;
 
 namespace UIInfoSuite2Alt.UIElements;
@@ -32,47 +32,23 @@ internal class ShowItemHoverInformation : IDisposable
 
   private readonly Dictionary<int, Color?> _bundleColorCache = new();
   private readonly PerScreen<Item?> _hoverItem = new();
-  private readonly ClickableTextureComponent _museumIcon;
 
-  private ClickableTextureComponent? _aquariumIcon;
-  private bool _aquariumIconInitialized;
+  private readonly DonationIconRow _donationIcons = new();
+  private readonly MuseumDonationProvider _museumProvider = new();
 
   private (Texture2D texture, Rectangle sourceRect)? _ubIconOverride;
 
   private static readonly Rectangle CollectionsTabSourceRect = new(640, 80, 16, 17);
   private Texture2D? _shippingBinTexture;
 
-  private LibraryMuseum? _libraryMuseum;
-
   public ShowItemHoverInformation(IModHelper helper)
   {
     _helper = helper;
 
-    NPC? gunther = Game1.getCharacterFromName("Gunther");
-    if (gunther == null)
-    {
-      ModEntry.MonitorObject.Log(
-        "ShowItemHoverInformation: Gunther not found, creating fallback NPC",
-        LogLevel.Warn
-      );
-      gunther = new NPC
-      {
-        Name = "Gunther",
-        Age = 0,
-        Sprite = new AnimatedSprite("Characters\\Gunther"),
-      };
-    }
-
-    _museumIcon = new ClickableTextureComponent(
-      new Rectangle(0, 0, Game1.tileSize, Game1.tileSize),
-      gunther.Sprite.Texture,
-      gunther.GetHeadShot(),
-      Game1.pixelZoom
-    );
+    _donationIcons.AddProvider(_museumProvider);
+    _donationIcons.AddProvider(new AquariumDonationProvider(helper));
 
     _shippingBinTexture = AssetHelper.TryLoadTexture(helper, "assets/bin_custom.png");
-
-    AquariumHelper.Initialize(helper);
   }
 
   public void Dispose()
@@ -88,46 +64,12 @@ internal class ShowItemHoverInformation : IDisposable
 
     if (showItemHoverInformation)
     {
-      _libraryMuseum = Game1.getLocationFromName("ArchaeologyHouse") as LibraryMuseum;
+      _museumProvider.Initialize();
 
       _helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
       _helper.Events.Display.RenderedHud += OnRenderedHud;
       _helper.Events.Display.Rendering += OnRendering;
     }
-  }
-
-  private ClickableTextureComponent? GetAquariumIcon()
-  {
-    if (_aquariumIconInitialized)
-    {
-      return _aquariumIcon;
-    }
-
-    _aquariumIconInitialized = true;
-    if (!AquariumHelper.IsModLoaded)
-    {
-      return null;
-    }
-
-    try
-    {
-      Texture2D curatorTexture = _helper.GameContent.Load<Texture2D>("Characters/Curator");
-      _aquariumIcon = new ClickableTextureComponent(
-        new Rectangle(0, 0, Game1.tileSize, Game1.tileSize),
-        curatorTexture,
-        new Rectangle(0, 1, 16, 16),
-        Game1.pixelZoom
-      );
-    }
-    catch (Exception)
-    {
-      ModEntry.MonitorObject.Log(
-        "ShowItemHoverInformation: Stardew Aquarium installed but Curator sprite load failed",
-        LogLevel.Warn
-      );
-    }
-
-    return _aquariumIcon;
   }
 
   private void OnRendering(object? sender, EventArgs e)
@@ -183,11 +125,7 @@ internal class ShowItemHoverInformation : IDisposable
 
       int cropPrice = showPrice ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
 
-      bool notDonatedYet =
-        showDonation && (_libraryMuseum?.isItemSuitableForDonation(_hoverItem.Value) ?? false);
-
-      bool notDonatedToAquarium =
-        showDonation && AquariumHelper.IsUndonatedAquariumFish(_hoverItem.Value);
+      bool hasUndonated = showDonation && _donationIcons.HasAnyDonation(_hoverItem.Value);
 
       bool notShippedYet =
         showShipping
@@ -426,7 +364,7 @@ internal class ShowItemHoverInformation : IDisposable
         if (InformantHelper.IsLoaded)
         {
           bool hasAnyDecorator =
-            (notDonatedYet && InformantHelper.IsFeatureEnabled("museum"))
+            (hasUndonated && InformantHelper.IsFeatureEnabled("museum"))
             || (notShippedYet && InformantHelper.IsFeatureEnabled("shipping"))
             || (
               !string.IsNullOrEmpty(requiredBundleName)
@@ -440,40 +378,12 @@ internal class ShowItemHoverInformation : IDisposable
         }
       }
 
-      if (notDonatedYet)
+      if (hasUndonated)
       {
         Vector2 donationPos = hasPriceRows
           ? windowPos + new Vector2(2, windowHeight + 8)
           : new Vector2(vanillaTooltip.Left + 2, vanillaTooltip.Bottom + 8);
-        spriteBatch.Draw(
-          _museumIcon.texture,
-          donationPos,
-          _museumIcon.sourceRect,
-          Color.White,
-          0f,
-          new Vector2(_museumIcon.sourceRect.Width / 2, _museumIcon.sourceRect.Height),
-          2,
-          SpriteEffects.None,
-          0.86f
-        );
-      }
-
-      if (notDonatedToAquarium && GetAquariumIcon() is { } aquariumIcon)
-      {
-        Vector2 aquariumPos = hasPriceRows
-          ? windowPos + new Vector2(2, windowHeight + 8)
-          : new Vector2(vanillaTooltip.Left + 2, vanillaTooltip.Bottom + 8);
-        spriteBatch.Draw(
-          aquariumIcon.texture,
-          aquariumPos,
-          aquariumIcon.sourceRect,
-          Color.White,
-          0f,
-          new Vector2(aquariumIcon.sourceRect.Width / 2, aquariumIcon.sourceRect.Height),
-          2,
-          SpriteEffects.None,
-          0.86f
-        );
+        _donationIcons.Draw(spriteBatch, _hoverItem.Value, donationPos);
       }
 
       if (!string.IsNullOrEmpty(requiredBundleName))
