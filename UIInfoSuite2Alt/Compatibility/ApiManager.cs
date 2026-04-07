@@ -28,6 +28,7 @@ public static class ModCompat
   public const string ShowItemQuality = "Jonqora.ShowItemQuality";
   public const string FarmTypeManager = "Esca.FarmTypeManager";
   public const string ArchaeologySkill = "moonslime.ArchaeologySkill";
+  public const string BetterJunimos = "hawkfalcon.BetterJunimos";
   public const string WalkOfLife = "DaLion.Professions";
 
   // original UIInfoSuite variants

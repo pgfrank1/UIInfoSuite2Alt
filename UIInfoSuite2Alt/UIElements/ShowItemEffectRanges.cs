@@ -12,6 +12,7 @@ using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.TerrainFeatures;
 using UIInfoSuite2Alt.Infrastructure;
+using UIInfoSuite2Alt.Compatibility;
 using Object = StardewValley.Object;
 
 namespace UIInfoSuite2Alt.UIElements;
@@ -30,6 +31,7 @@ internal class ShowItemEffectRanges : IDisposable
   private readonly Lazy<Texture2D> _wildTreeTexture;
   private readonly PerScreen<bool> _isBombRange = new(() => false);
 
+  private int _junimoHutRadius = 8; // default radius
   private bool _showItemEffectRanges;
   private bool _showPlacedItemRanges = true;
 
@@ -463,6 +465,12 @@ internal class ShowItemEffectRanges : IDisposable
 
       if (building is JunimoHut hoveredHut)
       {
+        // get the max radius real time to account for config changes
+        if (ApiManager.GetApi(ModCompat.BetterJunimos, out IBetterJunimosApi? betterJunimosApi))
+        {
+          _junimoHutRadius = betterJunimosApi.GetJunimoHutMaxRadius();
+        }
+
         arrayToUse = GetDistanceArray(ObjectsWithDistance.JunimoHut);
         int hutTiles = CountTilesInArray(arrayToUse);
 
@@ -1199,7 +1207,7 @@ internal class ShowItemEffectRanges : IDisposable
   {
     return type switch
     {
-      ObjectsWithDistance.JunimoHut => GetCircularMask(100, maxDisplaySquareRadius: 8),
+      ObjectsWithDistance.JunimoHut => GetCircularMask(100, maxDisplaySquareRadius: _junimoHutRadius),
       ObjectsWithDistance.Beehouse => GetCircularMask(4.19, 5, true),
       ObjectsWithDistance.Scarecrow => GetCircularMask(
         (instance?.GetRadiusForScarecrow() ?? 9) - 0.01

@@ -107,6 +107,14 @@ public partial class ModEntry : Mod
       );
     }
 
+    if (helper.ModRegistry.IsLoaded(ModCompat.BetterJunimos))
+    {
+      Monitor.Log(
+        "ModEntry: Better Junimos detected, using configured Junimo hut radius",
+        LogLevel.Info
+      );
+    }
+
     CheckForConflictingMods(helper);
   }
   #endregion
