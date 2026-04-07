@@ -27,9 +27,4 @@ public interface IWalkOfLifeApi
   /// <param name="farmer">The player.</param>
   /// <returns>A bonus applied to Angler fish prices.</returns>
   float GetAnglerSaleBonus(Farmer? farmer = null);
-
-  /// <summary>Gets the Conservationist's effective tax deduction based on last season's trash collection.</summary>
-  /// <param name="farmer">The player.</param>
-  /// <returns>The percentage of tax deductions currently in effect (0 to 1).</returns>
-  float GetConservationistTaxDeduction(Farmer? farmer = null);
 }

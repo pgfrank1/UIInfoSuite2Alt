@@ -1082,7 +1082,7 @@ internal class ShowTileTooltips : IDisposable
         }
 
         // Iridium uses value 4 but must also skip if current is gold (2) going to iridium (4)
-        // — handled by quality <= currentQuality since 4 > 2
+        // quality <= currentQuality since 4 > 2
 
         int daysUntilThisQuality = (int)Math.Ceiling((daysToMature - threshold) / agingRate);
         if (daysUntilThisQuality <= 0)

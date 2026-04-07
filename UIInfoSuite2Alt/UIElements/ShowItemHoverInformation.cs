@@ -125,6 +125,31 @@ internal class ShowItemHoverInformation : IDisposable
 
       int cropPrice = showPrice ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
 
+      // Walk of Life profession sale bonus (informational - price already includes it)
+      string? wolBonusPct = null;
+      string? wolBonusLabel = null;
+      if (
+        itemPrice > 0
+        && hoveredObject != null
+        && ApiManager.GetApi<IWalkOfLifeApi>(ModCompat.WalkOfLife, out var wolApi)
+      )
+      {
+        float producerBonus = wolApi.GetProducerSaleBonus();
+        float anglerBonus = wolApi.GetAnglerSaleBonus();
+        if (producerBonus > 1f && IsAnimalProduct(hoveredObject))
+        {
+          int pct = (int)Math.Round((producerBonus - 1f) * 100f);
+          wolBonusPct = $"+{pct}% ";
+          wolBonusLabel = "Producer";
+        }
+        else if (anglerBonus > 1f && IsFishProduct(hoveredObject))
+        {
+          int pct = (int)Math.Round((anglerBonus - 1f) * 100f);
+          wolBonusPct = $"+{pct}% ";
+          wolBonusLabel = "Angler";
+        }
+      }
+
       bool hasUndonated = showDonation && _donationIcons.HasAnyDonation(_hoverItem.Value);
 
       bool notShippedYet =
@@ -188,12 +213,19 @@ internal class ShowItemHoverInformation : IDisposable
         var itemTextWidth = (int)Game1.smallFont.MeasureString(itemPrice.ToString()).X;
         var stackTextWidth = (int)Game1.smallFont.MeasureString(stackPrice.ToString()).X;
         var cropTextWidth = (int)Game1.smallFont.MeasureString(cropPrice.ToString()).X;
+        var wolBonusTextWidth =
+          wolBonusPct != null
+            ? (int)Game1.smallFont.MeasureString(wolBonusPct + wolBonusLabel).X
+            : 0;
         var minTextWidth = (int)Game1.smallFont.MeasureString("000").X;
         int largestTextWidth =
           76
           + Math.Max(
             minTextWidth,
-            Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+            Math.Max(
+              wolBonusTextWidth,
+              Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+            )
           );
         windowWidth = Math.Max(bundleHeaderWidth, largestTextWidth);
 
@@ -211,6 +243,11 @@ internal class ShowItemHoverInformation : IDisposable
         if (cropPrice > 0)
         {
           windowHeight += 40;
+        }
+
+        if (wolBonusPct != null)
+        {
+          windowHeight += 32;
         }
 
         if (!string.IsNullOrEmpty(requiredBundleName))
@@ -348,6 +385,33 @@ internal class ShowItemHoverInformation : IDisposable
           );
 
           DrawSmallTextWithShadow(spriteBatch, cropPrice.ToString(), drawPosition + textOffset);
+
+          drawPosition.Y += rowHeight;
+        }
+
+        if (wolBonusPct != null)
+        {
+          Vector2 bonusPos = drawPosition + new Vector2(4, 2);
+          float pctWidth = Game1.smallFont.MeasureString(wolBonusPct).X;
+
+          // +X% in green
+          spriteBatch.DrawString(
+            Game1.smallFont,
+            wolBonusPct,
+            bonusPos + new Vector2(2, 2),
+            Game1.textShadowColor
+          );
+          spriteBatch.DrawString(Game1.smallFont, wolBonusPct, bonusPos, Tools.TooltipGreen);
+
+          // Profession name in normal text color
+          Vector2 labelPos = bonusPos + new Vector2(pctWidth, 0);
+          spriteBatch.DrawString(
+            Game1.smallFont,
+            wolBonusLabel!,
+            labelPos + new Vector2(2, 2),
+            Game1.textShadowColor
+          );
+          spriteBatch.DrawString(Game1.smallFont, wolBonusLabel!, labelPos, Game1.textColor);
         }
       }
 
@@ -471,6 +535,44 @@ internal class ShowItemHoverInformation : IDisposable
         }
       }
     }
+  }
+
+  /// <summary>
+  /// Matches WoL's IsAnimalOrDerivedGood check for Producer bonus display.
+  /// Excludes the honey/BeesAreAnimals config edge case.
+  /// </summary>
+  private static bool IsAnimalProduct(Object obj)
+  {
+    if (
+      obj.Category
+      is Object.EggCategory
+        or Object.MilkCategory
+        or Object.meatCategory
+        or Object.sellAtPierresAndMarnies
+    )
+    {
+      return true;
+    }
+
+    return obj.QualifiedItemId
+      is "(O)107" // Dinosaur Egg
+        or "(O)306" // Mayonnaise
+        or "(O)307" // Duck Mayonnaise
+        or "(O)308" // Void Mayonnaise
+        or "(O)807" // Dinosaur Mayonnaise
+        or "(O)424" // Cheese
+        or "(O)426" // Goat Cheese
+        or "(O)428" // Cloth
+        or "(O)440" // Wool
+        or "(O)DaLion.Professions_GoldenMayo"
+        or "(O)DaLion.Professions_OstrichMayo";
+  }
+
+  /// <summary>Matches WoL's IsFish + SmokedFish check for Angler bonus display.</summary>
+  private static bool IsFishProduct(Object obj)
+  {
+    return obj.Category == Object.FishCategory
+      || obj.preserve?.Value == Object.PreserveType.SmokedFish;
   }
 
   private void DrawSmallTextWithShadow(SpriteBatch b, string text, Vector2 position)
