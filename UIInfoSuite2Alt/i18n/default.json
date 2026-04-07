@@ -41,6 +41,7 @@
   //GUI - Seed shop
   "HarvestPrice": "Harvest price",
   //Production
+  "Day": "day",
   "Days": "days",
   "Hours": "hours",
   "Minutes": "minutes",
@@ -54,6 +55,8 @@
   "FishPondNextQuest": "Quest in: {{days}} day(s)",
   "FishPondQuestItem": "Needs: {{item}} x{{count}}",
   "FishPondGoldenCracker": "Golden Animal Cracker",
+  //Cask
+  "CaskAgingIn": "in",
   //Harvest
   "DaysToMature": "days to mature",
   "ReadyToHarvest": "Ready to harvest!",

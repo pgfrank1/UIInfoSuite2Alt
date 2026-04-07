@@ -1,4 +1,3 @@
-
 using System;
 
 namespace UIInfoSuite2Alt.Compatibility;

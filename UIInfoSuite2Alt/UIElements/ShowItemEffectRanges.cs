@@ -11,8 +11,8 @@ using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.TerrainFeatures;
-using UIInfoSuite2Alt.Infrastructure;
 using UIInfoSuite2Alt.Compatibility;
+using UIInfoSuite2Alt.Infrastructure;
 using Object = StardewValley.Object;
 
 namespace UIInfoSuite2Alt.UIElements;
@@ -1207,7 +1207,10 @@ internal class ShowItemEffectRanges : IDisposable
   {
     return type switch
     {
-      ObjectsWithDistance.JunimoHut => GetCircularMask(100, maxDisplaySquareRadius: _junimoHutRadius),
+      ObjectsWithDistance.JunimoHut => GetCircularMask(
+        100,
+        maxDisplaySquareRadius: _junimoHutRadius
+      ),
       ObjectsWithDistance.Beehouse => GetCircularMask(4.19, 5, true),
       ObjectsWithDistance.Scarecrow => GetCircularMask(
         (instance?.GetRadiusForScarecrow() ?? 9) - 0.01

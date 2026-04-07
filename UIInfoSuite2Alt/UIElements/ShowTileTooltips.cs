@@ -25,10 +25,36 @@ using Object = StardewValley.Object;
 
 namespace UIInfoSuite2Alt.UIElements;
 
-internal readonly struct HoverSegment(string text, Color? color = null)
+internal readonly struct HoverSegment
 {
-  public string Text { get; } = text;
-  public Color? Color { get; } = color;
+  public string Text { get; }
+  public Color? Color { get; }
+  public Texture2D? Texture { get; }
+  public Rectangle? SourceRect { get; }
+  public float SpriteScale { get; }
+
+  public HoverSegment(string text, Color? color = null)
+  {
+    Text = text;
+    Color = color;
+  }
+
+  public HoverSegment(
+    Texture2D texture,
+    Rectangle sourceRect,
+    float spriteScale,
+    string text = "",
+    Color? color = null
+  )
+  {
+    Text = text;
+    Color = color;
+    Texture = texture;
+    SourceRect = sourceRect;
+    SpriteScale = spriteScale;
+  }
+
+  public bool HasSprite => Texture != null && SourceRect != null;
 
   public static implicit operator HoverSegment(string text) => new(text);
 }
@@ -246,6 +272,12 @@ internal class ShowTileTooltips : IDisposable
             )
           );
         }
+      }
+
+      // Show current quality star on the cask's held item icon
+      if (currentTile is Cask { heldObject.Value: not null } caskTile)
+      {
+        predictedQuality = caskTile.heldObject.Value.Quality;
       }
     }
 
@@ -545,6 +577,11 @@ internal class ShowTileTooltips : IDisposable
       float lineWidth = 0;
       foreach (HoverSegment segment in line.Segments)
       {
+        if (segment.HasSprite)
+        {
+          lineWidth += segment.SourceRect!.Value.Width * segment.SpriteScale;
+        }
+
         if (segment.Text.Length > 0)
         {
           lineWidth += font.MeasureString(segment.Text).X;
@@ -625,6 +662,26 @@ internal class ShowTileTooltips : IDisposable
 
       foreach (HoverSegment segment in line.Segments)
       {
+        if (segment.HasSprite)
+        {
+          Rectangle srcRect = segment.SourceRect!.Value;
+          float spriteW = srcRect.Width * segment.SpriteScale;
+          float spriteH = srcRect.Height * segment.SpriteScale;
+          float spriteCY = lineY + font.LineSpacing / 2f - spriteH / 2f;
+          b.Draw(
+            segment.Texture!,
+            new Vector2(segX, spriteCY),
+            srcRect,
+            Color.White,
+            0f,
+            Vector2.Zero,
+            segment.SpriteScale,
+            SpriteEffects.None,
+            0.91f
+          );
+          segX += spriteW;
+        }
+
         if (segment.Text.Length > 0)
         {
           Color segColor = segment.Color ?? defaultColor;
@@ -946,9 +1003,7 @@ internal class ShowTileTooltips : IDisposable
       entries.Add(tileObject.heldObject.Value.DisplayName);
       if (tileObject is Cask cask)
       {
-        entries.Add(
-          $"{(int)Math.Ceiling(cask.daysToMature.Value / cask.agingRate.Value)} {I18n.DaysToMature()}"
-        );
+        AddCaskAgingLines(cask, entries);
         return true;
       }
 
@@ -1004,6 +1059,50 @@ internal class ShowTileTooltips : IDisposable
       builder.Append($"{shortTime} {shortText}");
       entries.Add(builder.ToString());
       return true;
+    }
+
+    private static readonly (int Quality, float DaysThreshold)[] CaskQualityStages =
+    [
+      (1, 42f), // Silver
+      (2, 28f), // Gold
+      (4, 0f), // Iridium
+    ];
+
+    private static void AddCaskAgingLines(Cask cask, List<HoverLine> entries)
+    {
+      int currentQuality = cask.heldObject.Value?.Quality ?? 0;
+      float daysToMature = cask.daysToMature.Value;
+      float agingRate = cask.agingRate.Value;
+
+      foreach ((int quality, float threshold) in CaskQualityStages)
+      {
+        if (quality <= currentQuality)
+        {
+          continue;
+        }
+
+        // Iridium uses value 4 but must also skip if current is gold (2) going to iridium (4)
+        // — handled by quality <= currentQuality since 4 > 2
+
+        int daysUntilThisQuality = (int)Math.Ceiling((daysToMature - threshold) / agingRate);
+        if (daysUntilThisQuality <= 0)
+        {
+          continue;
+        }
+
+        Rectangle starRect =
+          quality < 4
+            ? new Rectangle(338 + (quality - 1) * 8, 400, 8, 8)
+            : new Rectangle(346, 392, 8, 8);
+
+        string daysText = daysUntilThisQuality == 1 ? I18n.Day() : I18n.Days();
+        entries.Add(
+          new HoverLine(
+            new HoverSegment(Game1.mouseCursors, starRect, 2f, $" {I18n.CaskAgingIn()} "),
+            new HoverSegment($"{daysUntilThisQuality} {daysText}", WaitingColor)
+          )
+        );
+      }
     }
 
     /// <summary>

@@ -61,10 +61,13 @@
     - Experience bar supports prestige levels (11-20) with correct XP curve
     - Ecologist/Gemologist quality predictions on forageable/mineral tooltips
   - Add ground mineral tooltip in caves/mines (gems, minerals)
+  - [Better Junimos](https://www.nexusmods.com/stardewvalley/mods/2221) compatibility: ([#1](https://github.com/dazuki/UIInfoSuite2Alt/pull/1)) [@PaulEndri](https://github.com/PaulEndri)
+    - Junimo hut range uses configured radius
   - Controller:
     - Trinket slot and Trash can now navigate to inventory icons with controller
     - Mod options tab is now reachable with controller
     - Dropdowns and number pickers in mod options now work with controller-style menus
+  - Cask tooltip now shows per-quality aging progress with star icons
   - Fix machine tooltip showing misleading hour/minute countdown for day-based machines
 - **v2.8.14**
   - Add hide trees keybind (Default: F7)
@@ -299,6 +302,7 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Walk of Life - Rebirth](https://www.nexusmods.com/stardewvalley/mods/24355)
 - [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414)
 - [Bigger Backpack](https://www.nexusmods.com/stardewvalley/mods/1845)
+- [Better Junimos](https://www.nexusmods.com/stardewvalley/mods/2221)
 - [Better Ranching](https://www.nexusmods.com/stardewvalley/mods/859)
 - [Informant](https://www.nexusmods.com/stardewvalley/mods/21286)
 - [Stardew Aquarium](https://www.nexusmods.com/stardewvalley/mods/6372)
