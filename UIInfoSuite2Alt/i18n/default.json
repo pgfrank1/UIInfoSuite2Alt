@@ -15,6 +15,7 @@
   "Keybinds.OpenSpecialOrdersBoardKeybind.Tooltip": "Opens the special orders board.",
   "Keybinds.HideTreesKeybind.DisplayedName": "Hide trees keybind",
   "Keybinds.HideTreesKeybind.Tooltip": "Toggles tree visibility on/off. Resets when returning to title/restart game.",
+  "HUD.TreesHidden": "Trees Hidden/Minimized - Press {{keybind}} to restore",
   "Keybinds.OpenModOptionsKeybind.DisplayedName": "Mod options keybind",
   "Keybinds.OpenModOptionsKeybind.Tooltip": "Opens the UI Info Suite options page directly.",
   "Keybinds.OpenMonsterEradicationKeybind.DisplayedName": "Monster eradication keybind",

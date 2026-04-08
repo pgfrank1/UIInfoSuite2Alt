@@ -268,6 +268,11 @@ public partial class ModEntry : Mod
   private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
   {
     IconHandler.Handler.DrawQueuedIcons(e.SpriteBatch);
+
+    if (UIElementUtils.IsRenderingNormally() && Game1.activeClickableMenu == null)
+    {
+      HideTreesPatch.DrawHiddenBanner(e.SpriteBatch, ModConfig.HideTreesKeybind.ToString());
+    }
   }
 
   public static void RegisterCalendarAndQuestKeyBindings(IModHelper helper, bool subscribe)

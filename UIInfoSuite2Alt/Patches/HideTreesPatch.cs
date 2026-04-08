@@ -438,6 +438,72 @@ internal static class HideTreesPatch
   }
   #endregion
 
+  #region HUD banner
+  private const int BannerSparkleSize = 64;
+  private const float BannerSparkleScale = 0.5f;
+  private static int _bannerSparkleDrawSize = (int)(BannerSparkleSize * BannerSparkleScale);
+
+  private static int GetBannerSparkleFrame()
+  {
+    int ticksPerFrame = (int)(SparkleFrameMs / 16.67);
+    return (int)(Game1.ticks / ticksPerFrame) % SparkleFrameCount;
+  }
+
+  /// <summary>Draw a centered top-screen banner when trees are fully hidden.</summary>
+  public static void DrawHiddenBanner(SpriteBatch batch, string keybindName)
+  {
+    if (!IsFullyHidden)
+    {
+      return;
+    }
+
+    string text = I18n.HUD_TreesHidden(keybind: keybindName);
+    Vector2 textSize = Game1.smallFont.MeasureString(text);
+
+    float scale = 4f;
+    int padding = (int)(5 * scale);
+    int sparkleGap = 4;
+    int contentWidth = _bannerSparkleDrawSize + sparkleGap + (int)textSize.X;
+    int boxWidth = contentWidth + padding * 2;
+    int boxHeight = (int)textSize.Y + padding * 2;
+    int x = (Game1.uiViewport.Width - boxWidth) / 2;
+    int y = 108;
+
+    var dest = new Rectangle(x, y, boxWidth, boxHeight);
+    NineSlice.Draw(batch, dest, scale, 1f);
+
+    // Sparkle icon to the left of text, vertically centered
+    int frame = GetBannerSparkleFrame();
+    var sparkleSrc = new Rectangle(
+      frame * BannerSparkleSize,
+      0,
+      BannerSparkleSize,
+      BannerSparkleSize
+    );
+    int sparkleX = x + padding;
+    int sparkleY = y + padding + ((int)textSize.Y - _bannerSparkleDrawSize) / 2;
+    var sparkleDest = new Rectangle(
+      sparkleX,
+      sparkleY,
+      _bannerSparkleDrawSize,
+      _bannerSparkleDrawSize
+    );
+    batch.Draw(
+      _sparkleTexture,
+      sparkleDest,
+      sparkleSrc,
+      new Color(120, 230, 100),
+      0f,
+      Vector2.Zero,
+      SpriteEffects.None,
+      1f
+    );
+
+    Vector2 textPos = new(sparkleX + _bannerSparkleDrawSize + sparkleGap, y + padding + 2);
+    Utility.drawTextWithShadow(batch, text, Game1.smallFont, textPos, Game1.textColor);
+  }
+  #endregion
+
   #region Idle sparkle effect
   // Custom sparkle: 6 frames, 64x64 each
   private const float SparkleFrameMs = 80f;
