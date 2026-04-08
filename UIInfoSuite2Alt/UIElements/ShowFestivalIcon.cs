@@ -470,7 +470,7 @@ internal class ShowFestivalIcon : IDisposable
       {
         if (icon.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, hoverText, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, hoverText, Game1.smallFont);
         }
       }
     );

@@ -164,7 +164,7 @@ internal class ShowLuckOfDay : IDisposable
       {
         if (_icon.Value.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.smallFont);
         }
       }
     );
@@ -192,7 +192,7 @@ internal class ShowLuckOfDay : IDisposable
       {
         if (_icon.Value.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.smallFont);
         }
       }
     );
@@ -214,7 +214,7 @@ internal class ShowLuckOfDay : IDisposable
       {
         if (_icon.Value.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.smallFont);
         }
       }
     );

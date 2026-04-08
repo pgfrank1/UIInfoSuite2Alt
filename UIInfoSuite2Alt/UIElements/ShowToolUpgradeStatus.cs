@@ -136,7 +136,7 @@ internal class ShowToolUpgradeStatus : IDisposable
       {
         if (_toolUpgradeIcon.Value.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, _hoverText.Value, Game1.smallFont);
         }
       }
     );

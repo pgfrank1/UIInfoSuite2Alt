@@ -94,7 +94,7 @@ internal class ShowRobinBuildingStatusIcon : IDisposable
             && !string.IsNullOrEmpty(_hoverText)
           )
           {
-            IClickableMenu.drawHoverText(batch, _hoverText, Game1.dialogueFont);
+            IClickableMenu.drawHoverText(batch, _hoverText, Game1.smallFont);
           }
         }
       );

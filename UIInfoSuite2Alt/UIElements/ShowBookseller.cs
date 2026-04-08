@@ -93,7 +93,7 @@ public class ShowBookseller : IDisposable
         {
           if (_booksellerIcon.Value?.containsPoint(Game1.getMouseX(), Game1.getMouseY()) ?? false)
           {
-            IClickableMenu.drawHoverText(batch, I18n.BooksellerIsInTown(), Game1.dialogueFont);
+            IClickableMenu.drawHoverText(batch, I18n.BooksellerIsInTown(), Game1.smallFont);
           }
         }
       );

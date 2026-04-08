@@ -132,7 +132,7 @@ internal class ShowSeasonalBerry : IDisposable
       {
         if (currentIcon != null && currentIcon.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
         {
-          IClickableMenu.drawHoverText(batch, hoverText, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, hoverText, Game1.smallFont);
         }
       }
     );

@@ -295,7 +295,7 @@ public class ShowTravelingMerchant : IDisposable
               }
             }
 
-            IClickableMenu.drawHoverText(batch, string.Join("\n", lines), Game1.dialogueFont);
+            IClickableMenu.drawHoverText(batch, string.Join("\n", lines), Game1.smallFont);
           }
         }
       );

@@ -216,7 +216,7 @@ internal class ShowQueenOfSauceIcon : IDisposable
           && (iconComponent.Value?.containsPoint(Game1.getMouseX(), Game1.getMouseY()) ?? false)
         )
         {
-          IClickableMenu.drawHoverText(batch, hoverText, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, hoverText, Game1.smallFont);
         }
       }
     );

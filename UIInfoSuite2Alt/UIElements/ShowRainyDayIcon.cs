@@ -136,7 +136,7 @@ internal class ShowRainyDayIcon : IDisposable
         bool hasText = !string.IsNullOrEmpty(weather.HoverText);
         if (weather.IsRainyTomorrow && hasMouse && hasText)
         {
-          IClickableMenu.drawHoverText(batch, weather.HoverText, Game1.dialogueFont);
+          IClickableMenu.drawHoverText(batch, weather.HoverText, Game1.smallFont);
         }
       }
     );
