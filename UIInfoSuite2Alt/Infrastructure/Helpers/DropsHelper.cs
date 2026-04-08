@@ -92,8 +92,18 @@ public static class DropsHelper
     bool includeToday = false
   )
   {
+    var treeData = tree.GetData();
+    if (treeData?.Fruit is not { Count: > 0 })
+    {
+      ModEntry.MonitorObject.LogOnce(
+        $"DropsHelper.GetFruitTreeDropItems: fruit tree '{tree.treeId.Value}' has null data or no fruit entries",
+        LogLevel.Warn
+      );
+      return new List<PossibleDroppedItem>();
+    }
+
     return GetGenericDropItems(
-      tree.GetData().Fruit,
+      treeData.Fruit,
       null,
       includeToday,
       "Fruit Tree",

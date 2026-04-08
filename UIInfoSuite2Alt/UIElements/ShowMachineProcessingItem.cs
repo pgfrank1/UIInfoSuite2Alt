@@ -26,12 +26,13 @@ internal class ShowMachineProcessingItem : IDisposable
   private readonly IModHelper _helper;
   private bool _showMachineIcons;
   private bool _showFishPondIcons;
-  private readonly PerScreen<bool> _toggleState = new();
+  private readonly PerScreen<bool> _toggleState = new(() =>
+    ModEntry.ModConfig.MachineProcessingIconsVisible
+  );
 
   public ShowMachineProcessingItem(IModHelper helper)
   {
     _helper = helper;
-    _toggleState.Value = ModEntry.ModConfig.MachineProcessingIconsVisible;
     _helper.Events.Input.ButtonsChanged += OnButtonsChanged;
     _helper.Events.GameLoop.Saving += OnSaving;
   }

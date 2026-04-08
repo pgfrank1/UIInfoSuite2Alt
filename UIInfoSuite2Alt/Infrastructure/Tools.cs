@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.GameData.Crops;
@@ -66,6 +67,15 @@ public static class Tools
       && FruitTree.TryGetData(item.ItemId, out FruitTreeData? fruitTreeData)
     )
     {
+      if (fruitTreeData.Fruit is not { Count: > 0 })
+      {
+        ModEntry.MonitorObject.LogOnce(
+          $"Tools.GetHarvest: fruit tree '{item.ItemId}' has no fruit entries",
+          LogLevel.Warn
+        );
+        return null;
+      }
+
       // TODO support multiple items returned
       return ItemRegistry.Create<SObject>(fruitTreeData.Fruit[0].ItemId);
     }

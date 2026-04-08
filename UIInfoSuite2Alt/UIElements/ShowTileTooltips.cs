@@ -1304,7 +1304,9 @@ internal class ShowTileTooltips : IDisposable
 
           ageToMature = customBushData.AgeToProduce;
           inProductionPeriod = Game1.dayOfMonth >= customBushData.DayToBeginProducing;
-          daysUntilProductionPeriod = inProductionPeriod ? 0 : 22 - Game1.dayOfMonth;
+          daysUntilProductionPeriod = inProductionPeriod
+            ? 0
+            : customBushData.DayToBeginProducing - Game1.dayOfMonth;
 
           if (customBushApi.TryGetShakeOffItem(bush, out Item? shakeOffItem))
           {

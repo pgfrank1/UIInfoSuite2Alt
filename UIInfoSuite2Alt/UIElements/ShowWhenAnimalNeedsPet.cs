@@ -101,8 +101,13 @@ internal class ShowWhenAnimalNeedsPet : IDisposable
   #region Logic
   private void DrawAnimalHasProduct()
   {
-    NetLongDictionary<FarmAnimal, NetRef<FarmAnimal>> animalsInCurrentLocation =
+    NetLongDictionary<FarmAnimal, NetRef<FarmAnimal>>? animalsInCurrentLocation =
       GetAnimalsInCurrentLocation();
+
+    if (animalsInCurrentLocation == null)
+    {
+      return;
+    }
 
     foreach (KeyValuePair<long, FarmAnimal> animal in animalsInCurrentLocation.Pairs)
     {

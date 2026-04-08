@@ -171,9 +171,10 @@ internal class ShowQueenOfSauceIcon : IDisposable
       iconKey,
       (batch, pos) =>
       {
-        if (_showRecipeItemIcon && recipe != null)
+        var itemData =
+          _showRecipeItemIcon && recipe != null ? recipe.GetItemData(useFirst: true) : null;
+        if (itemData != null)
         {
-          var itemData = recipe.GetItemData(useFirst: true);
           Texture2D itemTexture = itemData.GetTexture();
           Rectangle itemSourceRect = itemData.GetSourceRect();
 
