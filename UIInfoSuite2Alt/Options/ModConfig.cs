@@ -88,10 +88,10 @@ public class ModConfig
   public bool ShowAnimalsNeedPets { get; set; } = true;
   public bool HideAnimalPetOnMaxFriendship { get; set; } = true;
   public bool ShowItemEffectRanges { get; set; } = true;
-  public bool ShowPlacedItemRanges { get; set; } = true;
-  public bool ButtonControlShow { get; set; } = false;
+  public bool ShowPlacedItemRanges { get; set; } = false;
+  public bool ButtonControlShow { get; set; } = true;
   public bool ShowRangeTooltip { get; set; } = true;
-  public bool ShowBombRange { get; set; } = false;
+  public bool ShowBombRange { get; set; } = true;
   public bool ShowHarvestPricesInShop { get; set; } = true;
   public bool ShowMailboxCount { get; set; } = true;
   public bool DisplayCalendarAndBillboard { get; set; } = true;
@@ -99,7 +99,7 @@ public class ModConfig
   public bool ShowRecipeItemIcon { get; set; } = true;
   public bool ShowToolUpgradeStatus { get; set; } = true;
   public bool HideMerchantWhenVisited { get; set; } = false;
-  public bool ShowMerchantBundleIcon { get; set; } = false;
+  public bool ShowMerchantBundleIcon { get; set; } = true;
   public bool ShowMerchantBundleItemNames { get; set; } = false;
   public bool HideBooksellerWhenVisited { get; set; } = false;
   public int LuckIconStyle { get; set; } = 0;
@@ -108,7 +108,7 @@ public class ModConfig
   public bool RequireTvForWeather { get; set; } = false;
   public bool ShowRobinBuildingStatusIcon { get; set; } = true;
   public bool ShowSeasonalBerry { get; set; } = true;
-  public bool ShowSeasonalBerryHazelnut { get; set; } = false;
+  public bool ShowSeasonalBerryHazelnut { get; set; } = true;
   public bool ShowTodaysGifts { get; set; } = true;
   public bool HideBirthdayIfFullFriendShip { get; set; } = true;
   public bool UseStackedBirthdayIcons { get; set; } = false;
@@ -120,7 +120,7 @@ public class ModConfig
   public int IconsPerRow { get; set; } = 10;
   public bool ShowFestivalIcon { get; set; } = true;
   public bool ShowFishOnCatch { get; set; } = false;
-  public bool ShowFishQualityStar { get; set; } = true;
+  public bool ShowFishQualityStar { get; set; } = false;
   public bool ShowBuffTimers { get; set; } = true;
   public bool PlayBuffExpireSound { get; set; } = true;
   public bool ShowCustomIcons { get; set; } = true;
