@@ -265,6 +265,7 @@
   "GrangeScore.ThirdPlace": "3rd Place",
   "GrangeScore.FourthPlace": "4th Place",
   "GrangeScore.Disqualified": "Disqualified",
+  "GrangeScore.Prize": "Prize: ",
   "FestivalToday": "Today: {0}",
   "FestivalTomorrow": "Tomorrow: {0}",
   "FestivalTimeRange": "{0} - {1}",

@@ -36,14 +36,24 @@ internal class ShowGrangeScore : IDisposable
     ([-26], 128), // Artisan
   ];
 
-  // Placement tiers: checked in order, first match wins
-  private static readonly (int minScore, Func<string> label, Func<Color> color)[] PlacementTiers =
+  // Placement tiers: checked in order, first match wins. Prize values from Event.cs dialogue rewards.
+  private static readonly (
+    int minScore,
+    Func<string> label,
+    Func<Color> color,
+    int prize
+  )[] PlacementTiers =
   [
-    (90, I18n.GrangeScore_FirstPlace, () => Tools.TooltipGreen),
-    (75, I18n.GrangeScore_SecondPlace, () => Tools.TooltipYellow),
-    (60, I18n.GrangeScore_ThirdPlace, () => Tools.TooltipYellow),
-    (int.MinValue, I18n.GrangeScore_FourthPlace, () => Tools.TooltipRed),
+    (90, I18n.GrangeScore_FirstPlace, () => Tools.TooltipGreen, 1000),
+    (75, I18n.GrangeScore_SecondPlace, () => Tools.TooltipYellow, 500),
+    (60, I18n.GrangeScore_ThirdPlace, () => Tools.TooltipYellow, 250),
+    (int.MinValue, I18n.GrangeScore_FourthPlace, () => Tools.TooltipRed, 50),
   ];
+
+  // Star token icon from Cursors spritesheet (same icon the game uses for the fair score HUD)
+  private static readonly Rectangle StarTokenSourceRect = new(338, 400, 8, 8);
+  private const float StarTokenScale = 3f;
+  private const int DisqualifiedPrize = 750;
 
   private readonly IModHelper _helper;
 
@@ -154,35 +164,53 @@ internal class ShowGrangeScore : IDisposable
     string scoreText;
     string placementText;
     Color scoreColor;
+    int prize;
 
     if (hasMayorShorts)
     {
       scoreText = "???";
       placementText = I18n.GrangeScore_Disqualified();
       scoreColor = Color.DimGray;
+      prize = DisqualifiedPrize;
     }
     else
     {
       scoreText = score.ToString();
-      (_, Func<string> label, Func<Color> color) = Array.Find(
+      (_, Func<string> label, Func<Color> color, int tierPrize) = Array.Find(
         PlacementTiers,
         t => score >= t.minScore
       );
       placementText = label();
       scoreColor = color();
+      prize = tierPrize;
     }
 
-    // "Score: XX - Placement"
-    string labelText = I18n.GrangeScore_Label();
-    string fullText = $"{labelText}{scoreText} - {placementText}";
-
+    // "Score: {score}/90 ({placement}) - Prize: [icon] amount"
+    // Only the score number and placement text are colored; everything else is default.
     SpriteFont font = Game1.smallFont;
-    Vector2 textSize = font.MeasureString(fullText);
+    string labelText = I18n.GrangeScore_Label();
+    string slashMax = "/90 (";
+    string closeParen = $") - {I18n.GrangeScore_Prize()}";
+    string prizeAmount = $"{prize:N0}";
+
+    int starTokenSize = (int)(StarTokenSourceRect.Width * StarTokenScale);
+    int iconSpacing = 4;
+
+    // Segments: label + score + /90( + placement + ) - Prize: + icon + amount
+    float totalTextWidth =
+      font.MeasureString(labelText).X
+      + font.MeasureString(scoreText).X
+      + font.MeasureString(slashMax).X
+      + font.MeasureString(placementText).X
+      + font.MeasureString(closeParen).X
+      + starTokenSize
+      + iconSpacing * 2
+      + font.MeasureString(prizeAmount).X;
 
     int paddingX = 16;
     int paddingY = 12;
-    int boxWidth = (int)textSize.X + paddingX * 2;
-    int boxHeight = (int)textSize.Y + paddingY * 2;
+    int boxWidth = (int)totalTextWidth + paddingX * 2;
+    int boxHeight = (int)font.MeasureString(labelText).Y + paddingY * 2;
 
     // Center above the StorageContainer menu
     int boxX = container.xPositionOnScreen + container.width / 2 - boxWidth / 2;
@@ -190,21 +218,64 @@ internal class ShowGrangeScore : IDisposable
 
     Game1.DrawBox(boxX, boxY, boxWidth, boxHeight);
 
-    int textX = boxX + paddingX;
+    float cursorX = boxX + paddingX;
     int textY = boxY + paddingY;
 
-    // Draw score label ("Score: ") in default color
-    float labelWidth = font.MeasureString(labelText).X;
-    Utility.drawTextWithShadow(batch, labelText, font, new Vector2(textX, textY), Game1.textColor);
-
-    // Draw score value + placement in tier color
-    string coloredPart = $"{scoreText} - {placementText}";
+    // "Score: " - default
     Utility.drawTextWithShadow(
       batch,
-      coloredPart,
+      labelText,
       font,
-      new Vector2(textX + labelWidth, textY),
-      scoreColor
+      new Vector2(cursorX, textY),
+      Game1.textColor
+    );
+    cursorX += font.MeasureString(labelText).X;
+
+    // "XX" - colored
+    Utility.drawTextWithShadow(batch, scoreText, font, new Vector2(cursorX, textY), scoreColor);
+    cursorX += font.MeasureString(scoreText).X;
+
+    // "/90 (" - default
+    Utility.drawTextWithShadow(batch, slashMax, font, new Vector2(cursorX, textY), Game1.textColor);
+    cursorX += font.MeasureString(slashMax).X;
+
+    // "1st Place" - colored
+    Utility.drawTextWithShadow(batch, placementText, font, new Vector2(cursorX, textY), scoreColor);
+    cursorX += font.MeasureString(placementText).X;
+
+    // ") - Prize: " - default
+    Utility.drawTextWithShadow(
+      batch,
+      closeParen,
+      font,
+      new Vector2(cursorX, textY),
+      Game1.textColor
+    );
+    cursorX += font.MeasureString(closeParen).X;
+
+    // Star token icon, vertically centered with text, nudged up 2px
+    cursorX += iconSpacing;
+    float iconY = textY + (font.MeasureString(prizeAmount).Y - starTokenSize) / 2f - 2;
+    batch.Draw(
+      Game1.mouseCursors,
+      new Vector2(cursorX, iconY),
+      StarTokenSourceRect,
+      Color.White,
+      0f,
+      Vector2.Zero,
+      StarTokenScale,
+      SpriteEffects.None,
+      1f
+    );
+    cursorX += starTokenSize + iconSpacing;
+
+    // "1,000" - default
+    Utility.drawTextWithShadow(
+      batch,
+      prizeAmount,
+      font,
+      new Vector2(cursorX, textY),
+      Game1.textColor
     );
   }
 }
