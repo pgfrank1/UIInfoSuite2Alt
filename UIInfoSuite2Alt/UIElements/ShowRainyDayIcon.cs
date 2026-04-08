@@ -178,28 +178,10 @@ internal class ShowRainyDayIcon : IDisposable
       Path.Combine(_helper.DirectoryPath, "assets", "weatherbox.png")
     );
     Texture2D weatherBorderTexture = _weatherBorderTexture;
-    var weatherBorderColors = new Color[15 * 15];
-    var cursorColors = new Color[Game1.mouseCursors.Width * Game1.mouseCursors.Height];
-    var cursorColors_1_6 = new Color[Game1.mouseCursors_1_6.Width * Game1.mouseCursors_1_6.Height];
-    var bounds = new Rectangle(0, 0, Game1.mouseCursors.Width, Game1.mouseCursors.Height);
-    var bounds_1_6 = new Rectangle(
-      0,
-      0,
-      Game1.mouseCursors_1_6.Width,
-      Game1.mouseCursors_1_6.Height
-    );
-    weatherBorderTexture.GetData(weatherBorderColors);
-    Game1.mouseCursors.GetData(cursorColors);
-    Game1.mouseCursors_1_6.GetData(cursorColors_1_6);
     var subTextureColors = new Color[15 * 15];
 
     // Copy TV border to each icon slot
-    Tools.GetSubTexture(
-      subTextureColors,
-      weatherBorderColors,
-      new Rectangle(0, 0, 15, 15),
-      new Rectangle(0, 0, 15, 15)
-    );
+    weatherBorderTexture.GetData(0, new Rectangle(0, 0, 15, 15), subTextureColors, 0, 15 * 15);
     // Copy to each slot
     for (var i = 0; i < 4; i++)
     {
@@ -233,7 +215,7 @@ internal class ShowRainyDayIcon : IDisposable
 
     subTextureColors = new Color[13 * 13];
     // Rainy Weather
-    Tools.GetSubTexture(subTextureColors, cursorColors, bounds, new Rectangle(504, 333, 13, 13));
+    Game1.mouseCursors.GetData(0, new Rectangle(504, 333, 13, 13), subTextureColors, 0, 13 * 13);
     Tools.SetSubTexture(
       subTextureColors,
       _weatherIconColors,
@@ -248,7 +230,7 @@ internal class ShowRainyDayIcon : IDisposable
     );
 
     // Stormy Weather
-    Tools.GetSubTexture(subTextureColors, cursorColors, bounds, new Rectangle(426, 346, 13, 13));
+    Game1.mouseCursors.GetData(0, new Rectangle(426, 346, 13, 13), subTextureColors, 0, 13 * 13);
     Tools.SetSubTexture(
       subTextureColors,
       _weatherIconColors,
@@ -263,7 +245,7 @@ internal class ShowRainyDayIcon : IDisposable
     );
 
     // Snowy Weather
-    Tools.GetSubTexture(subTextureColors, cursorColors, bounds, new Rectangle(465, 346, 13, 13));
+    Game1.mouseCursors.GetData(0, new Rectangle(465, 346, 13, 13), subTextureColors, 0, 13 * 13);
     Tools.SetSubTexture(
       subTextureColors,
       _weatherIconColors,
@@ -272,11 +254,12 @@ internal class ShowRainyDayIcon : IDisposable
     );
 
     // Green Rain
-    Tools.GetSubTexture(
+    Game1.mouseCursors_1_6.GetData(
+      0,
+      new Rectangle(178, 363, 13, 13),
       subTextureColors,
-      cursorColors_1_6,
-      bounds_1_6,
-      new Rectangle(178, 363, 13, 13)
+      0,
+      13 * 13
     );
     Tools.SetSubTexture(
       subTextureColors,
@@ -292,7 +275,7 @@ internal class ShowRainyDayIcon : IDisposable
     );
 
     subTextureColors = new Color[9 * 14];
-    Tools.GetSubTexture(subTextureColors, cursorColors, bounds, new Rectangle(146, 149, 9, 14));
+    Game1.mouseCursors.GetData(0, new Rectangle(146, 149, 9, 14), subTextureColors, 0, 9 * 14);
     Tools.SetSubTexture(
       subTextureColors,
       _weatherIconColors,

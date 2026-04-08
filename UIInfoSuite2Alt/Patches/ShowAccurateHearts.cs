@@ -69,11 +69,12 @@ internal class ShowAccurateHearts : IDisposable
     )
     {
       string internalName = socialPage.SocialEntries[i].InternalName;
+      NPC? npc = Game1.getCharacterFromName(internalName);
+      int maxHearts = npc != null ? Utility.GetMaximumHeartsForCharacter(npc) : 10;
       if (
         Game1.player.friendshipData.TryGetValue(internalName, out Friendship friendshipValues)
         && friendshipValues.Points > 0
-        && friendshipValues.Points
-          < Utility.GetMaximumHeartsForCharacter(Game1.getCharacterFromName(internalName)) * 250
+        && friendshipValues.Points < maxHearts * 250
       )
       {
         int pointsToNextHeart = friendshipValues.Points % 250;

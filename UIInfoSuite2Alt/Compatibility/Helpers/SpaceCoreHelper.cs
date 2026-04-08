@@ -23,7 +23,7 @@ public class CachedCustomSkillInfo(
 
 public static class SpaceCoreHelper
 {
-  private static readonly Color DefaultBarColor = new(148, 103, 198, 0.63f);
+  private static readonly Color DefaultBarColor = new Color(148, 103, 198) * 0.63f;
 
   private static readonly Dictionary<string, CachedCustomSkillInfo> SkillCache = [];
   private static MethodInfo? _getSkillMethod;

@@ -8,7 +8,7 @@ public static class NpcExtensions
 {
   private static readonly Dictionary<string, int> NpcHeadShotSize = new()
   {
-    ["Piere"] = 9,
+    ["Pierre"] = 9,
     ["Sebastian"] = 7,
     ["Evelyn"] = 5,
     ["Penny"] = 6,
