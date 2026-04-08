@@ -307,12 +307,15 @@ internal class ModOptionsPageHandler : IDisposable
       );
     }
 
+    // Cache banner textures upfront
+    Texture2D bannerHud = AssetHelper.TryLoadTexture(_helper, "assets/banner_hud.png");
+    Texture2D bannerField = AssetHelper.TryLoadTexture(_helper, "assets/banner_ffield.png");
+    Texture2D bannerExp = AssetHelper.TryLoadTexture(_helper, "assets/banner_exp.png");
+    Texture2D bannerItems = AssetHelper.TryLoadTexture(_helper, "assets/banner_items.png");
+    Texture2D bannerNpc = AssetHelper.TryLoadTexture(_helper, "assets/banner_npc.png");
+
     // --- HUD Icons ---
-    BeginSection(
-      "hud-icons",
-      () => I18n.Section_HudIcons(),
-      () => AssetHelper.TryLoadTexture(_helper, "assets/banner_hud.png")
-    );
+    BeginSection("hud-icons", () => I18n.Section_HudIcons(), () => bannerHud);
 
     _currentTarget.Add(
       new ModOptionsCheckbox(
@@ -628,11 +631,7 @@ internal class ModOptionsPageHandler : IDisposable
     );
 
     // --- Farm & Field ---
-    BeginSection(
-      "farm-field",
-      () => I18n.Section_FarmAndField(),
-      () => AssetHelper.TryLoadTexture(_helper, "assets/banner_ffield.png")
-    );
+    BeginSection("farm-field", () => I18n.Section_FarmAndField(), () => bannerField);
 
     var animalPetIcon = new ModOptionsCheckbox(
       _helper.SafeGetString(nameof(config.ShowAnimalsNeedPets)),
@@ -819,11 +818,7 @@ internal class ModOptionsPageHandler : IDisposable
     OptionsSpacer();
 
     // --- Experience & Skills ---
-    BeginSection(
-      "experience-skills",
-      () => I18n.Section_ExperienceAndSkills(),
-      () => AssetHelper.TryLoadTexture(_helper, "assets/banner_exp.png")
-    );
+    BeginSection("experience-skills", () => I18n.Section_ExperienceAndSkills(), () => bannerExp);
 
     _currentTarget.Add(
       new ModOptionsCheckbox(
@@ -881,11 +876,7 @@ internal class ModOptionsPageHandler : IDisposable
     );
 
     // --- Items & Shopping ---
-    BeginSection(
-      "items-shopping",
-      () => I18n.Section_ItemsAndShopping(),
-      () => AssetHelper.TryLoadTexture(_helper, "assets/banner_items.png")
-    );
+    BeginSection("items-shopping", () => I18n.Section_ItemsAndShopping(), () => bannerItems);
 
     if (!ShowItemQualityPatch.ExternalModLoaded)
     {
@@ -998,11 +989,7 @@ internal class ModOptionsPageHandler : IDisposable
     );
 
     // --- NPC & Social ---
-    BeginSection(
-      "npc-social",
-      () => I18n.Section_NpcAndSocial(),
-      () => AssetHelper.TryLoadTexture(_helper, "assets/banner_npc.png")
-    );
+    BeginSection("npc-social", () => I18n.Section_NpcAndSocial(), () => bannerNpc);
 
     _currentTarget.Add(
       new ModOptionsCheckbox(
