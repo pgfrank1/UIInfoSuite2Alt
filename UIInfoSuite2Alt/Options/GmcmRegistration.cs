@@ -621,6 +621,11 @@ public partial class ModEntry
         BundleHelper.ShowLockedBundles = v;
       }
     );
+    AddBool(
+      nameof(ModConfig.ShowGrangeScore),
+      () => ModConfig.ShowGrangeScore,
+      v => ModConfig.ShowGrangeScore = v
+    );
 
     // =====================
     // NPC & Social page

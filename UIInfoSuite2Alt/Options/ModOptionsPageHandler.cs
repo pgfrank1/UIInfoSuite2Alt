@@ -228,6 +228,7 @@ internal class ModOptionsPageHandler : IDisposable
     var showBuffTimers = new ShowBuffTimers(helper);
     var showCustomIcons = new ShowCustomIcons(helper);
     var showFishOnCatch = new ShowFishOnCatch();
+    var showGrangeScore = new ShowGrangeScore(helper);
     var showMailboxCount = new ShowMailboxCount(helper);
 
     _elementsToDispose =
@@ -257,6 +258,7 @@ internal class ModOptionsPageHandler : IDisposable
       showFestivalIcon,
       showCustomIcons,
       showFishOnCatch,
+      showGrangeScore,
       showMailboxCount,
       experienceBar,
     ];
@@ -974,6 +976,15 @@ internal class ModOptionsPageHandler : IDisposable
         v => BundleHelper.ShowLockedBundles = v,
         () => config.ShowLockedBundleItems,
         Set(v => config.ShowLockedBundleItems = v)
+      )
+    );
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.ShowGrangeScore)),
+        whichOption++,
+        showGrangeScore.ToggleOption,
+        () => config.ShowGrangeScore,
+        Set(v => config.ShowGrangeScore = v)
       )
     );
 

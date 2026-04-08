@@ -151,16 +151,12 @@ internal class ShowQueenOfSauceIcon : IDisposable
 
     if (_drawMeatFridayIcon.Value)
     {
-      string hoverText = _meatFridayRecipe != null
-        ? I18n.TodaysMeatRecipe() + _meatFridayRecipe.DisplayName
-        : I18n.TodaysMeatRecipe();
+      string hoverText =
+        _meatFridayRecipe != null
+          ? I18n.TodaysMeatRecipe() + _meatFridayRecipe.DisplayName
+          : I18n.TodaysMeatRecipe();
 
-      EnqueueRecipeIcon(
-        "MeatFriday",
-        _meatFridayRecipe,
-        _meatFridayIconComponent,
-        hoverText
-      );
+      EnqueueRecipeIcon("MeatFriday", _meatFridayRecipe, _meatFridayIconComponent, hoverText);
     }
   }
 

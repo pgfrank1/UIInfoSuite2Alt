@@ -59,6 +59,7 @@
 - **v2.8.16**
   - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538) compatibility:
     - Queen of Sauce icon shows Meat Friday recipes on Fridays when the player hasn't learned them yet
+  - Show live grange display score during the Stardew Valley Fair
 - **v2.8.15**
   - [Walk of Life](https://www.nexusmods.com/stardewvalley/mods/24355) compatibility:
     - Experience bar supports prestige levels (11-20) with correct XP curve

@@ -126,6 +126,7 @@ public class ModConfig
   public bool ShowCustomIcons { get; set; } = true;
   public bool ShowItemQualityOnPickup { get; set; } = true;
   public bool ShowLockedBundleItems { get; set; } = false;
+  public bool ShowGrangeScore { get; set; } = true;
   public Dictionary<string, int> IconOrder { get; set; } =
     new()
     {
