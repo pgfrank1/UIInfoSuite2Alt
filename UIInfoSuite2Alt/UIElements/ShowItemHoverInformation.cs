@@ -158,6 +158,7 @@ internal class ShowItemHoverInformation : IDisposable
         && hoveredObject.countsForShippedCollection()
         && !Game1.player.basicShipped.ContainsKey(hoveredObject.ItemId)
         && hoveredObject.Type != "Fish"
+        && hoveredObject.Category != Object.booksCategory
         && hoveredObject.Category != Object.skillBooksCategory;
 
       string? requiredBundleName = null;
