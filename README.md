@@ -60,6 +60,7 @@
   - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538) compatibility:
     - Queen of Sauce icon shows Meat Friday recipes on Fridays when the player hasn't learned them yet
   - Show live grange display score overlay during the Stardew Valley Fair
+  - Use smaller font for HUD icon tooltips
   - Fix books (Powers tab items) incorrectly showing the shipping collection icon
 - **v2.8.15**
   - [Walk of Life](https://www.nexusmods.com/stardewvalley/mods/24355) compatibility:

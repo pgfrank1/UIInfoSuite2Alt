@@ -626,6 +626,12 @@ public partial class ModEntry
       () => ModConfig.ShowGrangeScore,
       v => ModConfig.ShowGrangeScore = v
     );
+    AddSubBool(
+      nameof(ModConfig.ShowGrangePrize),
+      () => ModConfig.ShowGrangePrize,
+      v => ModConfig.ShowGrangePrize = v
+    );
+    Spacer();
 
     // =====================
     // NPC & Social page

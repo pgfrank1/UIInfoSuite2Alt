@@ -57,6 +57,8 @@ internal class ShowGrangeScore : IDisposable
 
   private readonly IModHelper _helper;
 
+  public bool ShowPrize { get; set; } = true;
+
   public ShowGrangeScore(IModHelper helper)
   {
     _helper = helper;
@@ -90,7 +92,7 @@ internal class ShowGrangeScore : IDisposable
     }
 
     int score = CalculateGrangeScore(out bool hasMayorShorts);
-    DrawScoreOverlay(e.SpriteBatch, container, score, hasMayorShorts);
+    DrawScoreOverlay(e.SpriteBatch, container, score, hasMayorShorts, ShowPrize);
 
     // Redraw mouse cursor on top so the score overlay doesn't cover it
     container.drawMouse(e.SpriteBatch);
@@ -158,7 +160,8 @@ internal class ShowGrangeScore : IDisposable
     SpriteBatch batch,
     StorageContainer container,
     int score,
-    bool hasMayorShorts
+    bool hasMayorShorts,
+    bool showPrize
   )
   {
     string scoreText;
@@ -190,22 +193,29 @@ internal class ShowGrangeScore : IDisposable
     SpriteFont font = Game1.smallFont;
     string labelText = I18n.GrangeScore_Label();
     string slashMax = "/90 (";
-    string closeParen = $") - {I18n.GrangeScore_Prize()}";
+    string closeParenOnly = ")";
+    string prizeLabel = $" - {I18n.GrangeScore_Prize()}";
     string prizeAmount = $"{prize:N0}";
 
     int starTokenSize = (int)(StarTokenSourceRect.Width * StarTokenScale);
     int iconSpacing = 4;
 
-    // Segments: label + score + /90( + placement + ) - Prize: + icon + amount
+    // Measure text width: label + score + /90( + placement + )
     float totalTextWidth =
       font.MeasureString(labelText).X
       + font.MeasureString(scoreText).X
       + font.MeasureString(slashMax).X
       + font.MeasureString(placementText).X
-      + font.MeasureString(closeParen).X
-      + starTokenSize
-      + iconSpacing * 2
-      + font.MeasureString(prizeAmount).X;
+      + font.MeasureString(closeParenOnly).X;
+
+    if (showPrize)
+    {
+      totalTextWidth +=
+        font.MeasureString(prizeLabel).X
+        + starTokenSize
+        + iconSpacing * 2
+        + font.MeasureString(prizeAmount).X;
+    }
 
     int paddingX = 16;
     int paddingY = 12;
@@ -243,15 +253,30 @@ internal class ShowGrangeScore : IDisposable
     Utility.drawTextWithShadow(batch, placementText, font, new Vector2(cursorX, textY), scoreColor);
     cursorX += font.MeasureString(placementText).X;
 
-    // ") - Prize: " - default
+    // ")" - default
     Utility.drawTextWithShadow(
       batch,
-      closeParen,
+      closeParenOnly,
       font,
       new Vector2(cursorX, textY),
       Game1.textColor
     );
-    cursorX += font.MeasureString(closeParen).X;
+    cursorX += font.MeasureString(closeParenOnly).X;
+
+    if (!showPrize)
+    {
+      return;
+    }
+
+    // " - Prize: " - default
+    Utility.drawTextWithShadow(
+      batch,
+      prizeLabel,
+      font,
+      new Vector2(cursorX, textY),
+      Game1.textColor
+    );
+    cursorX += font.MeasureString(prizeLabel).X;
 
     // Star token icon, vertically centered with text, nudged up 2px
     cursorX += iconSpacing;

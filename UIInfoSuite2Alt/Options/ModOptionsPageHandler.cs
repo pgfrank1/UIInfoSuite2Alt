@@ -978,13 +978,22 @@ internal class ModOptionsPageHandler : IDisposable
         Set(v => config.ShowLockedBundleItems = v)
       )
     );
+    var grangeScoreCheckbox = new ModOptionsCheckbox(
+      _helper.SafeGetString(nameof(config.ShowGrangeScore)),
+      whichOption++,
+      showGrangeScore.ToggleOption,
+      () => config.ShowGrangeScore,
+      Set(v => config.ShowGrangeScore = v)
+    );
+    _currentTarget.Add(grangeScoreCheckbox);
     _currentTarget.Add(
       new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.ShowGrangeScore)),
+        _helper.SafeGetString(nameof(config.ShowGrangePrize)),
         whichOption++,
-        showGrangeScore.ToggleOption,
-        () => config.ShowGrangeScore,
-        Set(v => config.ShowGrangeScore = v)
+        v => showGrangeScore.ShowPrize = v,
+        () => config.ShowGrangePrize,
+        Set(v => config.ShowGrangePrize = v),
+        grangeScoreCheckbox
       )
     );
 

@@ -259,6 +259,7 @@
   "ShowCustomIcons": "Show custom mod icons",
   "ShowLockedBundleItems": "Reveal locked CC bundle items",
   "ShowGrangeScore": "Show grange display score",
+  "ShowGrangePrize": "Show prize reward",
   "GrangeScore.Label": "Score: ",
   "GrangeScore.FirstPlace": "1st Place",
   "GrangeScore.SecondPlace": "2nd Place",
