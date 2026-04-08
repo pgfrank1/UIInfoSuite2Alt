@@ -1074,6 +1074,9 @@ internal class ModOptionsPageHandler : IDisposable
       item.Dispose();
     }
 
+    _modOptionsPage.Value?.Dispose();
+    _modOptionsPage.Value = null;
+
     _helper.Events.Input.ButtonsChanged -= OnButtonsChanged;
 
     if (_hasBgm)
@@ -1125,7 +1128,11 @@ internal class ModOptionsPageHandler : IDisposable
       getTabVisible: () => ShowPersonalConfigButton,
       getWidth: w => w,
       getHeight: h => h,
-      onResize: ctx => new ModOptionsPage(_optionsElements, _helper.Events, ctx.Menu)
+      onResize: ctx =>
+      {
+        (ctx.OldPage as ModOptionsPage)?.Dispose();
+        return new ModOptionsPage(_optionsElements, _helper.Events, ctx.Menu);
+      }
     );
 
     // Right-click opens GMCM if available
@@ -1369,6 +1376,7 @@ internal class ModOptionsPageHandler : IDisposable
       if (_modOptionsPage.Value != null)
       {
         oldGameMenu.pages.Remove(_modOptionsPage.Value);
+        _modOptionsPage.Value.Dispose();
         _modOptionsPage.Value = null;
       }
 

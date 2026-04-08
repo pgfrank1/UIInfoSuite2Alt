@@ -55,6 +55,23 @@ public partial class ModEntry : Mod
     _lastConfigSnapshot = newSnapshot;
   }
 
+  /// <summary>
+  /// Harmony prefix: Without this, resizing while on our custom mod options tab crashes because the new GameMenu
+  /// doesn't have our page yet.
+  /// </summary>
+  private static void SetWindowSize_Prefix()
+  {
+    if (
+      Game1.activeClickableMenu is GameMenu gameMenu
+      && gameMenu.currentTab >= 0
+      && gameMenu.currentTab < gameMenu.pages.Count
+      && gameMenu.pages[gameMenu.currentTab] is ModOptionsPage
+    )
+    {
+      gameMenu.currentTab = GameMenu.optionsTab;
+    }
+  }
+
   #region Entry
   public override void Entry(IModHelper helper)
   {
@@ -75,8 +92,12 @@ public partial class ModEntry : Mod
       helper.ModRegistry.IsLoaded(ModCompat.ShowItemQuality)
     );
     HideTreesPatch.Initialize(harmony, helper);
+    harmony.Patch(
+      AccessTools.Method(typeof(Game1), nameof(Game1.SetWindowSize)),
+      prefix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Prefix))
+    );
     Monitor.Log(
-      "ModEntry: Harmony patches applied - TvChannelWatcher, ShowFishOnCatch, HudMessagePatch, ShowAccurateHearts, ShowItemQualityPatch, HideTreesPatch",
+      "ModEntry: Harmony patches applied - TvChannelWatcher, ShowFishOnCatch, HudMessagePatch, ShowAccurateHearts, ShowItemQualityPatch, HideTreesPatch, SetWindowSize",
       LogLevel.Trace
     );
 

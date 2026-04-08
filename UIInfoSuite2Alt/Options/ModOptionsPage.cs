@@ -10,10 +10,11 @@ using StardewValley.Menus;
 namespace UIInfoSuite2Alt.Options;
 
 /// <summary>Our mod options made page to be added to <see cref="GameMenu.pages" /></summary>
-public class ModOptionsPage : IClickableMenu
+public class ModOptionsPage : IClickableMenu, IDisposable
 {
   private const int visibleSlots = 7;
   private readonly ClickableTextureComponent _downArrow;
+  private readonly IModEvents _events;
   private readonly List<ModOptionsElement> _options;
   private readonly ClickableTextureComponent _scrollBar;
   private readonly ClickableTextureComponent _upArrow;
@@ -43,6 +44,7 @@ public class ModOptionsPage : IClickableMenu
     )
   {
     _options = options;
+    _events = events;
     _upArrow = new ClickableTextureComponent(
       new Rectangle(
         xPositionOnScreen + width + Game1.tileSize / 4,
@@ -539,5 +541,10 @@ public class ModOptionsPage : IClickableMenu
         snapCursorToCurrentSnappedComponent();
       }
     }
+  }
+
+  public void Dispose()
+  {
+    _events.Display.MenuChanged -= OnMenuChanged;
   }
 }
