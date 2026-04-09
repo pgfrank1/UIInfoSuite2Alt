@@ -39,7 +39,8 @@ internal class ShowItemHoverInformation : IDisposable
   private (Texture2D texture, Rectangle sourceRect)? _ubIconOverride;
 
   private static readonly Rectangle CollectionsTabSourceRect = new(640, 80, 16, 17);
-  private Texture2D? _shippingBinTexture;
+  private static readonly Rectangle ShippingBinBaseRect = new(526, 218, 30, 22);
+  private static readonly Rectangle ShippingBinLidRect = new(134, 236, 30, 15);
 
   public ShowItemHoverInformation(IModHelper helper)
   {
@@ -47,8 +48,6 @@ internal class ShowItemHoverInformation : IDisposable
 
     _donationIcons.AddProvider(_museumProvider);
     _donationIcons.AddProvider(new AquariumDonationProvider(helper));
-
-    _shippingBinTexture = AssetHelper.TryLoadTexture(helper, "assets/bin_custom.png");
   }
 
   public void Dispose()
@@ -490,13 +489,13 @@ internal class ShowItemHoverInformation : IDisposable
 
       if (notShippedYet)
       {
-        bool useBinIcon = config.UseShippingBinIcon && _shippingBinTexture != null;
+        bool useBinIcon = config.UseShippingBinIcon;
         if (hasPriceRows)
         {
           Vector2 tabPos = windowPos + new Vector2(windowWidth - 4, 28);
           if (useBinIcon)
           {
-            DrawShippingBin(spriteBatch, tabPos + new Vector2(-16, -8), 2f);
+            DrawShippingBin(spriteBatch, tabPos + new Vector2(-16, -8), 1.5f);
           }
           else
           {
@@ -510,14 +509,14 @@ internal class ShowItemHoverInformation : IDisposable
             DrawShippingBin(
               spriteBatch,
               new Vector2(
-                vanillaTooltip.Right - _shippingBinTexture!.Width * 2 + 18,
+                vanillaTooltip.Right - (int)(ShippingBinBaseRect.Width * 1.5f) + 18,
                 vanillaTooltip.Bottom
                   + 8
-                  - _shippingBinTexture.Height * 2
+                  - (int)(ShippingBinBaseRect.Height * 1.5f)
                   - informantDecoratorHeight
                   + 40
               ),
-              2f
+              1.5f
             );
           }
           else
@@ -825,12 +824,41 @@ internal class ShowItemHoverInformation : IDisposable
     );
   }
 
-  private void DrawShippingBin(SpriteBatch b, Vector2 position, float scale)
+  private static void DrawShippingBin(SpriteBatch b, Vector2 position, float scale)
   {
+    var shadowOffset = new Vector2(-2, 2);
+
+    // Draw base shadow
     b.Draw(
-      _shippingBinTexture,
+      Game1.mouseCursors,
+      position + shadowOffset,
+      ShippingBinBaseRect,
+      new Color(0, 0, 0, 50),
+      0f,
+      Vector2.Zero,
+      scale,
+      SpriteEffects.None,
+      0.859f
+    );
+
+    // Draw lid shadow (lower opacity to avoid darkening where it overlaps the base shadow)
+    b.Draw(
+      Game1.mouseCursors,
+      position + shadowOffset,
+      ShippingBinLidRect,
+      new Color(0, 0, 0, 30),
+      0f,
+      Vector2.Zero,
+      scale,
+      SpriteEffects.None,
+      0.859f
+    );
+
+    // Draw base
+    b.Draw(
+      Game1.mouseCursors,
       position,
-      null,
+      ShippingBinBaseRect,
       Color.White,
       0f,
       Vector2.Zero,
@@ -838,18 +866,24 @@ internal class ShowItemHoverInformation : IDisposable
       SpriteEffects.None,
       0.86f
     );
+
+    // Draw lid overlaying the top of the base
+    b.Draw(
+      Game1.mouseCursors,
+      position,
+      ShippingBinLidRect,
+      Color.White,
+      0f,
+      Vector2.Zero,
+      scale,
+      SpriteEffects.None,
+      0.861f
+    );
   }
 
   /// <summary>
-  /// Estimates the vanilla tooltip box bounds for an item, replicating the core logic
-  /// from IClickableMenu.drawHoverText. Covers the item types that trigger our icons
-  /// (bundleable objects, museum artifacts/minerals, shippable items, food).
+  /// Estimates the vanilla tooltip box bounds, replicating logic from IClickableMenu.drawHoverText.
   /// </summary>
-  /// <param name="item">The hovered item.</param>
-  /// <param name="informantSellPrice">
-  /// When true, Informant injects moneyAmountToShowAtBottom into the vanilla tooltip,
-  /// adding a sell price row at the bottom that increases tooltip height.
-  /// </param>
   private static Rectangle EstimateVanillaTooltipBounds(Item item, bool informantSellPrice = false)
   {
     SpriteFont descFont = Game1.smallFont;
