@@ -56,11 +56,13 @@ public partial class ModEntry : Mod
   }
 
   /// <summary>
-  /// Harmony prefix: Without this, resizing while on our custom mod options tab crashes because the new GameMenu
-  /// doesn't have our page yet.
+  /// Harmony prefix+postfix pair for SetWindowSize: prevents crash when resizing while on our custom tab.
+  /// Prefix: temporarily switches away from our tab so the GameMenu recreation uses a valid tab index.
+  /// Postfix: if SetWindowSize returned early (no actual resize), restores our tab.
   /// </summary>
-  private static void SetWindowSize_Prefix()
+  private static void SetWindowSize_Prefix(out int __state)
   {
+    __state = -1;
     if (
       Game1.activeClickableMenu is GameMenu gameMenu
       && gameMenu.currentTab >= 0
@@ -68,7 +70,22 @@ public partial class ModEntry : Mod
       && gameMenu.pages[gameMenu.currentTab] is ModOptionsPage
     )
     {
+      __state = gameMenu.currentTab;
       gameMenu.currentTab = GameMenu.optionsTab;
+    }
+  }
+
+  private static void SetWindowSize_Postfix(int __state)
+  {
+    // If we switched away but the menu wasn't recreated (no-op resize), restore our tab
+    if (
+      __state >= 0
+      && Game1.activeClickableMenu is GameMenu gameMenu
+      && __state < gameMenu.pages.Count
+      && gameMenu.pages[__state] is ModOptionsPage
+    )
+    {
+      gameMenu.currentTab = __state;
     }
   }
 
@@ -94,7 +111,8 @@ public partial class ModEntry : Mod
     HideTreesPatch.Initialize(harmony, helper);
     harmony.Patch(
       AccessTools.Method(typeof(Game1), nameof(Game1.SetWindowSize)),
-      prefix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Prefix))
+      prefix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Prefix)),
+      postfix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Postfix))
     );
     Monitor.Log(
       "ModEntry: Harmony patches applied - TvChannelWatcher, ShowFishOnCatch, HudMessagePatch, ShowAccurateHearts, ShowItemQualityPatch, HideTreesPatch, SetWindowSize",
