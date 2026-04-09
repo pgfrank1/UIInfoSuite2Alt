@@ -11,6 +11,7 @@ using StardewValley.GameData.FruitTrees;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 using StardewValley.WorldMaps;
+using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Compatibility.Helpers;
 using SObject = StardewValley.Object;
 
@@ -83,6 +84,22 @@ public static class Tools
     if (Crop.TryGetData(item.ItemId, out CropData cropData) && cropData.HarvestItemId is not null)
     {
       return ItemRegistry.Create<SObject>(cropData.HarvestItemId);
+    }
+
+    // Custom Bush saplings and vanilla tea sapling
+    if (
+      ApiManager.GetApi(ModCompat.CustomBush, out ICustomBushApi? customBushApi)
+      && customBushApi.TryGetDrops(item.QualifiedItemId, out IList<ICustomBushDrop>? drops)
+      && drops.Count > 0
+    )
+    {
+      return ItemRegistry.Create<SObject>(drops[0].ItemId);
+    }
+
+    // Vanilla tea sapling fallback (no Custom Bush mod)
+    if (item.QualifiedItemId == "(O)251")
+    {
+      return ItemRegistry.Create<SObject>("(O)614");
     }
 
     return null;

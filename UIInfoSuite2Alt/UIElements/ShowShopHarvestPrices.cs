@@ -33,12 +33,6 @@ internal class ShowShopHarvestPrices : IDisposable
     }
   }
 
-  /// <summary>
-  ///   When a menu is open (<see cref="Game1.activeClickableMenu" /> isn't null), raised after that menu is drawn to
-  ///   the sprite batch but before it's rendered to the screen.
-  /// </summary>
-  /// <param name="sender">The event sender.</param>
-  /// <param name="e">The event arguments.</param>
   private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
   {
     if (!(Game1.activeClickableMenu is ShopMenu menu))
