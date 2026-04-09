@@ -12,7 +12,7 @@ Add your own HUD icons to UI Info Suite 2 Alternative using Content Patcher. Ico
 
 ```json
 {
-  "Format": "2.9.0",
+  "Format": "2.8.1",
   "Changes": [
     {
       "Action": "Load",
@@ -121,8 +121,21 @@ Add multiple entries in one patch, or use separate patches with different `When`
 A maximum of **5 custom CP icons** can be shown at any given time. Any beyond that are not displayed.
 
 
+## Multi-Line Hover Text
+
+Use `\n` to add line breaks in your tooltip or `\n\n` for an empty line:
+
+```json
+{
+  "YourModId.MyIcon": {
+    "Texture": "Mods/YourModId/Icons",
+    "HoverText": "Line one\nLine two\n\nLine three with empty line above"
+  }
+}
+```
+
 ## Some Good-To-Know Stuff
 
 - Prefix entry keys with your mod ID to avoid conflicts (e.g. `YourModId.IconName`).
 - Players can toggle custom icons on/off in the mod settings(+GMCM).
-- Custom icons share a single position in the icon order settings for now.
+- Custom icons share a single position in the icon order settings for now("Icon Order" > "Custom Icons").

@@ -162,10 +162,11 @@ internal class ShowCustomIcons : IDisposable
     }
     catch (Exception ex)
     {
-      ModEntry.MonitorObject.Log(
+      ModEntry.MonitorObject.LogOnce(
         $"ShowCustomIcons: failed to load texture '{iconData.Texture}' for icon '{key}', {ex.Message}",
-        LogLevel.Trace
+        LogLevel.Warn
       );
+      _iconComponents.Value.Remove(key);
       return;
     }
 
