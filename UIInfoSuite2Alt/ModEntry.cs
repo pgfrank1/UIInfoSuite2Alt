@@ -269,7 +269,11 @@ public partial class ModEntry : Mod
   {
     IconHandler.Handler.DrawQueuedIcons(e.SpriteBatch);
 
-    if (UIElementUtils.IsRenderingNormally() && Game1.activeClickableMenu == null)
+    if (
+      ModConfig.ShowHideTreesBanner
+      && UIElementUtils.IsRenderingNormally()
+      && Game1.activeClickableMenu == null
+    )
     {
       HideTreesPatch.DrawHiddenBanner(e.SpriteBatch, ModConfig.HideTreesKeybind.ToString());
     }

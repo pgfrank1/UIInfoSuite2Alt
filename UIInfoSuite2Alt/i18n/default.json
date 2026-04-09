@@ -16,6 +16,8 @@
   "Keybinds.HideTreesKeybind.DisplayedName": "Hide trees keybind",
   "Keybinds.HideTreesKeybind.Tooltip": "Toggles tree visibility on/off. Resets when returning to title/restart game.",
   "HUD.TreesHidden": "Trees Hidden/Minimized - Press {{keybind}} to restore",
+  "Bool.ShowHideTreesBanner.DisplayedName": "Show hidden trees banner",
+  "Bool.ShowHideTreesBanner.Tooltip": "Shows a HUD banner when trees are hidden, displaying the keybind to restore them.",
   "Keybinds.OpenModOptionsKeybind.DisplayedName": "Mod options keybind",
   "Keybinds.OpenModOptionsKeybind.Tooltip": "Opens the UI Info Suite options page directly.",
   "Keybinds.OpenMonsterEradicationKeybind.DisplayedName": "Monster eradication keybind",

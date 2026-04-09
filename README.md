@@ -58,6 +58,7 @@
 
 - **v2.8.17**
   - Shipping bin icon now uses vanilla game sprites instead of a custom texture, allowing Content Patcher retextures to apply
+  - Add option to disable the "Trees Hidden/Minimized" HUD banner in GMCM
 - **v2.8.16**
   - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538) compatibility:
     - Queen of Sauce icon shows Meat Friday recipes on Fridays

@@ -95,6 +95,13 @@ public partial class ModEntry
       getValue: () => ModConfig.HideTreesKeybind,
       setValue: value => ModConfig.HideTreesKeybind = value
     );
+    configMenu.AddBoolOption(
+      ModManifest,
+      name: () => "  > " + I18n.Bool_ShowHideTreesBanner_DisplayedName(),
+      tooltip: () => I18n.Bool_ShowHideTreesBanner_Tooltip(),
+      getValue: () => ModConfig.ShowHideTreesBanner,
+      setValue: value => ModConfig.ShowHideTreesBanner = value
+    );
     configMenu.AddKeybindList(
       ModManifest,
       name: () => I18n.Keybinds_OpenModOptionsKeybind_DisplayedName(),
