@@ -37,8 +37,7 @@ internal static class HideTreesPatch
   // Per-tree jitter range in ms (+/- this value)
   private const double JitterRangeMs = 40.0;
 
-  // Effect counts per tree per step
-  private const int SparklesPerTree = 3;
+  // Effect count per tree per step
   private const int LeavesPerTree = 8;
 
   private static Texture2D _sparkleTexture = null!;
@@ -488,6 +487,29 @@ internal static class HideTreesPatch
       _bannerSparkleDrawSize,
       _bannerSparkleDrawSize
     );
+    // Shadow layers at smallFont-style offsets (-2, 2)
+    Color shadowColor = Color.Black * 0.5f;
+    var shadowOffsets = new Vector2[] { new(-2, 2), new(0, 2), new(-2, 0) };
+    foreach (Vector2 offset in shadowOffsets)
+    {
+      var shadowDest = new Rectangle(
+        sparkleDest.X + (int)offset.X,
+        sparkleDest.Y + (int)offset.Y,
+        sparkleDest.Width,
+        sparkleDest.Height
+      );
+      batch.Draw(
+        _sparkleTexture,
+        shadowDest,
+        sparkleSrc,
+        shadowColor,
+        0f,
+        Vector2.Zero,
+        SpriteEffects.None,
+        0.99f
+      );
+    }
+
     batch.Draw(
       _sparkleTexture,
       sparkleDest,
@@ -510,30 +532,55 @@ internal static class HideTreesPatch
   private const int SparkleFrameCount = 6;
   private const double SparkleIntervalMs = SparkleFrameMs * SparkleFrameCount;
 
-  // Track last spawn time per tile to avoid stacking
+  // Global frame counter to space out sparkle spawns
   private static long _lastSparkleFrameTick = -1;
   private static int _sparkleTickCounter;
 
   private static void SpawnIdleSparkle(GameLocation location, Vector2 tile)
   {
-    var sprite = new TemporaryAnimatedSprite(
-      null,
-      new Rectangle(0, 0, 64, 64),
-      SparkleFrameMs,
-      SparkleFrameCount,
-      0,
-      tile * 64f,
-      flicker: false,
-      flipped: false
-    )
-    {
-      texture = _sparkleTexture,
-      color = new Color(120, 230, 100),
-      layerDepth = 1f,
-      scale = 1f,
-      rotation = (float)(Game1.random.NextDouble() * Math.PI * 2.0),
-    };
-    location.temporarySprites.Add(sprite);
+    float rotation = (float)(Game1.random.NextDouble() * Math.PI * 2.0);
+    Vector2 position = tile * 64f;
+
+    // Shadow sprite at smallFont-style offset (-2, 2)
+    location.temporarySprites.Add(
+      new TemporaryAnimatedSprite(
+        null,
+        new Rectangle(0, 0, 64, 64),
+        SparkleFrameMs,
+        SparkleFrameCount,
+        0,
+        position + new Vector2(-2f, 2f),
+        flicker: false,
+        flipped: false
+      )
+      {
+        texture = _sparkleTexture,
+        color = Color.Black * 0.5f,
+        layerDepth = 0.99f,
+        scale = 1f,
+        rotation = rotation,
+      }
+    );
+
+    location.temporarySprites.Add(
+      new TemporaryAnimatedSprite(
+        null,
+        new Rectangle(0, 0, 64, 64),
+        SparkleFrameMs,
+        SparkleFrameCount,
+        0,
+        position,
+        flicker: false,
+        flipped: false
+      )
+      {
+        texture = _sparkleTexture,
+        color = new Color(120, 230, 100),
+        layerDepth = 1f,
+        scale = 1f,
+        rotation = rotation,
+      }
+    );
   }
 
   private static void TrySpawnIdleSparkle(Vector2 tile)
