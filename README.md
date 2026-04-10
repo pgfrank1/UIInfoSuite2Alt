@@ -57,9 +57,10 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.17**
-  - Shipping bin icon now uses vanilla game sprites instead of a custom texture, allowing Content Patcher retextures to apply
-  - Add option to disable the "Trees Hidden/Minimized" HUD banner in GMCM
   - Show harvest price for [Custom Bush](https://www.nexusmods.com/stardewvalley/mods/20619) saplings in shops (e.g. [Cornucopia](https://www.nexusmods.com/stardewvalley/mods/19508))
+  - Add option to disable the "Trees Hidden/Minimized" HUD banner in GMCM
+  - Shipping bin icon now uses vanilla game sprites instead of a custom texture, allowing Content Patcher retextures to apply
+  - Fix F8 keybind not opening mod options tab
 - **v2.8.16**
   - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538) compatibility:
     - Queen of Sauce icon shows Meat Friday recipes on Fridays
