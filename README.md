@@ -44,7 +44,7 @@
 ❤️ Big **THANK YOU** to All Translators that make this mod available in so many different languages! ❤️
 
 - [中文](https://www.nexusmods.com/stardewvalley/mods/43147) - passersby10086
-- [Português](https://www.nexusmods.com/stardewvalley/mods/43172) ([#1](https://www.nexusmods.com/stardewvalley/mods/43172), [#2](https://www.nexusmods.com/stardewvalley/mods/43142)) - Maatsuki, Necromante96Official
+- [Português](https://www.nexusmods.com/stardewvalley/mods/43172) - Maatsuki
 - [Русский](https://www.nexusmods.com/stardewvalley/mods/43168) - ReyRoyce
 - [Tiếng Việt](https://www.nexusmods.com/stardewvalley/mods/43168) - toiviethoamodkoaichoi
 - [日本語](https://www.nexusmods.com/stardewvalley/mods/43335) - tchuks
