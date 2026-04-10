@@ -46,7 +46,7 @@
 - [中文](https://www.nexusmods.com/stardewvalley/mods/43147) - passersby10086
 - [Português](https://www.nexusmods.com/stardewvalley/mods/43172) - Maatsuki
 - [Русский](https://www.nexusmods.com/stardewvalley/mods/43168) - ReyRoyce
-- [Tiếng Việt](https://www.nexusmods.com/stardewvalley/mods/43168) - toiviethoamodkoaichoi
+- [Tiếng Việt](https://www.nexusmods.com/stardewvalley/mods/43298) - valesaren
 - [日本語](https://www.nexusmods.com/stardewvalley/mods/43335) - tchuks
 - [Türkçe](https://www.nexusmods.com/stardewvalley/mods/43359) - Bortakbosna
 - [한국어](https://www.nexusmods.com/stardewvalley/mods/43452) - jjongleee
