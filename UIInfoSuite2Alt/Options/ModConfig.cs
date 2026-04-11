@@ -77,6 +77,9 @@ public class ModConfig
   public bool ShowTreeTooltip { get; set; } = true;
   public bool ShowBarrelTooltip { get; set; } = true;
   public bool ShowFishPondTooltip { get; set; } = true;
+  public bool ShowAnimalBuildingTooltip { get; set; } = true;
+  public KeybindList AnimalBuildingTooltipKeybind { get; set; } =
+    KeybindList.ForSingle(SButton.LeftControl);
   public bool ShowForageableTooltip { get; set; } = true;
   public bool ShowArtifactSpotTooltip { get; set; } = true;
   public bool ShowHarvestQuality { get; set; } = true;

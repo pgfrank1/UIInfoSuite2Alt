@@ -137,6 +137,13 @@ public partial class ModEntry
       getValue: () => ModConfig.ShowAllRange,
       setValue: value => ModConfig.ShowAllRange = value
     );
+    configMenu.AddKeybindList(
+      ModManifest,
+      name: () => I18n.Keybinds_AnimalBuildingTooltipKeybind_DisplayedName(),
+      tooltip: () => I18n.Keybinds_AnimalBuildingTooltipKeybind_Tooltip(),
+      getValue: () => ModConfig.AnimalBuildingTooltipKeybind,
+      setValue: value => ModConfig.AnimalBuildingTooltipKeybind = value
+    );
     RegisterGmcmFeatureToggles(configMenu);
   }
 
@@ -424,6 +431,11 @@ public partial class ModEntry
       nameof(ModConfig.ShowFishPondTooltip),
       () => ModConfig.ShowFishPondTooltip,
       v => ModConfig.ShowFishPondTooltip = v
+    );
+    AddSubBool(
+      nameof(ModConfig.ShowAnimalBuildingTooltip),
+      () => ModConfig.ShowAnimalBuildingTooltip,
+      v => ModConfig.ShowAnimalBuildingTooltip = v
     );
     AddSubBool(
       nameof(ModConfig.ShowForageableTooltip),

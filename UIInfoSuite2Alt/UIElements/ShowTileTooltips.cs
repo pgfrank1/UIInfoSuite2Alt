@@ -9,6 +9,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.GameData.FarmAnimals;
 using StardewValley.GameData.FishPonds;
 using StardewValley.GameData.Machines;
 using StardewValley.ItemTypeDefinitions;
@@ -62,10 +63,17 @@ internal readonly struct HoverSegment
 internal readonly struct HoverLine
 {
   public IReadOnlyList<HoverSegment> Segments { get; }
+  public int ExtraPadding { get; }
 
   public HoverLine(string text, Color? color = null)
   {
     Segments = [new HoverSegment(text, color)];
+  }
+
+  public HoverLine(int extraPadding, params HoverSegment[] segments)
+  {
+    ExtraPadding = extraPadding;
+    Segments = segments;
   }
 
   public HoverLine(params HoverSegment[] segments)
@@ -104,10 +112,12 @@ internal class ShowTileTooltips : IDisposable
   private readonly IModHelper _helper;
   private readonly ShowItemEffectRanges _itemEffectRanges;
   private readonly Lazy<Texture2D> _wildTreeTexture;
+  private static readonly Lazy<Texture2D> _petIconTexture = new(CreatePetIcon);
   private bool ShowCropTooltip => ModEntry.ModConfig.ShowCropTooltip;
   private bool ShowTreeTooltip => ModEntry.ModConfig.ShowTreeTooltip;
   private bool ShowBarrelTooltip => ModEntry.ModConfig.ShowBarrelTooltip;
   private bool ShowFishPondTooltip => ModEntry.ModConfig.ShowFishPondTooltip;
+  private bool ShowAnimalBuildingTooltip => ModEntry.ModConfig.ShowAnimalBuildingTooltip;
   private bool ShowForageableTooltip => ModEntry.ModConfig.ShowForageableTooltip;
   private bool ShowHarvestQuality => ModEntry.ModConfig.ShowHarvestQuality;
 
@@ -119,6 +129,50 @@ internal class ShowTileTooltips : IDisposable
     _wildTreeTexture = new Lazy<Texture2D>(() =>
       AssetHelper.TryLoadTexture(_helper, "assets/wild_tree_tooltip.png")
     );
+  }
+
+  /// <summary>
+  /// Composites the hand icon (16x16) with a heart overlay into a single texture.
+  /// </summary>
+  private static Texture2D CreatePetIcon()
+  {
+    const int handSize = 16;
+    Rectangle handRect = new(32, 0, handSize, handSize);
+    Rectangle heartRect = new(211, 428, 7, 6);
+
+    // Read hand pixels
+    var handPixels = new Color[handSize * handSize];
+    Game1.mouseCursors.GetData(0, handRect, handPixels, 0, handPixels.Length);
+
+    // Read heart pixels
+    var heartPixels = new Color[heartRect.Width * heartRect.Height];
+    Game1.mouseCursors.GetData(0, heartRect, heartPixels, 0, heartPixels.Length);
+
+    // Overlay heart onto hand, centered toward the palm
+    int heartOffsetX = 5;
+    int heartOffsetY = 3;
+    for (int y = 0; y < heartRect.Height; y++)
+    {
+      for (int x = 0; x < heartRect.Width; x++)
+      {
+        Color heartPixel = heartPixels[y * heartRect.Width + x];
+        if (heartPixel.A <= 0)
+        {
+          continue;
+        }
+
+        int destX = heartOffsetX + x;
+        int destY = heartOffsetY + y;
+        if (destX < handSize && destY < handSize)
+        {
+          handPixels[destY * handSize + destX] = heartPixel;
+        }
+      }
+    }
+
+    var texture = new Texture2D(Game1.graphics.GraphicsDevice, handSize, handSize);
+    texture.SetData(handPixels);
+    return texture;
   }
 
   public void Dispose()
@@ -243,6 +297,21 @@ internal class ShowTileTooltips : IDisposable
       if (DetailRenderers.FishPondRender(fishPond, lines))
       {
         Vector2 buildingTile = new(fishPond.tileX.Value, fishPond.tileY.Value);
+        tile = Utility.ModifyCoordinatesForUIScale(
+          Game1.GlobalToLocal(buildingTile * Game1.tileSize)
+        );
+      }
+    }
+
+    if (ShowAnimalBuildingTooltip && currentTileBuilding?.GetIndoors() is AnimalHouse animalHouse)
+    {
+      bool holdingKey = ModEntry.ModConfig.AnimalBuildingTooltipKeybind.IsDown();
+      if (DetailRenderers.AnimalBuildingRender(currentTileBuilding, animalHouse, holdingKey, lines))
+      {
+        Vector2 buildingTile = new(
+          currentTileBuilding.tileX.Value,
+          currentTileBuilding.tileY.Value
+        );
         tile = Utility.ModifyCoordinatesForUIScale(
           Game1.GlobalToLocal(buildingTile * Game1.tileSize)
         );
@@ -599,7 +668,13 @@ internal class ShowTileTooltips : IDisposable
     }
 
     int width = (int)maxWidth + 32;
-    int height = Math.Max(66, lines.Count * font.LineSpacing + 38);
+    int totalExtraPadding = 0;
+    foreach (HoverLine line in lines)
+    {
+      totalExtraPadding += line.ExtraPadding;
+    }
+
+    int height = Math.Max(66, lines.Count * font.LineSpacing + totalExtraPadding + 38);
 
     int x = Game1.getOldMouseX() + 32;
     int y = Game1.getOldMouseY() + 32;
@@ -742,7 +817,7 @@ internal class ShowTileTooltips : IDisposable
         isFirst = false;
       }
 
-      lineY += font.LineSpacing;
+      lineY += font.LineSpacing + line.ExtraPadding;
     }
   }
 
@@ -940,6 +1015,178 @@ internal class ShowTileTooltips : IDisposable
       if (fishPond.goldenAnimalCracker.Value)
       {
         entries.Add(new HoverLine(I18n.FishPondGoldenCracker(), WaitingColor));
+      }
+
+      return true;
+    }
+
+    public static bool AnimalBuildingRender(
+      Building building,
+      AnimalHouse animalHouse,
+      bool showDetails,
+      List<HoverLine> entries
+    )
+    {
+      string buildingName =
+        TokenParser.ParseText(building.GetData()?.Name) ?? building.buildingType.Value;
+      int current = animalHouse.animalsThatLiveHere.Count;
+      int max = animalHouse.animalLimit.Value;
+
+      Color countColor = current >= max ? ReadyColor : WaitingColor;
+      entries.Add(
+        showDetails && current > 0
+          ? new HoverLine(
+            8,
+            new HoverSegment($"{buildingName} - "),
+            new HoverSegment($"{current}", countColor),
+            new HoverSegment($"/{max}")
+          )
+          : new HoverLine(
+            new HoverSegment($"{buildingName} - "),
+            new HoverSegment($"{current}", countColor),
+            new HoverSegment($"/{max}")
+          )
+      );
+
+      if (!showDetails)
+      {
+        string keybindName =
+          ModEntry.ModConfig.AnimalBuildingTooltipKeybind.GetKeybindCurrentlyDown()?.ToString()
+          ?? ModEntry.ModConfig.AnimalBuildingTooltipKeybind.ToString();
+        entries.Add(new HoverLine(I18n.AnimalBuildingHoldHint(keybindName), WaitingColor));
+        return true;
+      }
+
+      if (current == 0)
+      {
+        return true;
+      }
+
+      // Collect items on the floor (overnight drops like eggs)
+      Dictionary<string, int> overnightCounts = new();
+      foreach (Object obj in animalHouse.objects.Values)
+      {
+        if (!obj.IsSpawnedObject)
+        {
+          continue;
+        }
+
+        string itemId = obj.QualifiedItemId;
+        overnightCounts[itemId] = overnightCounts.GetValueOrDefault(itemId) + obj.Stack;
+      }
+
+      if (overnightCounts.Count > 0)
+      {
+        const float overnightIconScale = 2f;
+        const int itemsPerRow = 5;
+        List<HoverSegment> rowSegments = new() { new HoverSegment(" ") };
+        int itemIndex = 0;
+        foreach ((string produceId, int count) in overnightCounts)
+        {
+          ParsedItemData? produceData = ItemRegistry.GetData(produceId);
+          if (produceData == null)
+          {
+            continue;
+          }
+
+          if (rowSegments.Count > 1)
+          {
+            rowSegments.Add(new HoverSegment(" "));
+          }
+
+          Rectangle produceRect = produceData.GetSourceRect();
+          float produceScale =
+            16f / Math.Max(produceRect.Width, produceRect.Height) * overnightIconScale;
+
+          rowSegments.Add(new HoverSegment($"{count}x"));
+          rowSegments.Add(new HoverSegment(produceData.GetTexture(), produceRect, produceScale));
+          itemIndex++;
+
+          if (itemIndex % itemsPerRow == 0)
+          {
+            bool isLastRow = itemIndex == overnightCounts.Count;
+            rowSegments.Add(new HoverSegment(" "));
+            entries.Add(
+              isLastRow
+                ? new HoverLine(16, rowSegments.ToArray())
+                : new HoverLine(rowSegments.ToArray())
+            );
+            rowSegments = new() { new HoverSegment(" ") };
+          }
+        }
+
+        if (rowSegments.Count > 1)
+        {
+          rowSegments.Add(new HoverSegment(" "));
+          entries.Add(new HoverLine(16, rowSegments.ToArray()));
+        }
+      }
+
+      IEnumerable<FarmAnimal> sortedAnimals = animalHouse
+        .animalsThatLiveHere.Select(id => Utility.getAnimal(id))
+        .Where(a => a != null)
+        .OrderBy(a => a!.type.Value)
+        .ThenBy(a => a!.displayName)!;
+
+      foreach (FarmAnimal animal in sortedAnimals)
+      {
+        // First frame of the spritesheet is the down-facing headshot
+        int spriteWidth = animal.Sprite.SpriteWidth;
+        int spriteHeight = animal.Sprite.SpriteHeight;
+        Rectangle headRect = new(0, 0, spriteWidth, spriteHeight);
+        const int targetHeight = 32;
+        float scale = targetHeight / (float)spriteHeight;
+
+        // Build status icon segments
+        const float iconScale = 2f;
+        List<HoverSegment> segments = new()
+        {
+          new HoverSegment(animal.Sprite.Texture, headRect, scale, $" {animal.displayName} "),
+        };
+
+        // Golden Animal Cracker
+        if (animal.hasEatenAnimalCracker.Value)
+        {
+          ParsedItemData? crackerData = ItemRegistry.GetData("(O)GoldenAnimalCracker");
+          if (crackerData != null)
+          {
+            Rectangle crackerRect = crackerData.GetSourceRect();
+            float crackerScale = 16f / Math.Max(crackerRect.Width, crackerRect.Height) * iconScale;
+            segments.Add(
+              new HoverSegment(crackerData.GetTexture(), crackerRect, crackerScale, " ")
+            );
+          }
+        }
+
+        // Needs pet: hand+heart icon
+        if (!animal.wasPet.Value && !animal.wasAutoPet.Value)
+        {
+          segments.Add(
+            new HoverSegment(_petIconTexture.Value, new Rectangle(0, 0, 16, 10), iconScale)
+          );
+        }
+
+        // Has produce: show the produce item sprite (same rules as bubble icons)
+        FarmAnimalHarvestType? harvestType = animal.GetHarvestType();
+        FarmAnimalData? animalData = animal.GetAnimalData();
+        if (
+          animal.currentProduce.Value != null
+          && harvestType is not (FarmAnimalHarvestType.DropOvernight or FarmAnimalHarvestType.DigUp)
+          && (animalData == null || animal.age.Value >= animalData.DaysToMature)
+        )
+        {
+          ParsedItemData? produceData = ItemRegistry.GetData(animal.currentProduce.Value);
+          if (produceData != null)
+          {
+            Rectangle produceRect = produceData.GetSourceRect();
+            float produceScale = 16f / Math.Max(produceRect.Width, produceRect.Height) * iconScale;
+            segments.Add(
+              new HoverSegment(produceData.GetTexture(), produceRect, produceScale, " ")
+            );
+          }
+        }
+
+        entries.Add(new HoverLine(8, segments.ToArray()));
       }
 
       return true;

@@ -701,6 +701,16 @@ internal class ModOptionsPageHandler : IDisposable
     );
     _currentTarget.Add(
       new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.ShowAnimalBuildingTooltip)),
+        whichOption++,
+        _ => { },
+        () => config.ShowAnimalBuildingTooltip,
+        Set(v => config.ShowAnimalBuildingTooltip = v),
+        showWorldTooltipCheckbox
+      )
+    );
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
         _helper.SafeGetString(nameof(config.ShowForageableTooltip)),
         whichOption++,
         _ => { },

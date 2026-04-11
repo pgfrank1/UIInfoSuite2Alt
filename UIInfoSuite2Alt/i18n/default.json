@@ -28,6 +28,8 @@
   "Keybinds.ShowOneRange.Tooltip": "When the mouse moves over the item you want to show, show range.",
   "Keybinds.ShowAllRange.DisplayedName": "Show all item range",
   "Keybinds.ShowAllRange.Tooltip": "When the mouse moves over the item you want to show, all ranges are show.",
+  "Keybinds.AnimalBuildingTooltipKeybind.DisplayedName": "Animal building detail keybind",
+  "Keybinds.AnimalBuildingTooltipKeybind.Tooltip": "Hold this key while hovering over a Coop or Barn to show detailed animal information.",
   //GUI - Billboard
   "Billboard": "Billboard",
   "Calendar": "Calendar",
@@ -58,6 +60,8 @@
   "FishPondNextQuest": "Quest in: {{days}} day(s)",
   "FishPondQuestItem": "Needs: {{item}} x{{count}}",
   "FishPondGoldenCracker": "Golden Animal Cracker",
+  //Animal Building
+  "AnimalBuildingHoldHint": "Hold {{keybind}} to show information",
   //Cask
   "CaskAgingIn": "in",
   //Harvest
@@ -192,6 +196,7 @@
   "ShowTreeTooltip": "Show tree tooltip",
   "ShowBarrelTooltip": "Show machine/barrel times",
   "ShowFishPondTooltip": "Show fish pond tooltip",
+  "ShowAnimalBuildingTooltip": "Show animal building tooltip",
   "ShowForageableTooltip": "Show forageable/mineral tooltip",
   "ShowArtifactSpotTooltip": "Show artifact spot tooltip",
   "ShowHarvestQuality": "Show quality prediction",
