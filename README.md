@@ -313,7 +313,7 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Cloudy Skies](https://www.nexusmods.com/stardewvalley/mods/23135)
 - [Unlockable Bundles](https://www.nexusmods.com/stardewvalley/mods/17265)
 - [Esca's Modding Plugins](https://www.nexusmods.com/stardewvalley/mods/9296)
-- [Vanilla Plus Professions](https://www.nexusmods.com/stardewvalley/mods/20956)
+- [Vanilla Plus Professions](https://www.nexusmods.com/stardewvalley/mods/20054)
 - [Walk of Life - Rebirth](https://www.nexusmods.com/stardewvalley/mods/24355)
 - [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414)
 - [Bigger Backpack](https://www.nexusmods.com/stardewvalley/mods/1845)
