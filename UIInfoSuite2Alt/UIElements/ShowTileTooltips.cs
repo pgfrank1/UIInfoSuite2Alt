@@ -33,7 +33,7 @@ internal readonly struct HoverSegment
   public Texture2D? Texture { get; }
   public Rectangle? SourceRect { get; }
   public float SpriteScale { get; }
-  public int TrailingGap { get; init; }
+  public float TrailingGap { get; init; }
 
   public HoverSegment(string text, Color? color = null)
   {
@@ -1168,7 +1168,7 @@ internal class ShowTileTooltips : IDisposable
       {
         const float overnightIconScale = 2f;
         const int itemsPerRow = 5;
-        List<HoverSegment> rowSegments = new() { new HoverSegment(" ") };
+        List<HoverSegment> rowSegments = new();
         int itemIndex = 0;
         foreach ((string produceId, int count) in overnightCounts)
         {
@@ -1178,35 +1178,33 @@ internal class ShowTileTooltips : IDisposable
             continue;
           }
 
-          if (rowSegments.Count > 1)
-          {
-            rowSegments.Add(new HoverSegment(" "));
-          }
-
           Rectangle produceRect = produceData.GetSourceRect();
           float produceScale =
             16f / Math.Max(produceRect.Width, produceRect.Height) * overnightIconScale;
 
           rowSegments.Add(new HoverSegment($"{count}x"));
-          rowSegments.Add(new HoverSegment(produceData.GetTexture(), produceRect, produceScale));
+          rowSegments.Add(
+            new HoverSegment(produceData.GetTexture(), produceRect, produceScale)
+            {
+              TrailingGap = 4f,
+            }
+          );
           itemIndex++;
 
           if (itemIndex % itemsPerRow == 0)
           {
             bool isLastRow = itemIndex == overnightCounts.Count;
-            rowSegments.Add(new HoverSegment(" "));
             entries.Add(
               isLastRow
                 ? new HoverLine(16, rowSegments.ToArray())
                 : new HoverLine(rowSegments.ToArray())
             );
-            rowSegments = new() { new HoverSegment(" ") };
+            rowSegments = new();
           }
         }
 
-        if (rowSegments.Count > 1)
+        if (rowSegments.Count > 0)
         {
-          rowSegments.Add(new HoverSegment(" "));
           entries.Add(new HoverLine(16, rowSegments.ToArray()));
         }
       }
@@ -1233,6 +1231,8 @@ internal class ShowTileTooltips : IDisposable
           new HoverSegment(animal.Sprite.Texture, headRect, scale, $" {animal.displayName} "),
         };
 
+        const int iconGap = 2;
+
         // Golden Animal Cracker
         if (animal.hasEatenAnimalCracker.Value)
         {
@@ -1242,7 +1242,10 @@ internal class ShowTileTooltips : IDisposable
             Rectangle crackerRect = crackerData.GetSourceRect();
             float crackerScale = 16f / Math.Max(crackerRect.Width, crackerRect.Height) * iconScale;
             segments.Add(
-              new HoverSegment(crackerData.GetTexture(), crackerRect, crackerScale, " ")
+              new HoverSegment(crackerData.GetTexture(), crackerRect, crackerScale)
+              {
+                TrailingGap = iconGap,
+              }
             );
           }
         }
@@ -1251,7 +1254,10 @@ internal class ShowTileTooltips : IDisposable
         if (!animal.wasPet.Value && !animal.wasAutoPet.Value)
         {
           segments.Add(
-            new HoverSegment(_petIconTexture.Value, new Rectangle(0, 0, 16, 10), iconScale)
+            new HoverSegment(_petIconTexture.Value, new Rectangle(0, 0, 13, 10), iconScale)
+            {
+              TrailingGap = iconGap,
+            }
           );
         }
 
@@ -1270,7 +1276,10 @@ internal class ShowTileTooltips : IDisposable
             Rectangle produceRect = produceData.GetSourceRect();
             float produceScale = 16f / Math.Max(produceRect.Width, produceRect.Height) * iconScale;
             segments.Add(
-              new HoverSegment(produceData.GetTexture(), produceRect, produceScale, " ")
+              new HoverSegment(produceData.GetTexture(), produceRect, produceScale)
+              {
+                TrailingGap = iconGap,
+              }
             );
           }
         }
