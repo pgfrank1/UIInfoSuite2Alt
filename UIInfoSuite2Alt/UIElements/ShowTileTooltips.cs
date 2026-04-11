@@ -1295,7 +1295,17 @@ internal class ShowTileTooltips : IDisposable
         if (customBushApi.TryGetBush(bush, out ICustomBushData? customBushData, out string? id))
         {
           droppedItems.Clear();
-          willProduceThisSeason = customBushApi.IsInSeason(bush);
+          try
+          {
+            willProduceThisSeason = customBushApi.IsInSeason(bush);
+          }
+          catch (Exception ex)
+          {
+            ModEntry.MonitorObject.LogOnce(
+              $"ShowTileTooltips: CustomBush.IsInSeason failed for bush at {bush.Tile}: {ex.Message}",
+              LogLevel.Warn
+            );
+          }
           string displayName = customBushData.DisplayName;
           if (displayName.Contains("LocalizedText"))
           {
