@@ -33,6 +33,7 @@ internal readonly struct HoverSegment
   public Texture2D? Texture { get; }
   public Rectangle? SourceRect { get; }
   public float SpriteScale { get; }
+  public int TrailingGap { get; init; }
 
   public HoverSegment(string text, Color? color = null)
   {
@@ -63,6 +64,7 @@ internal readonly struct HoverSegment
 internal readonly struct HoverLine
 {
   public IReadOnlyList<HoverSegment> Segments { get; }
+  public IReadOnlyList<HoverSegment>? RightSegments { get; }
   public int ExtraPadding { get; }
 
   public HoverLine(string text, Color? color = null)
@@ -79,6 +81,14 @@ internal readonly struct HoverLine
   public HoverLine(params HoverSegment[] segments)
   {
     Segments = segments;
+  }
+
+  /// <summary>Creates a line with left segments, right-aligned segments, and optional extra padding.</summary>
+  public HoverLine(HoverSegment[] leftSegments, HoverSegment[] rightSegments, int extraPadding = 0)
+  {
+    Segments = leftSegments;
+    RightSegments = rightSegments;
+    ExtraPadding = extraPadding;
   }
 
   public static implicit operator HoverLine(string text) => new(text);
@@ -655,6 +665,28 @@ internal class ShowTileTooltips : IDisposable
         {
           lineWidth += font.MeasureString(segment.Text).X;
         }
+
+        lineWidth += segment.TrailingGap;
+      }
+
+      if (line.RightSegments != null)
+      {
+        const float rightGap = 16f;
+        lineWidth += rightGap;
+        foreach (HoverSegment segment in line.RightSegments)
+        {
+          if (segment.HasSprite)
+          {
+            lineWidth += segment.SourceRect!.Value.Width * segment.SpriteScale;
+          }
+
+          if (segment.Text.Length > 0)
+          {
+            lineWidth += font.MeasureString(segment.Text).X;
+          }
+
+          lineWidth += segment.TrailingGap;
+        }
       }
 
       // First line needs extra room for the sprite
@@ -763,6 +795,63 @@ internal class ShowTileTooltips : IDisposable
           Vector2 pos = new(segX, lineY);
           Tools.DrawShadowedText(b, font, segment.Text, pos, segColor, shadowColor);
           segX += font.MeasureString(segment.Text).X;
+        }
+
+        segX += segment.TrailingGap;
+      }
+
+      // Draw right-aligned segments from the right edge
+      if (line.RightSegments != null)
+      {
+        float rightEdge = x + width - 16;
+        float rightWidth = 0;
+        foreach (HoverSegment segment in line.RightSegments)
+        {
+          if (segment.HasSprite)
+          {
+            rightWidth += segment.SourceRect!.Value.Width * segment.SpriteScale;
+          }
+
+          if (segment.Text.Length > 0)
+          {
+            rightWidth += font.MeasureString(segment.Text).X;
+          }
+
+          rightWidth += segment.TrailingGap;
+        }
+
+        float rSegX = rightEdge - rightWidth;
+        foreach (HoverSegment segment in line.RightSegments)
+        {
+          if (segment.HasSprite)
+          {
+            Rectangle srcRect = segment.SourceRect!.Value;
+            float spriteW = srcRect.Width * segment.SpriteScale;
+            float spriteH = srcRect.Height * segment.SpriteScale;
+            float spriteCY = lineY + font.LineSpacing / 2f - spriteH / 2f;
+            b.Draw(
+              segment.Texture!,
+              new Vector2(rSegX, spriteCY),
+              srcRect,
+              Color.White,
+              0f,
+              Vector2.Zero,
+              segment.SpriteScale,
+              SpriteEffects.None,
+              0.91f
+            );
+            rSegX += spriteW;
+          }
+
+          if (segment.Text.Length > 0)
+          {
+            Color segColor = segment.Color ?? defaultColor;
+            Vector2 pos = new(rSegX, lineY);
+            Tools.DrawShadowedText(b, font, segment.Text, pos, segColor, shadowColor);
+            rSegX += font.MeasureString(segment.Text).X;
+          }
+
+          rSegX += segment.TrailingGap;
         }
       }
 
@@ -1186,7 +1275,23 @@ internal class ShowTileTooltips : IDisposable
           }
         }
 
-        entries.Add(new HoverLine(8, segments.ToArray()));
+        // Friendship hearts (right-aligned): filled then empty
+        int filledHearts = Math.Min(animal.friendshipTowardFarmer.Value / 200, 5);
+        const int maxHearts = 5;
+        Rectangle filledHeartRect = new(211, 428, 7, 6);
+        Rectangle emptyHeartRect = new(218, 428, 7, 6);
+        const float heartScale = 3f;
+        List<HoverSegment> heartSegments = new();
+        for (int i = 0; i < maxHearts; i++)
+        {
+          Rectangle rect = i < filledHearts ? filledHeartRect : emptyHeartRect;
+          int gap = i < maxHearts - 1 ? 1 : 0;
+          heartSegments.Add(
+            new HoverSegment(Game1.mouseCursors, rect, heartScale) { TrailingGap = gap }
+          );
+        }
+
+        entries.Add(new HoverLine(segments.ToArray(), heartSegments.ToArray(), 8));
       }
 
       return true;
