@@ -141,24 +141,19 @@ internal class ShowTileTooltips : IDisposable
     );
   }
 
-  /// <summary>
-  /// Composites the hand icon (16x16) with a heart overlay into a single texture.
-  /// </summary>
   private static Texture2D CreatePetIcon()
   {
     const int handSize = 16;
     Rectangle handRect = new(32, 0, handSize, handSize);
     Rectangle heartRect = new(211, 428, 7, 6);
 
-    // Read hand pixels
     var handPixels = new Color[handSize * handSize];
     Game1.mouseCursors.GetData(0, handRect, handPixels, 0, handPixels.Length);
 
-    // Read heart pixels
     var heartPixels = new Color[heartRect.Width * heartRect.Height];
     Game1.mouseCursors.GetData(0, heartRect, heartPixels, 0, heartPixels.Length);
 
-    // Overlay heart onto hand, centered toward the palm
+    // Offset biases the heart toward the hand's palm
     int heartOffsetX = 5;
     int heartOffsetY = 3;
     for (int y = 0; y < heartRect.Height; y++)
@@ -1122,19 +1117,14 @@ internal class ShowTileTooltips : IDisposable
       int max = animalHouse.animalLimit.Value;
 
       Color countColor = current >= max ? ReadyColor : WaitingColor;
+      int headerPadding = showDetails && current > 0 ? 8 : 0;
       entries.Add(
-        showDetails && current > 0
-          ? new HoverLine(
-            8,
-            new HoverSegment($"{buildingName} - "),
-            new HoverSegment($"{current}", countColor),
-            new HoverSegment($"/{max}")
-          )
-          : new HoverLine(
-            new HoverSegment($"{buildingName} - "),
-            new HoverSegment($"{current}", countColor),
-            new HoverSegment($"/{max}")
-          )
+        new HoverLine(
+          headerPadding,
+          new HoverSegment($"{buildingName} - "),
+          new HoverSegment($"{current}", countColor),
+          new HoverSegment($"/{max}")
+        )
       );
 
       if (!showDetails)
@@ -1151,7 +1141,6 @@ internal class ShowTileTooltips : IDisposable
         return true;
       }
 
-      // Collect items on the floor (overnight drops like eggs)
       Dictionary<string, int> overnightCounts = new();
       foreach (Object obj in animalHouse.objects.Values)
       {
@@ -1224,7 +1213,6 @@ internal class ShowTileTooltips : IDisposable
         const int targetHeight = 32;
         float scale = targetHeight / (float)spriteHeight;
 
-        // Build status icon segments
         const float iconScale = 2f;
         List<HoverSegment> segments = new()
         {
@@ -1233,7 +1221,6 @@ internal class ShowTileTooltips : IDisposable
 
         const int iconGap = 2;
 
-        // Golden Animal Cracker
         if (animal.hasEatenAnimalCracker.Value)
         {
           ParsedItemData? crackerData = ItemRegistry.GetData("(O)GoldenAnimalCracker");
@@ -1250,7 +1237,6 @@ internal class ShowTileTooltips : IDisposable
           }
         }
 
-        // Needs pet: hand+heart icon
         if (!animal.wasPet.Value && !animal.wasAutoPet.Value)
         {
           segments.Add(
@@ -1261,7 +1247,7 @@ internal class ShowTileTooltips : IDisposable
           );
         }
 
-        // Has produce: show the produce item sprite (same rules as bubble icons)
+        // Mirrors vanilla bubble-icon conditions so the tooltip matches what appears above the animal
         FarmAnimalHarvestType? harvestType = animal.GetHarvestType();
         FarmAnimalData? animalData = animal.GetAnimalData();
         if (
@@ -1284,7 +1270,6 @@ internal class ShowTileTooltips : IDisposable
           }
         }
 
-        // Friendship hearts (right-aligned): filled then empty
         int filledHearts = Math.Min(animal.friendshipTowardFarmer.Value / 200, 5);
         const int maxHearts = 5;
         Rectangle filledHeartRect = new(211, 428, 7, 6);
