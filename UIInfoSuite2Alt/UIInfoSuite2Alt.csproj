@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <EnableHarmony>true</EnableHarmony>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup>
