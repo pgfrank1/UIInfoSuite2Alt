@@ -77,18 +77,6 @@ internal class ModOptionsPageHandler : IDisposable
     }
   }
 
-  private void OptionsHR()
-  {
-    _currentTarget.Add(
-      new ModOptionsElement(
-        "------------------------------------------------------------------------",
-        isCentered: true,
-        isVertCentered: true,
-        isSmallText: true
-      )
-    );
-  }
-
   private void RebuildVisibleList()
   {
     _optionsElements.Clear();
@@ -739,7 +727,9 @@ internal class ModOptionsPageHandler : IDisposable
         showWorldTooltipCheckbox
       )
     );
-    _currentTarget.Add(new ModOptionsElement(I18n.ShowHarvestQuality_Note(), isSmallText: true));
+    _currentTarget.Add(
+      new ModOptionsElement(I18n.ShowHarvestQuality_Note(), isSmallText: true, isIndented: true)
+    );
     OptionsSpacer();
     showMachineProcessingItem.SetMode(config.MachineProcessingIconsMode);
     _currentTarget.Add(
@@ -817,12 +807,12 @@ internal class ModOptionsPageHandler : IDisposable
     );
     _currentTarget.Add(
       new ModOptionsElement(
-        $"{I18n.EnableItemRangeKeybinds()}\n"
-          + $"  {I18n.Keybinds_ShowOneRange_DisplayedName()}:\n"
-          + $"    > {config.ShowOneRange}\n"
-          + $"  {I18n.Keybinds_ShowAllRange_DisplayedName()}:\n"
-          + $"    > {config.ShowAllRange}",
-        isSmallText: true
+        $"{I18n.Keybinds_ShowOneRange_DisplayedName()}:\n"
+          + $"> {config.ShowOneRange}\n"
+          + $"{I18n.Keybinds_ShowAllRange_DisplayedName()}:\n"
+          + $"> {config.ShowAllRange}",
+        isSmallText: true,
+        isIndented: true
       )
     );
     OptionsSpacer();
@@ -909,18 +899,31 @@ internal class ModOptionsPageHandler : IDisposable
       Set(v => config.ShowExtraItemInformation = v)
     );
     _currentTarget.Add(showItemHoverCheckbox);
+    var sellPriceCheckbox = new ModOptionsCheckbox(
+      _helper.SafeGetString(nameof(config.ShowInventoryItemSellPrice)),
+      whichOption++,
+      _ => { },
+      () => config.ShowInventoryItemSellPrice,
+      Set(v => config.ShowInventoryItemSellPrice = v),
+      showItemHoverCheckbox
+    );
+    _currentTarget.Add(sellPriceCheckbox);
     _currentTarget.Add(
-      new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.ShowInventoryItemSellPrice)),
-        whichOption++,
-        _ => { },
-        () => config.ShowInventoryItemSellPrice,
-        Set(v => config.ShowInventoryItemSellPrice = v),
-        showItemHoverCheckbox
+      new ModOptionsElement(
+        I18n.ShowInventoryItemSellPrice_Note(),
+        isSmallText: true,
+        isIndented: true
       )
     );
     _currentTarget.Add(
-      new ModOptionsElement(I18n.ShowInventoryItemSellPrice_Note(), isSmallText: true)
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.ShowInventoryItemArtisanPrices)),
+        whichOption++,
+        _ => { },
+        () => config.ShowInventoryItemArtisanPrices,
+        Set(v => config.ShowInventoryItemArtisanPrices = v),
+        sellPriceCheckbox
+      )
     );
     _currentTarget.Add(
       new ModOptionsCheckbox(
@@ -1031,7 +1034,6 @@ internal class ModOptionsPageHandler : IDisposable
 
     // --- Icon Order (always visible) ---
     _currentTarget = _bottomElements;
-    OptionsHR();
     _currentTarget.Add(new ModOptionsElement(I18n.Section_IconOrder()));
     _currentTarget.Add(new ModOptionsElement(I18n.Section_IconOrder_Subtitle(), isSmallText: true));
 

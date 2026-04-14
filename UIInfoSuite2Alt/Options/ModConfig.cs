@@ -64,6 +64,7 @@ public class ModConfig
   public bool ShowHeartFills { get; set; } = true;
   public bool ShowExtraItemInformation { get; set; } = true;
   public bool ShowInventoryItemSellPrice { get; set; } = true;
+  public bool ShowInventoryItemArtisanPrices { get; set; } = true;
   public bool ShowInventoryItemBundleBanner { get; set; } = true;
   public bool ShowInventoryItemDonationStatus { get; set; } = true;
   public bool ShowInventoryItemShippingStatus { get; set; } = true;

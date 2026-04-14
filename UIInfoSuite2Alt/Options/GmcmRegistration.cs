@@ -452,16 +452,7 @@ public partial class ModEntry
       () => ModConfig.ShowHarvestQuality,
       v => ModConfig.ShowHarvestQuality = v
     );
-    configMenu.AddComplexOption(
-      ModManifest,
-      name: () => "",
-      draw: (spriteBatch, pos) =>
-      {
-        string text = I18n.ShowHarvestQuality_Note();
-        Utility.drawTextWithShadow(spriteBatch, text, Game1.smallFont, pos, Game1.textColor);
-      },
-      height: () => (int)(Game1.smallFont.MeasureString(I18n.ShowHarvestQuality_Note()).Y + 8)
-    );
+    configMenu.AddParagraph(ModManifest, text: () => I18n.ShowHarvestQuality_Note());
     Spacer();
     string[] machineIconModes = { "0", "1", "2" };
     configMenu.AddTextOption(
@@ -514,19 +505,13 @@ public partial class ModEntry
       () => ModConfig.ShowRangeTooltip,
       v => ModConfig.ShowRangeTooltip = v
     );
-    configMenu.AddComplexOption(
+    configMenu.AddParagraph(
       ModManifest,
-      name: () => "",
-      draw: (spriteBatch, pos) =>
-      {
-        string text =
-          $"{I18n.Keybinds_ShowOneRange_DisplayedName()}:\n"
-          + $"  > {ModConfig.ShowOneRange}\n"
-          + $"{I18n.Keybinds_ShowAllRange_DisplayedName()}:\n"
-          + $"  > {ModConfig.ShowAllRange}";
-        Utility.drawTextWithShadow(spriteBatch, text, Game1.smallFont, pos, Game1.textColor);
-      },
-      height: () => (int)(Game1.smallFont.MeasureString("T").Y * 5)
+      text: () =>
+        $"{I18n.Keybinds_ShowOneRange_DisplayedName()}:\n"
+        + $"> {ModConfig.ShowOneRange}\n"
+        + $"{I18n.Keybinds_ShowAllRange_DisplayedName()}:\n"
+        + $"> {ModConfig.ShowAllRange}"
     );
 
     // =====================
@@ -593,18 +578,14 @@ public partial class ModEntry
       () => ModConfig.ShowInventoryItemSellPrice,
       v => ModConfig.ShowInventoryItemSellPrice = v
     );
-    configMenu.AddComplexOption(
+    configMenu.AddParagraph(ModManifest, text: () => I18n.ShowInventoryItemSellPrice_Note());
+    configMenu.AddBoolOption(
       ModManifest,
-      name: () => "",
-      draw: (spriteBatch, pos) =>
-      {
-        string text = I18n.ShowInventoryItemSellPrice_Note();
-        Utility.drawTextWithShadow(spriteBatch, text, Game1.smallFont, pos, Game1.textColor);
-      },
-      height: () =>
-        (int)(Game1.smallFont.MeasureString(I18n.ShowInventoryItemSellPrice_Note()).Y + 8)
+      name: () => "    > " + Helper.SafeGetString(nameof(ModConfig.ShowInventoryItemArtisanPrices)),
+      getValue: () => ModConfig.ShowInventoryItemArtisanPrices,
+      setValue: v => ModConfig.ShowInventoryItemArtisanPrices = v
     );
-    Spacer();
+    // Spacer();
     AddSubBool(
       nameof(ModConfig.ShowInventoryItemBundleBanner),
       () => ModConfig.ShowInventoryItemBundleBanner,
@@ -679,6 +660,7 @@ public partial class ModEntry
     configMenu.AddPage(ModManifest, "");
     Spacer(3);
     configMenu.AddSectionTitle(ModManifest, text: () => I18n.Section_IconOrder());
+    configMenu.AddParagraph(ModManifest, text: () => I18n.Section_IconOrder_Subtitle());
 
     foreach (string key in IconHandler.IconKeys)
     {

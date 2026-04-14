@@ -30,7 +30,8 @@ public class ModOptionsElement
     bool isSmallText = false,
     bool isCentered = false,
     Color? textColor = null,
-    bool isVertCentered = false
+    bool isVertCentered = false,
+    bool isIndented = false
   )
   {
     int x = DefaultX * Game1.pixelZoom;
@@ -38,7 +39,7 @@ public class ModOptionsElement
     int width = DefaultPixelSize * Game1.pixelZoom;
     int height = DefaultPixelSize * Game1.pixelZoom;
 
-    if (parent != null)
+    if (parent != null || isIndented)
     {
       x += DefaultX * 2 * Game1.pixelZoom;
     }
