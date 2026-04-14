@@ -532,7 +532,7 @@ internal class ShowItemHoverInformation : IDisposable
             requiredBundleName,
             bundleId,
             new Vector2(
-              vanillaTooltip.Left - 7,
+              vanillaTooltip.Left + 6,
               vanillaTooltip.Top
                 - 17
                 - informantDecoratorHeight
@@ -569,12 +569,8 @@ internal class ShowItemHoverInformation : IDisposable
             DrawShippingBin(
               spriteBatch,
               new Vector2(
-                vanillaTooltip.Right - (int)(ShippingBinBaseRect.Width * 1.5f) + 18,
-                vanillaTooltip.Bottom
-                  + 8
-                  - (int)(ShippingBinBaseRect.Height * 1.5f)
-                  - informantDecoratorHeight
-                  + 40
+                vanillaTooltip.Right - 24,
+                vanillaTooltip.Bottom - 24 - informantDecoratorHeight
               ),
               1.5f
             );
@@ -1071,6 +1067,14 @@ internal class ShowItemHoverInformation : IDisposable
     int x = Game1.getOldMouseX() + 32;
     int y = Game1.getOldMouseY() + 32;
 
+    // Vanilla drawToolTip shifts the tooltip by +40 on both axes when the player is holding
+    // an item on the cursor (so it doesn't render under the dragged item sprite).
+    if (IsHoldingItemOnCursor())
+    {
+      x += 40;
+      y += 40;
+    }
+
     // Screen edge adjustments matching game logic
     Rectangle safeArea = Utility.getSafeArea();
     if (x + width > safeArea.Right)
@@ -1091,5 +1095,20 @@ internal class ShowItemHoverInformation : IDisposable
     }
 
     return new Rectangle(x, y, width, height);
+  }
+
+  private static bool IsHoldingItemOnCursor()
+  {
+    if (Game1.player.CursorSlotItem != null)
+    {
+      return true;
+    }
+
+    if (Game1.activeClickableMenu is MenuWithInventory mwi && mwi.heldItem != null)
+    {
+      return true;
+    }
+
+    return false;
   }
 }
