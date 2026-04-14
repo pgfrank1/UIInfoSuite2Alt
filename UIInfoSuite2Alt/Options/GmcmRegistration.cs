@@ -29,6 +29,7 @@ public partial class ModEntry
     ApiManager.TryRegisterApi<IFerngillSimpleEconomyApi>(Helper, ModCompat.FerngillEconomy);
     ApiManager.TryRegisterApi<IBetterJunimosApi>(Helper, ModCompat.BetterJunimos);
     ApiManager.TryRegisterApi<IWalkOfLifeApi>(Helper, ModCompat.WalkOfLife);
+    ApiManager.TryRegisterApi<IExtraMachineConfigApi>(Helper, ModCompat.ExtraMachineConfig);
 
     WalkOfLifeHelper.Initialize(Helper);
 

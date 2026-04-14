@@ -3,13 +3,15 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.GameData.Machines;
+using UIInfoSuite2Alt.Compatibility;
 using Object = StardewValley.Object;
 
 namespace UIInfoSuite2Alt.Infrastructure.Helpers;
 
 /// <summary>
 /// Probes Data/Machines to compute artisan good sell prices for a given input item.
-/// Currently covers Keg, Preserves Jar, and Dehydrator.
+/// Skips rules with C# delegate outputs and Extra Machine Config hidden secondary inputs
+/// since their true profit isn't introspectable without subjective assumptions.
 /// </summary>
 public static class ArtisanPriceHelper
 {
@@ -17,21 +19,24 @@ public static class ArtisanPriceHelper
   {
     public readonly string MachineQualifiedId;
     public readonly int UnitSellPrice;
-    public readonly int OutputStackPerInput;
+    public readonly int MinOutputStack;
+    public readonly int MaxOutputStack;
     public readonly int InputsPerBatch;
     public readonly Item OutputItem;
 
     public ArtisanEntry(
       string machineQualifiedId,
       int unitSellPrice,
-      int outputStackPerInput,
+      int minOutputStack,
+      int maxOutputStack,
       int inputsPerBatch,
       Item outputItem
     )
     {
       MachineQualifiedId = machineQualifiedId;
       UnitSellPrice = unitSellPrice;
-      OutputStackPerInput = outputStackPerInput;
+      MinOutputStack = minOutputStack;
+      MaxOutputStack = maxOutputStack;
       InputsPerBatch = inputsPerBatch;
       OutputItem = outputItem;
     }
@@ -42,6 +47,8 @@ public static class ArtisanPriceHelper
     "(BC)12", // Keg
     "(BC)15", // Preserves Jar
     "(BC)Dehydrator",
+    "(BC)19", // Oil Maker
+    "(BC)17", // Loom
   };
 
   private static readonly Dictionary<string, ArtisanEntry?[]> _cache = new();
@@ -144,6 +151,25 @@ public static class ArtisanPriceHelper
         continue;
       }
 
+      // Skip rules with a C# delegate output - we can't introspect it. Matches LookupAnything.
+      if (outputData.OutputMethod != null)
+      {
+        continue;
+      }
+
+      // Skip rules with Extra Machine Config hidden secondary inputs - their true profit is
+      // unknowable without subjective assumptions about fuel value.
+      if (
+        ApiManager.GetApi<IExtraMachineConfigApi>(ModCompat.ExtraMachineConfig, out var emcApi)
+        && (
+          emcApi.GetExtraRequirements(outputData).Count > 0
+          || emcApi.GetExtraTagsRequirements(outputData).Count > 0
+        )
+      )
+      {
+        continue;
+      }
+
       Item? output = MachineDataUtility.GetOutputItem(
         machine,
         outputData,
@@ -164,9 +190,15 @@ public static class ArtisanPriceHelper
         continue;
       }
 
-      int outputStack = outObj.Stack > 0 ? outObj.Stack : 1;
+      int minStack = outputData.MinStack > 0 ? outputData.MinStack : 1;
+      int maxStack = outputData.MaxStack > 0 ? outputData.MaxStack : minStack;
+      if (maxStack < minStack)
+      {
+        maxStack = minStack;
+      }
+
       int inputsPerBatch = triggerRule?.RequiredCount > 0 ? triggerRule.RequiredCount : 1;
-      result[i] = new ArtisanEntry(machineQid, unit, outputStack, inputsPerBatch, outObj);
+      result[i] = new ArtisanEntry(machineQid, unit, minStack, maxStack, inputsPerBatch, outObj);
     }
 
     _cache[cacheKey] = result;

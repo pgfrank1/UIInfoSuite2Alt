@@ -127,7 +127,7 @@ internal class ShowItemHoverInformation : IDisposable
 
       int cropPrice = showPrice ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
 
-      // Artisan good prices (Keg / Preserves Jar / Dehydrator). Sub-option of ShowInventoryItemSellPrice.
+      // Artisan good prices. Sub-option of ShowInventoryItemSellPrice.
       bool showArtisan = showPrice && config.ShowInventoryItemArtisanPrices;
       ArtisanPriceHelper.ArtisanEntry?[] artisanEntries =
         showArtisan && itemPrice > 0 ? ArtisanPriceHelper.GetEntries(_hoverItem.Value) : [];
@@ -142,11 +142,9 @@ internal class ShowItemHoverInformation : IDisposable
         }
 
         ArtisanPriceHelper.ArtisanEntry e = entry.Value;
-        int unit = e.UnitSellPrice * e.OutputStackPerInput;
-        int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
         artisanRowCount++;
-        string text = batches > 1 ? $"{unit} ({unit * batches})" : unit.ToString();
-        int w = (int)Game1.smallFont.MeasureString(text).X;
+        var parts = FormatArtisanPrice(e, hoverStack);
+        int w = (int)MeasureArtisanRow(parts);
         artisanMaxTextWidth = Math.Max(artisanMaxTextWidth, w);
       }
 
@@ -433,14 +431,12 @@ internal class ShowItemHoverInformation : IDisposable
             }
 
             ArtisanPriceHelper.ArtisanEntry e = entry.Value;
-            int unit = e.UnitSellPrice * e.OutputStackPerInput;
-            int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
-            string text = batches > 1 ? $"{unit} ({unit * batches})" : unit.ToString();
+            var parts = FormatArtisanPrice(e, hoverStack);
 
             DrawArtisanOutputRow(
               spriteBatch,
               e.OutputItem,
-              text,
+              parts,
               drawPosition,
               iconCenterOffset,
               textOffset
@@ -631,16 +627,103 @@ internal class ShowItemHoverInformation : IDisposable
       || obj.preserve?.Value == Object.PreserveType.SmokedFish;
   }
 
-  private void DrawSmallTextWithShadow(SpriteBatch b, string text, Vector2 position)
+  private void DrawSmallTextWithShadow(
+    SpriteBatch b,
+    string text,
+    Vector2 position,
+    Color? color = null,
+    float alpha = 1f
+  )
   {
-    b.DrawString(Game1.smallFont, text, position + new Vector2(2, 2), Game1.textShadowColor);
-    b.DrawString(Game1.smallFont, text, position, Game1.textColor);
+    Color shadow = Game1.textShadowColor * alpha;
+    Color main = (color ?? Game1.textColor) * alpha;
+    b.DrawString(Game1.smallFont, text, position + new Vector2(2, 2), shadow);
+    b.DrawString(Game1.smallFont, text, position, main);
+  }
+
+  private readonly struct ArtisanRowParts
+  {
+    public readonly string RatioLabel;
+    public readonly string UnitText;
+    public readonly string StackPriceLabel;
+    public readonly string BatchCountSuffix;
+
+    public ArtisanRowParts(
+      string ratioLabel,
+      string unitText,
+      string stackPriceLabel,
+      string batchCountSuffix
+    )
+    {
+      RatioLabel = ratioLabel;
+      UnitText = unitText;
+      StackPriceLabel = stackPriceLabel;
+      BatchCountSuffix = batchCountSuffix;
+    }
+  }
+
+  private const float ArtisanStackPriceLeadGap = 12f;
+
+  private static ArtisanRowParts FormatArtisanPrice(
+    ArtisanPriceHelper.ArtisanEntry e,
+    int hoverStack
+  )
+  {
+    int unitMin = e.UnitSellPrice * e.MinOutputStack;
+    int unitMax = e.UnitSellPrice * e.MaxOutputStack;
+    string unitPart = unitMin == unitMax ? unitMin.ToString() : $"{unitMin}-{unitMax}";
+
+    // "[in:out]" recipe signature - hidden for plain 1:1 recipes to reduce clutter.
+    string ratioLabel = "";
+    if (e.InputsPerBatch > 1 || e.MaxOutputStack > 1)
+    {
+      string outPart =
+        e.MinOutputStack == e.MaxOutputStack
+          ? e.MinOutputStack.ToString()
+          : $"{e.MinOutputStack}-{e.MaxOutputStack}";
+      ratioLabel = $"[{e.InputsPerBatch}:{outPart}]";
+    }
+
+    // Total stack sell price + faded batch count. Skipped at 1 batch (would just duplicate unit).
+    int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
+    string stackPriceLabel = "";
+    string batchCountSuffix = "";
+    if (batches >= 2)
+    {
+      int stackMin = batches * unitMin;
+      int stackMax = batches * unitMax;
+      stackPriceLabel = stackMin == stackMax ? $"({stackMin})" : $"({stackMin}-{stackMax})";
+      batchCountSuffix = $"[{batches}]";
+    }
+
+    return new ArtisanRowParts(ratioLabel, unitPart, stackPriceLabel, batchCountSuffix);
+  }
+
+  private static float MeasureArtisanRow(ArtisanRowParts parts)
+  {
+    float width = Game1.smallFont.MeasureString(parts.UnitText).X;
+    if (!string.IsNullOrEmpty(parts.RatioLabel))
+    {
+      width += Game1.smallFont.MeasureString(parts.RatioLabel).X;
+    }
+
+    if (!string.IsNullOrEmpty(parts.StackPriceLabel))
+    {
+      width += ArtisanStackPriceLeadGap + Game1.smallFont.MeasureString(parts.StackPriceLabel).X;
+    }
+
+    if (!string.IsNullOrEmpty(parts.BatchCountSuffix))
+    {
+      width += Game1.smallFont.MeasureString(parts.BatchCountSuffix).X;
+    }
+
+    return width;
   }
 
   private void DrawArtisanOutputRow(
     SpriteBatch spriteBatch,
     Item outputItem,
-    string text,
+    ArtisanRowParts parts,
     Vector2 drawPosition,
     Vector2 iconCenterOffset,
     Vector2 textOffset
@@ -714,7 +797,26 @@ internal class ShowItemHoverInformation : IDisposable
       );
     }
 
-    DrawSmallTextWithShadow(spriteBatch, text, drawPosition + textOffset);
+    Vector2 textPos = drawPosition + textOffset;
+    if (!string.IsNullOrEmpty(parts.RatioLabel))
+    {
+      DrawSmallTextWithShadow(spriteBatch, parts.RatioLabel, textPos, alpha: 0.5f);
+      textPos.X += Game1.smallFont.MeasureString(parts.RatioLabel).X;
+    }
+
+    DrawSmallTextWithShadow(spriteBatch, parts.UnitText, textPos);
+
+    if (!string.IsNullOrEmpty(parts.StackPriceLabel))
+    {
+      textPos.X += Game1.smallFont.MeasureString(parts.UnitText).X + ArtisanStackPriceLeadGap;
+      DrawSmallTextWithShadow(spriteBatch, parts.StackPriceLabel, textPos);
+
+      if (!string.IsNullOrEmpty(parts.BatchCountSuffix))
+      {
+        textPos.X += Game1.smallFont.MeasureString(parts.StackPriceLabel).X;
+        DrawSmallTextWithShadow(spriteBatch, parts.BatchCountSuffix, textPos, alpha: 0.5f);
+      }
+    }
   }
 
   private void DrawBundleBanner(
