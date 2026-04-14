@@ -6,7 +6,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
+using StardewValley.Objects;
 using StardewValley.Tools;
 using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Compatibility.Helpers;
@@ -64,6 +66,7 @@ internal class ShowItemHoverInformation : IDisposable
     if (showItemHoverInformation)
     {
       _museumProvider.Initialize();
+      ArtisanPriceHelper.EnsureInitialized(_helper);
 
       _helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
       _helper.Events.Display.RenderedHud += OnRenderedHud;
@@ -123,6 +126,29 @@ internal class ShowItemHoverInformation : IDisposable
       }
 
       int cropPrice = showPrice ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
+
+      // Artisan good prices (Keg / Preserves Jar / Dehydrator). Sub-option of ShowInventoryItemSellPrice.
+      bool showArtisan = showPrice && config.ShowInventoryItemArtisanPrices;
+      ArtisanPriceHelper.ArtisanEntry?[] artisanEntries =
+        showArtisan && itemPrice > 0 ? ArtisanPriceHelper.GetEntries(_hoverItem.Value) : [];
+      int artisanRowCount = 0;
+      int artisanMaxTextWidth = 0;
+      int hoverStack = _hoverItem.Value.Stack;
+      foreach (ArtisanPriceHelper.ArtisanEntry? entry in artisanEntries)
+      {
+        if (entry == null)
+        {
+          continue;
+        }
+
+        ArtisanPriceHelper.ArtisanEntry e = entry.Value;
+        int unit = e.UnitSellPrice * e.OutputStackPerInput;
+        int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
+        artisanRowCount++;
+        string text = batches > 1 ? $"{unit} ({unit * batches})" : unit.ToString();
+        int w = (int)Game1.smallFont.MeasureString(text).X;
+        artisanMaxTextWidth = Math.Max(artisanMaxTextWidth, w);
+      }
 
       // Walk of Life profession sale bonus (informational - price already includes it)
       string? wolBonusPct = null;
@@ -196,7 +222,7 @@ internal class ShowItemHoverInformation : IDisposable
         }
       }
 
-      bool hasPriceRows = itemPrice > 0 || stackPrice > 0 || cropPrice > 0;
+      bool hasPriceRows = itemPrice > 0 || stackPrice > 0 || cropPrice > 0 || artisanRowCount > 0;
 
       var drawPositionOffset = new Vector2();
       int windowWidth,
@@ -223,8 +249,11 @@ internal class ShowItemHoverInformation : IDisposable
           + Math.Max(
             minTextWidth,
             Math.Max(
-              wolBonusTextWidth,
-              Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+              artisanMaxTextWidth,
+              Math.Max(
+                wolBonusTextWidth,
+                Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+              )
             )
           );
         windowWidth = Math.Max(bundleHeaderWidth, largestTextWidth);
@@ -248,6 +277,11 @@ internal class ShowItemHoverInformation : IDisposable
         if (wolBonusPct != null)
         {
           windowHeight += 32;
+        }
+
+        if (artisanRowCount > 0)
+        {
+          windowHeight += 40 * artisanRowCount;
         }
 
         if (!string.IsNullOrEmpty(requiredBundleName))
@@ -387,6 +421,32 @@ internal class ShowItemHoverInformation : IDisposable
           DrawSmallTextWithShadow(spriteBatch, cropPrice.ToString(), drawPosition + textOffset);
 
           drawPosition.Y += rowHeight;
+        }
+
+        if (artisanRowCount > 0)
+        {
+          foreach (ArtisanPriceHelper.ArtisanEntry? entry in artisanEntries)
+          {
+            if (entry == null)
+            {
+              continue;
+            }
+
+            ArtisanPriceHelper.ArtisanEntry e = entry.Value;
+            int unit = e.UnitSellPrice * e.OutputStackPerInput;
+            int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
+            string text = batches > 1 ? $"{unit} ({unit * batches})" : unit.ToString();
+
+            DrawArtisanOutputRow(
+              spriteBatch,
+              e.OutputItem,
+              text,
+              drawPosition,
+              iconCenterOffset,
+              textOffset
+            );
+            drawPosition.Y += rowHeight;
+          }
         }
 
         if (wolBonusPct != null)
@@ -579,6 +639,86 @@ internal class ShowItemHoverInformation : IDisposable
   {
     b.DrawString(Game1.smallFont, text, position + new Vector2(2, 2), Game1.textShadowColor);
     b.DrawString(Game1.smallFont, text, position, Game1.textColor);
+  }
+
+  private void DrawArtisanOutputRow(
+    SpriteBatch spriteBatch,
+    Item outputItem,
+    string text,
+    Vector2 drawPosition,
+    Vector2 iconCenterOffset,
+    Vector2 textOffset
+  )
+  {
+    // Match the coin's on-screen visual size (~32px) by rendering a 16x16 sprite at scale 2.
+    const float scale = 2f;
+    Vector2 iconCenter = drawPosition + iconCenterOffset;
+
+    ParsedItemData data = ItemRegistry.GetDataOrErrorItem(outputItem.QualifiedItemId);
+    Texture2D tex = data.GetTexture();
+    int spriteIndex = outputItem.ParentSheetIndex;
+    Rectangle baseRect = data.GetSourceRect(0, spriteIndex);
+    var origin = new Vector2(baseRect.Width / 2f, baseRect.Height / 2f);
+
+    if (outputItem is ColoredObject coloredObj)
+    {
+      if (coloredObj.ColorSameIndexAsParentSheetIndex)
+      {
+        spriteBatch.Draw(
+          tex,
+          iconCenter,
+          baseRect,
+          coloredObj.color.Value,
+          0f,
+          origin,
+          scale,
+          SpriteEffects.None,
+          0.95f
+        );
+      }
+      else
+      {
+        Rectangle overlayRect = data.GetSourceRect(1, spriteIndex);
+        spriteBatch.Draw(
+          tex,
+          iconCenter,
+          baseRect,
+          Color.White,
+          0f,
+          origin,
+          scale,
+          SpriteEffects.None,
+          0.95f
+        );
+        spriteBatch.Draw(
+          tex,
+          iconCenter,
+          overlayRect,
+          coloredObj.color.Value,
+          0f,
+          origin,
+          scale,
+          SpriteEffects.None,
+          0.951f
+        );
+      }
+    }
+    else
+    {
+      spriteBatch.Draw(
+        tex,
+        iconCenter,
+        baseRect,
+        Color.White,
+        0f,
+        origin,
+        scale,
+        SpriteEffects.None,
+        0.95f
+      );
+    }
+
+    DrawSmallTextWithShadow(spriteBatch, text, drawPosition + textOffset);
   }
 
   private void DrawBundleBanner(
