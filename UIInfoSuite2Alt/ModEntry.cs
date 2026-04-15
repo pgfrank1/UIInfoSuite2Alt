@@ -202,7 +202,7 @@ public partial class ModEntry : Mod
       {
         MonitorObject.Log(
           $"ModEntry: recommended mod not installed - {name} [Nexus:{nexusId}], {reason}",
-          LogLevel.Info
+          LogLevel.Warn
         );
       }
     }
