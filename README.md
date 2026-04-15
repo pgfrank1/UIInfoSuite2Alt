@@ -56,6 +56,10 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.19**
+  - Show artisan good sell prices on item hover (sub-option under "Show item hover information")
+  - Correct shipping bin and bundle banner icon position when the extended tooltip is disabled
+  - Icons now track the vanilla tooltip shift that occurs while holding an item on the cursor
 - **v2.8.18**
   - Animal building tooltip: hover over Coops/Barns to see animal count, hold keybind for detailed animal list with status icons
 - **v2.8.17**

@@ -49,6 +49,9 @@ public static class ArtisanPriceHelper
     "(BC)Dehydrator",
     "(BC)19", // Oil Maker
     "(BC)17", // Loom
+    "(BC)16", // Cheese Press
+    "(BC)24", // Mayonnaise Machine
+    "(BC)FishSmoker",
   };
 
   private static readonly Dictionary<string, ArtisanEntry?[]> _cache = new();

@@ -646,19 +646,12 @@ internal class ShowItemHoverInformation : IDisposable
     public readonly string RatioLabel;
     public readonly string UnitText;
     public readonly string StackPriceLabel;
-    public readonly string BatchCountSuffix;
 
-    public ArtisanRowParts(
-      string ratioLabel,
-      string unitText,
-      string stackPriceLabel,
-      string batchCountSuffix
-    )
+    public ArtisanRowParts(string ratioLabel, string unitText, string stackPriceLabel)
     {
       RatioLabel = ratioLabel;
       UnitText = unitText;
       StackPriceLabel = stackPriceLabel;
-      BatchCountSuffix = batchCountSuffix;
     }
   }
 
@@ -684,19 +677,17 @@ internal class ShowItemHoverInformation : IDisposable
       ratioLabel = $"[{e.InputsPerBatch}:{outPart}]";
     }
 
-    // Total stack sell price + faded batch count. Skipped at 1 batch (would just duplicate unit).
+    // Total stack sell price. Skipped at 1 batch (would just duplicate unit).
     int batches = hoverStack / Math.Max(1, e.InputsPerBatch);
     string stackPriceLabel = "";
-    string batchCountSuffix = "";
     if (batches >= 2)
     {
       int stackMin = batches * unitMin;
       int stackMax = batches * unitMax;
       stackPriceLabel = stackMin == stackMax ? $"({stackMin})" : $"({stackMin}-{stackMax})";
-      batchCountSuffix = $"[{batches}]";
     }
 
-    return new ArtisanRowParts(ratioLabel, unitPart, stackPriceLabel, batchCountSuffix);
+    return new ArtisanRowParts(ratioLabel, unitPart, stackPriceLabel);
   }
 
   private static float MeasureArtisanRow(ArtisanRowParts parts)
@@ -710,11 +701,6 @@ internal class ShowItemHoverInformation : IDisposable
     if (!string.IsNullOrEmpty(parts.StackPriceLabel))
     {
       width += ArtisanStackPriceLeadGap + Game1.smallFont.MeasureString(parts.StackPriceLabel).X;
-    }
-
-    if (!string.IsNullOrEmpty(parts.BatchCountSuffix))
-    {
-      width += Game1.smallFont.MeasureString(parts.BatchCountSuffix).X;
     }
 
     return width;
@@ -737,9 +723,23 @@ internal class ShowItemHoverInformation : IDisposable
     Texture2D tex = data.GetTexture();
     int spriteIndex = outputItem.ParentSheetIndex;
     Rectangle baseRect = data.GetSourceRect(0, spriteIndex);
+
+    // Swap Smoked Fish to the preserved fish sprite (vanilla's bowl+smoke path doesn't apply here).
+    bool isSmokedFish =
+      outputItem is ColoredObject { ItemId: "SmokedFish" } smoked
+      && smoked.preservedParentSheetIndex.Value != null;
+    if (isSmokedFish)
+    {
+      ParsedItemData fishData = ItemRegistry.GetDataOrErrorItem(
+        "(O)" + ((ColoredObject)outputItem).preservedParentSheetIndex.Value
+      );
+      tex = fishData.GetTexture();
+      baseRect = fishData.GetSourceRect();
+    }
+
     var origin = new Vector2(baseRect.Width / 2f, baseRect.Height / 2f);
 
-    if (outputItem is ColoredObject coloredObj)
+    if (!isSmokedFish && outputItem is ColoredObject coloredObj)
     {
       if (coloredObj.ColorSameIndexAsParentSheetIndex)
       {
@@ -795,6 +795,53 @@ internal class ShowItemHoverInformation : IDisposable
         SpriteEffects.None,
         0.95f
       );
+
+      if (isSmokedFish)
+      {
+        spriteBatch.Draw(
+          tex,
+          iconCenter,
+          baseRect,
+          new Color(80, 30, 10) * 0.6f,
+          0f,
+          origin,
+          scale,
+          SpriteEffects.None,
+          0.951f
+        );
+
+        DrawSmokedFishPuffs(spriteBatch, iconCenter, ((ColoredObject)outputItem).Price);
+      }
+    }
+
+    int quality = (outputItem as Object)?.Quality ?? 0;
+    if (quality > 0)
+    {
+      Rectangle qualityRect =
+        quality < 4
+          ? new Rectangle(338 + (quality - 1) * 8, 400, 8, 8)
+          : new Rectangle(346, 392, 8, 8);
+      float iridiumPulse =
+        quality >= 4
+          ? (
+            (float)Math.Cos(Game1.currentGameTime.TotalGameTime.Milliseconds * Math.PI / 512.0) + 1f
+          ) * 0.05f
+          : 0f;
+      Vector2 starPos = new(
+        iconCenter.X - baseRect.Width / 2f * scale + 6f,
+        iconCenter.Y + baseRect.Height / 2f * scale - 8f
+      );
+      spriteBatch.Draw(
+        Game1.mouseCursors,
+        starPos,
+        qualityRect,
+        Color.White,
+        0f,
+        new Vector2(4f, 4f),
+        2f * (1f + iridiumPulse),
+        SpriteEffects.None,
+        0.96f
+      );
     }
 
     Vector2 textPos = drawPosition + textOffset;
@@ -810,12 +857,37 @@ internal class ShowItemHoverInformation : IDisposable
     {
       textPos.X += Game1.smallFont.MeasureString(parts.UnitText).X + ArtisanStackPriceLeadGap;
       DrawSmallTextWithShadow(spriteBatch, parts.StackPriceLabel, textPos);
+    }
+  }
 
-      if (!string.IsNullOrEmpty(parts.BatchCountSuffix))
-      {
-        textPos.X += Game1.smallFont.MeasureString(parts.StackPriceLabel).X;
-        DrawSmallTextWithShadow(spriteBatch, parts.BatchCountSuffix, textPos, alpha: 0.5f);
-      }
+  // Two small rising smoke puffs, scaled down from vanilla ColoredObject.drawSmokedFish.
+  private static void DrawSmokedFishPuffs(SpriteBatch spriteBatch, Vector2 iconCenter, int price)
+  {
+    var puffRect = new Rectangle(372, 1956, 10, 10);
+    var puffOrigin = new Vector2(5f, 5f);
+    double ms = Game1.currentGameTime.TotalGameTime.TotalMilliseconds;
+    int offset = 700 + (price + 17) * 7777 % 200;
+
+    DrawPuff(iconCenter + new Vector2(-6f, -2f), ms);
+    DrawPuff(iconCenter + new Vector2(6f, -6f), ms + offset);
+
+    void DrawPuff(Vector2 basePos, double timeMs)
+    {
+      double phase = (-timeMs) % 2000.0;
+      float rise = (float)phase * 0.015f;
+      float alpha = 0.5f * (1f - (float)(timeMs % 2000.0) / 2000f);
+      float rotation = (float)phase * 0.001f;
+      spriteBatch.Draw(
+        Game1.mouseCursors,
+        basePos + new Vector2(0f, rise),
+        puffRect,
+        new Color(80, 80, 80) * alpha,
+        rotation,
+        puffOrigin,
+        1f,
+        SpriteEffects.None,
+        0.952f
+      );
     }
   }
 
