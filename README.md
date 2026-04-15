@@ -58,6 +58,9 @@
 
 - **v2.8.19**
   - Show artisan good sell prices on item hover (sub-option under "Show item hover information")
+    - Lists each matching vanilla/modded machine output with unit price, stack range, and total for the current stack
+    - "...for known/owned machines" sub-option filters rows to machines the player has crafted or placed
+    - Excludes some machines for now with non-artisan or randomised outputs (Cask, Crystalarium, Recycling Machine, Seed Maker, Slime Incubator, Charcoal Kiln, Slime Egg-Press)
   - Correct shipping bin and bundle banner icon position when the extended tooltip is disabled
   - Icons now track the vanilla tooltip shift that occurs while holding an item on the cursor
 - **v2.8.18**
