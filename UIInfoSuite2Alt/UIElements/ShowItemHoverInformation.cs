@@ -129,6 +129,7 @@ internal class ShowItemHoverInformation : IDisposable
 
       // Artisan good prices. Sub-option of ShowInventoryItemSellPrice.
       bool showArtisan = showPrice && config.ShowInventoryItemArtisanPrices;
+      bool filterKnownMachines = showArtisan && config.OnlyShowKnownArtisanMachines;
       ArtisanPriceHelper.ArtisanEntry?[] artisanEntries =
         showArtisan && itemPrice > 0 ? ArtisanPriceHelper.GetEntries(_hoverItem.Value) : [];
       int artisanRowCount = 0;
@@ -142,6 +143,11 @@ internal class ShowItemHoverInformation : IDisposable
         }
 
         ArtisanPriceHelper.ArtisanEntry e = entry.Value;
+        if (filterKnownMachines && !ArtisanPriceHelper.IsMachineKnownOrOwned(e.MachineQualifiedId))
+        {
+          continue;
+        }
+
         artisanRowCount++;
         var parts = FormatArtisanPrice(e, hoverStack);
         int w = (int)MeasureArtisanRow(parts);
@@ -431,6 +437,13 @@ internal class ShowItemHoverInformation : IDisposable
             }
 
             ArtisanPriceHelper.ArtisanEntry e = entry.Value;
+            if (
+              filterKnownMachines && !ArtisanPriceHelper.IsMachineKnownOrOwned(e.MachineQualifiedId)
+            )
+            {
+              continue;
+            }
+
             var parts = FormatArtisanPrice(e, hoverStack);
 
             DrawArtisanOutputRow(

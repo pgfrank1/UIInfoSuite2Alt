@@ -586,6 +586,12 @@ public partial class ModEntry
       getValue: () => ModConfig.ShowInventoryItemArtisanPrices,
       setValue: v => ModConfig.ShowInventoryItemArtisanPrices = v
     );
+    configMenu.AddBoolOption(
+      ModManifest,
+      name: () => "      " + Helper.SafeGetString(nameof(ModConfig.OnlyShowKnownArtisanMachines)),
+      getValue: () => ModConfig.OnlyShowKnownArtisanMachines,
+      setValue: v => ModConfig.OnlyShowKnownArtisanMachines = v
+    );
     // Spacer();
     AddSubBool(
       nameof(ModConfig.ShowInventoryItemBundleBanner),

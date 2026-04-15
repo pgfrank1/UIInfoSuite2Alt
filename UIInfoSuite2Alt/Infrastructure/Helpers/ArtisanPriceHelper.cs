@@ -3,6 +3,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.GameData.Machines;
+using StardewValley.Objects;
 using UIInfoSuite2Alt.Compatibility;
 using Object = StardewValley.Object;
 
@@ -10,8 +11,8 @@ namespace UIInfoSuite2Alt.Infrastructure.Helpers;
 
 /// <summary>
 /// Probes Data/Machines to compute artisan good sell prices for a given input item.
-/// Skips rules with C# delegate outputs and Extra Machine Config hidden secondary inputs
-/// since their true profit isn't introspectable without subjective assumptions.
+/// Skips rules with C# delegate outputs or EMC hidden secondary inputs since their
+/// true profit isn't introspectable.
 /// </summary>
 public static class ArtisanPriceHelper
 {
@@ -54,6 +55,33 @@ public static class ArtisanPriceHelper
     "(BC)FishSmoker",
   };
 
+  // Parallel to MachineQualifiedIds - recipe keys used in Farmer.craftingRecipes.
+  private static readonly string[] RecipeNames =
+  {
+    "Keg",
+    "Preserves Jar",
+    "Dehydrator",
+    "Oil Maker",
+    "Loom",
+    "Cheese Press",
+    "Mayonnaise Machine",
+    "Fish Smoker",
+  };
+
+  private static readonly Dictionary<string, string> _recipeByMachineQid;
+  private static readonly HashSet<string> _trackedMachineQids;
+  private static readonly HashSet<string> _ownedMachines = new();
+
+  static ArtisanPriceHelper()
+  {
+    _recipeByMachineQid = new Dictionary<string, string>(MachineQualifiedIds.Length);
+    for (int i = 0; i < MachineQualifiedIds.Length; i++)
+    {
+      _recipeByMachineQid[MachineQualifiedIds[i]] = RecipeNames[i];
+    }
+    _trackedMachineQids = new HashSet<string>(MachineQualifiedIds);
+  }
+
   private static readonly Dictionary<string, ArtisanEntry?[]> _cache = new();
   private static bool _eventsHooked;
 
@@ -64,9 +92,76 @@ public static class ArtisanPriceHelper
       return;
     }
 
-    helper.Events.GameLoop.DayStarted += (_, _) => _cache.Clear();
+    helper.Events.GameLoop.DayStarted += (_, _) =>
+    {
+      _cache.Clear();
+      RefreshOwnedMachines();
+    };
+    helper.Events.GameLoop.SaveLoaded += (_, _) => RefreshOwnedMachines();
     helper.Events.Content.AssetReady += OnAssetReady;
     _eventsHooked = true;
+  }
+
+  /// <summary>
+  /// True if the player knows the recipe or owns at least one of this machine.
+  /// Ownership cache refreshes on SaveLoaded and DayStarted.
+  /// </summary>
+  public static bool IsMachineKnownOrOwned(string machineQualifiedId)
+  {
+    if (
+      Game1.player != null
+      && _recipeByMachineQid.TryGetValue(machineQualifiedId, out string? recipe)
+      && Game1.player.craftingRecipes.ContainsKey(recipe)
+    )
+    {
+      return true;
+    }
+
+    return _ownedMachines.Contains(machineQualifiedId);
+  }
+
+  private static void RefreshOwnedMachines()
+  {
+    _ownedMachines.Clear();
+    if (!Context.IsWorldReady || Game1.player == null)
+    {
+      return;
+    }
+
+    foreach (Item? item in Game1.player.Items)
+    {
+      if (item != null)
+      {
+        CheckAndAddOwned(item);
+      }
+    }
+
+    Utility.ForEachLocation(loc =>
+    {
+      foreach (Object obj in loc.Objects.Values)
+      {
+        CheckAndAddOwned(obj);
+        if (obj is Chest chest)
+        {
+          foreach (Item? stored in chest.Items)
+          {
+            if (stored != null)
+            {
+              CheckAndAddOwned(stored);
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  private static void CheckAndAddOwned(Item item)
+  {
+    if (_trackedMachineQids.Contains(item.QualifiedItemId))
+    {
+      _ownedMachines.Add(item.QualifiedItemId);
+    }
   }
 
   private static void OnAssetReady(object? sender, AssetReadyEventArgs e)
@@ -116,9 +211,7 @@ public static class ArtisanPriceHelper
         continue;
       }
 
-      // Probe input (fresh copy to avoid any mutation bleed). Stack is inflated so that
-      // machine rules with RequiredCount > 1 (e.g. Dehydrator needs 5, Keg coffee needs 5)
-      // still match during probing.
+      // Inflate stack so rules with RequiredCount > 1 still match during probing.
       Item probeInput = inputObj.getOne();
       probeInput.Quality = inputObj.Quality;
       probeInput.Stack = 999;
@@ -154,14 +247,13 @@ public static class ArtisanPriceHelper
         continue;
       }
 
-      // Skip rules with a C# delegate output - we can't introspect it. Matches LookupAnything.
+      // C# delegate outputs aren't introspectable.
       if (outputData.OutputMethod != null)
       {
         continue;
       }
 
-      // Skip rules with Extra Machine Config hidden secondary inputs - their true profit is
-      // unknowable without subjective assumptions about fuel value.
+      // EMC hidden secondary inputs make true profit unknowable.
       if (
         ApiManager.GetApi<IExtraMachineConfigApi>(ModCompat.ExtraMachineConfig, out var emcApi)
         && (

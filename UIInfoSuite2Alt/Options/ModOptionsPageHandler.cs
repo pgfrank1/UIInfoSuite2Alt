@@ -915,14 +915,23 @@ internal class ModOptionsPageHandler : IDisposable
         isIndented: true
       )
     );
+    var artisanPricesCheckbox = new ModOptionsCheckbox(
+      _helper.SafeGetString(nameof(config.ShowInventoryItemArtisanPrices)),
+      whichOption++,
+      _ => { },
+      () => config.ShowInventoryItemArtisanPrices,
+      Set(v => config.ShowInventoryItemArtisanPrices = v),
+      sellPriceCheckbox
+    );
+    _currentTarget.Add(artisanPricesCheckbox);
     _currentTarget.Add(
       new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.ShowInventoryItemArtisanPrices)),
+        _helper.SafeGetString(nameof(config.OnlyShowKnownArtisanMachines)),
         whichOption++,
         _ => { },
-        () => config.ShowInventoryItemArtisanPrices,
-        Set(v => config.ShowInventoryItemArtisanPrices = v),
-        sellPriceCheckbox
+        () => config.OnlyShowKnownArtisanMachines,
+        Set(v => config.OnlyShowKnownArtisanMachines = v),
+        artisanPricesCheckbox
       )
     );
     _currentTarget.Add(

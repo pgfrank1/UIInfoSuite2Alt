@@ -214,6 +214,7 @@
   "ShowExtraItemInformation": "Show item hover information",
   "ShowInventoryItemSellPrice": "Show sell price overlay",
   "ShowInventoryItemArtisanPrices": "Show artisan good sell prices",
+  "OnlyShowKnownArtisanMachines": "...for known/owned machines",
   "ShowInventoryItemSellPrice.Note": "Note: Also enables this mod's extended tooltip",
   "ShowInventoryItemBundleBanner": "Show bundle banner",
   "ShowInventoryItemDonationStatus": "Show donation status",
