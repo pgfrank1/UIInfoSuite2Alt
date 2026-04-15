@@ -35,6 +35,7 @@ public static class ModCompat
   public const string BiggerBackpack = "spacechase0.BiggerBackpack";
   public const string FullInventoryView = "CpdnCristiano.FullInventoryView";
   public const string CatValley = "RimeNovi.CatValley";
+  public const string CornucopiaArtisanMachines = "Cornucopia.ArtisanMachines";
 
   // original UIInfoSuite variants
   public const string UIInfoSuite2 = "Annosz.UiInfoSuite2";

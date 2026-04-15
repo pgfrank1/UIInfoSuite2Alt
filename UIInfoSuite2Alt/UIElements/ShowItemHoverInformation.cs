@@ -31,6 +31,7 @@ internal class ShowItemHoverInformation : IDisposable
   );
 
   private readonly IModHelper _helper;
+  private bool _cornucopiaArtisanMachinesLoaded;
 
   private readonly Dictionary<int, Color?> _bundleColorCache = new();
   private readonly PerScreen<Item?> _hoverItem = new();
@@ -67,6 +68,9 @@ internal class ShowItemHoverInformation : IDisposable
     {
       _museumProvider.Initialize();
       ArtisanPriceHelper.EnsureInitialized(_helper);
+      _cornucopiaArtisanMachinesLoaded = _helper.ModRegistry.IsLoaded(
+        ModCompat.CornucopiaArtisanMachines
+      );
 
       _helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
       _helper.Events.Display.RenderedHud += OnRenderedHud;
@@ -130,27 +134,18 @@ internal class ShowItemHoverInformation : IDisposable
       // Artisan good prices. Sub-option of ShowInventoryItemSellPrice.
       bool showArtisan = showPrice && config.ShowInventoryItemArtisanPrices;
       bool filterKnownMachines = showArtisan && config.OnlyShowKnownArtisanMachines;
-      ArtisanPriceHelper.ArtisanEntry?[] artisanEntries =
-        showArtisan && itemPrice > 0 ? ArtisanPriceHelper.GetEntries(_hoverItem.Value) : [];
-      int artisanRowCount = 0;
+      ArtisanPriceHelper.ArtisanEntry[] artisanEntries =
+        showArtisan && itemPrice > 0
+          ? ArtisanPriceHelper.GetEntries(_hoverItem.Value, filterKnownMachines)
+          : [];
+      int artisanRowCount = artisanEntries.Length;
       int artisanMaxTextWidth = 0;
       int hoverStack = _hoverItem.Value.Stack;
-      foreach (ArtisanPriceHelper.ArtisanEntry? entry in artisanEntries)
+      ArtisanRowParts[] artisanRowParts = new ArtisanRowParts[artisanRowCount];
+      for (int i = 0; i < artisanRowCount; i++)
       {
-        if (entry == null)
-        {
-          continue;
-        }
-
-        ArtisanPriceHelper.ArtisanEntry e = entry.Value;
-        if (filterKnownMachines && !ArtisanPriceHelper.IsMachineKnownOrOwned(e.MachineQualifiedId))
-        {
-          continue;
-        }
-
-        artisanRowCount++;
-        var parts = FormatArtisanPrice(e, hoverStack);
-        int w = (int)MeasureArtisanRow(parts);
+        artisanRowParts[i] = FormatArtisanPrice(artisanEntries[i], hoverStack);
+        int w = (int)MeasureArtisanRow(artisanRowParts[i]);
         artisanMaxTextWidth = Math.Max(artisanMaxTextWidth, w);
       }
 
@@ -429,27 +424,14 @@ internal class ShowItemHoverInformation : IDisposable
 
         if (artisanRowCount > 0)
         {
-          foreach (ArtisanPriceHelper.ArtisanEntry? entry in artisanEntries)
+          for (int i = 0; i < artisanRowCount; i++)
           {
-            if (entry == null)
-            {
-              continue;
-            }
-
-            ArtisanPriceHelper.ArtisanEntry e = entry.Value;
-            if (
-              filterKnownMachines && !ArtisanPriceHelper.IsMachineKnownOrOwned(e.MachineQualifiedId)
-            )
-            {
-              continue;
-            }
-
-            var parts = FormatArtisanPrice(e, hoverStack);
-
+            ArtisanPriceHelper.ArtisanEntry e = artisanEntries[i];
             DrawArtisanOutputRow(
               spriteBatch,
               e.OutputItem,
-              parts,
+              e.MachineQualifiedId,
+              artisanRowParts[i],
               drawPosition,
               iconCenterOffset,
               textOffset
@@ -722,6 +704,7 @@ internal class ShowItemHoverInformation : IDisposable
   private void DrawArtisanOutputRow(
     SpriteBatch spriteBatch,
     Item outputItem,
+    string machineQualifiedId,
     ArtisanRowParts parts,
     Vector2 drawPosition,
     Vector2 iconCenterOffset,
@@ -749,6 +732,10 @@ internal class ShowItemHoverInformation : IDisposable
       tex = fishData.GetTexture();
       baseRect = fishData.GetSourceRect();
     }
+
+    bool isDeluxeSmokerOutput =
+      _cornucopiaArtisanMachinesLoaded && machineQualifiedId == "(BC)Cornucopia_DeluxeSmoker";
+    bool applySmokeOverlay = isSmokedFish || isDeluxeSmokerOutput;
 
     var origin = new Vector2(baseRect.Width / 2f, baseRect.Height / 2f);
 
@@ -808,23 +795,25 @@ internal class ShowItemHoverInformation : IDisposable
         SpriteEffects.None,
         0.95f
       );
+    }
 
-      if (isSmokedFish)
-      {
-        spriteBatch.Draw(
-          tex,
-          iconCenter,
-          baseRect,
-          new Color(80, 30, 10) * 0.6f,
-          0f,
-          origin,
-          scale,
-          SpriteEffects.None,
-          0.951f
-        );
+    if (applySmokeOverlay)
+    {
+      // Brown tint + two rising smoke puffs.
+      spriteBatch.Draw(
+        tex,
+        iconCenter,
+        baseRect,
+        new Color(80, 30, 10) * 0.6f,
+        0f,
+        origin,
+        scale,
+        SpriteEffects.None,
+        0.951f
+      );
 
-        DrawSmokedFishPuffs(spriteBatch, iconCenter, ((ColoredObject)outputItem).Price);
-      }
+      int puffSeed = (outputItem as Object)?.Price ?? 0;
+      DrawSmokedFishPuffs(spriteBatch, iconCenter, puffSeed);
     }
 
     int quality = (outputItem as Object)?.Quality ?? 0;
