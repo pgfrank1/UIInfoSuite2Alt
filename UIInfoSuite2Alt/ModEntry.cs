@@ -192,7 +192,7 @@ public partial class ModEntry : Mod
         ModCompat.NpcMapLocations,
         "NPC Map Locations",
         239,
-        "NPC map tracking was Removed in v2.7.0 - Use this mod instead"
+        "UIIS2Alt npc map tracking was Removed in v2.7.0"
       ),
     };
 
@@ -201,7 +201,7 @@ public partial class ModEntry : Mod
       if (!helper.ModRegistry.IsLoaded(modId))
       {
         MonitorObject.Log(
-          $"ModEntry: recommended mod not installed - {name} [Nexus:{nexusId}], {reason}",
+          $"Recommended mod not installed - {name} [Nexus:{nexusId}] - {reason}",
           LogLevel.Warn
         );
       }
