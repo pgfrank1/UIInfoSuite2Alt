@@ -935,6 +935,39 @@ internal class ModOptionsPageHandler : IDisposable
       )
     );
     _currentTarget.Add(
+      new ModOptionsDropdown(
+        _helper.SafeGetString(nameof(config.MaxArtisanRows)),
+        whichOption++,
+        ["5", "10", "15", "20", "30", "50", "100"],
+        () =>
+          config.MaxArtisanRows switch
+          {
+            5 => 0,
+            10 => 1,
+            15 => 2,
+            20 => 3,
+            30 => 4,
+            50 => 5,
+            100 => 6,
+            _ => 1,
+          },
+        SetInt(v =>
+          config.MaxArtisanRows = v switch
+          {
+            0 => 5,
+            1 => 10,
+            2 => 15,
+            3 => 20,
+            4 => 30,
+            5 => 50,
+            6 => 100,
+            _ => 10,
+          }
+        ),
+        artisanPricesCheckbox
+      )
+    );
+    _currentTarget.Add(
       new ModOptionsCheckbox(
         _helper.SafeGetString(nameof(config.ShowInventoryItemBundleBanner)),
         whichOption++,

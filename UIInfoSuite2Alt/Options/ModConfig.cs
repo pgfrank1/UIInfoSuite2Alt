@@ -66,6 +66,7 @@ public class ModConfig
   public bool ShowInventoryItemSellPrice { get; set; } = true;
   public bool ShowInventoryItemArtisanPrices { get; set; } = true;
   public bool OnlyShowKnownArtisanMachines { get; set; } = true;
+  public int MaxArtisanRows { get; set; } = 10;
   public bool ShowInventoryItemBundleBanner { get; set; } = true;
   public bool ShowInventoryItemDonationStatus { get; set; } = true;
   public bool ShowInventoryItemShippingStatus { get; set; } = true;

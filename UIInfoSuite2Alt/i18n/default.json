@@ -215,6 +215,7 @@
   "ShowInventoryItemSellPrice": "Show sell price overlay",
   "ShowInventoryItemArtisanPrices": "Show artisan good sell prices",
   "OnlyShowKnownArtisanMachines": "...for known/owned machines",
+  "MaxArtisanRows": "Max artisan rows",
   "ShowInventoryItemSellPrice.Note": "Note: Also enables this mod's extended tooltip",
   "ShowInventoryItemBundleBanner": "Show bundle banner",
   "ShowInventoryItemDonationStatus": "Show donation status",

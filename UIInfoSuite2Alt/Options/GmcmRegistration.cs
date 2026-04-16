@@ -592,6 +592,14 @@ public partial class ModEntry
       getValue: () => ModConfig.OnlyShowKnownArtisanMachines,
       setValue: v => ModConfig.OnlyShowKnownArtisanMachines = v
     );
+    string[] maxArtisanRowValues = { "5", "10", "15", "20", "30", "50", "100" };
+    configMenu.AddTextOption(
+      ModManifest,
+      name: () => "      " + Helper.SafeGetString(nameof(ModConfig.MaxArtisanRows)),
+      getValue: () => ModConfig.MaxArtisanRows.ToString(),
+      setValue: v => ModConfig.MaxArtisanRows = int.Parse(v),
+      allowedValues: maxArtisanRowValues
+    );
     // Spacer();
     AddSubBool(
       nameof(ModConfig.ShowInventoryItemBundleBanner),

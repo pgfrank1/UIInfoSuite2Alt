@@ -56,6 +56,11 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.20**
+  - Add "Max rows shown" dropdown for artisan tooltip (default 10)
+  - Exclude Binning Skill Composter from artisan machine tooltips
+  - Fix artisan tooltip showing wrong icon and price for fish roe
+  - Fix golden walnut tracker always showing Golden Coconut as incomplete
 - **v2.8.19**
   - Show artisan good sell prices on item hover (sub-option under "Show item hover information")
     - Lists each matching vanilla/modded machine output with unit price, stack range, and total for the current stack

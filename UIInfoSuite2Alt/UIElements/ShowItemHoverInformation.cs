@@ -138,7 +138,8 @@ internal class ShowItemHoverInformation : IDisposable
         showArtisan && itemPrice > 0
           ? ArtisanPriceHelper.GetEntries(_hoverItem.Value, filterKnownMachines)
           : [];
-      int artisanRowCount = artisanEntries.Length;
+      int artisanRowCount = Math.Min(artisanEntries.Length, config.MaxArtisanRows);
+      bool artisanTruncated = artisanRowCount < artisanEntries.Length;
       int artisanMaxTextWidth = 0;
       int hoverStack = _hoverItem.Value.Stack;
       ArtisanRowParts[] artisanRowParts = new ArtisanRowParts[artisanRowCount];
@@ -281,6 +282,10 @@ internal class ShowItemHoverInformation : IDisposable
         if (artisanRowCount > 0)
         {
           windowHeight += 40 * artisanRowCount;
+          if (artisanTruncated)
+          {
+            windowHeight += 32;
+          }
         }
 
         if (!string.IsNullOrEmpty(requiredBundleName))
@@ -437,6 +442,12 @@ internal class ShowItemHoverInformation : IDisposable
               textOffset
             );
             drawPosition.Y += rowHeight;
+          }
+
+          if (artisanTruncated)
+          {
+            DrawSmallTextWithShadow(spriteBatch, "...", drawPosition + textOffset, alpha: 0.5f);
+            drawPosition.Y += 32;
           }
         }
 
