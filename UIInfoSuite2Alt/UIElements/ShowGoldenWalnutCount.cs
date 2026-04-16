@@ -311,6 +311,16 @@ internal class ShowGoldenWalnutCount : IDisposable
 
     foreach (string key in area.Keys)
     {
+      // GoldenCoconut uses a dedicated flag, not collectedNutTracker
+      if (key == "GoldenCoconut")
+      {
+        if (Game1.netWorldState.Value.GoldenCoconutCracked)
+        {
+          count += GetWalnutCount(key);
+        }
+        continue;
+      }
+
       if (tracker.Contains(key))
       {
         // limitedNutDrops tracks actual count for repeatable activities
