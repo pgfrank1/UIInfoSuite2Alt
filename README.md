@@ -57,7 +57,7 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.20**
-  - Add "Max rows shown" dropdown for artisan tooltip (default 10)
+  - Add "Max rows shown" dropdown for artisan tooltip (default 10, options: 5/10/15/20/30/50/100)
   - Exclude Binning Skill Composter from artisan machine tooltips
   - Fix artisan tooltip showing wrong icon and price for fish roe
   - Fix golden walnut tracker always showing Golden Coconut as incomplete

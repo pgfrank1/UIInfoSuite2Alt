@@ -446,7 +446,12 @@ internal class ShowItemHoverInformation : IDisposable
 
           if (artisanTruncated)
           {
-            DrawSmallTextWithShadow(spriteBatch, "...", drawPosition + textOffset, alpha: 0.5f);
+            DrawSmallTextWithShadow(
+              spriteBatch,
+              $"+{artisanEntries.Length - artisanRowCount} ...",
+              drawPosition + textOffset,
+              alpha: 0.5f
+            );
             drawPosition.Y += 32;
           }
         }
