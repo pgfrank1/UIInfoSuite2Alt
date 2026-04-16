@@ -389,8 +389,19 @@ public static class ArtisanPriceHelper
       return Array.Empty<ArtisanEntry>();
     }
 
+    // Include preservedParentSheetIndex so distinct preserved items (e.g. fish roe variants)
+    // don't collide - they share QualifiedItemId but differ in output price/color/name.
+    string? preserveId = inputObj.preservedParentSheetIndex.Value;
     string cacheKey =
-      inputObj.QualifiedItemId + "|" + inputObj.Quality + "|" + (filterKnownOnly ? 1 : 0);
+      preserveId != null
+        ? inputObj.QualifiedItemId
+          + "|"
+          + inputObj.Quality
+          + "|"
+          + (filterKnownOnly ? 1 : 0)
+          + "|"
+          + preserveId
+        : inputObj.QualifiedItemId + "|" + inputObj.Quality + "|" + (filterKnownOnly ? 1 : 0);
     if (_cache.TryGetValue(cacheKey, out ArtisanEntry[]? cached))
     {
       return cached;
