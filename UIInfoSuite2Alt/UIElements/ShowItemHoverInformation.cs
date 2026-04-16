@@ -489,7 +489,7 @@ internal class ShowItemHoverInformation : IDisposable
       {
         bool informantSellPrice =
           InformantHelper.IsLoaded && InformantHelper.IsFeatureEnabled("sell-price");
-        vanillaTooltip = EstimateVanillaTooltipBounds(_hoverItem.Value, informantSellPrice);
+        vanillaTooltip = Tools.EstimateVanillaTooltipBounds(_hoverItem.Value, informantSellPrice);
 
         // Estimate Informant's decorator box height if any known decorators would fire
         if (InformantHelper.IsLoaded)
@@ -1207,100 +1207,5 @@ internal class ShowItemHoverInformation : IDisposable
       SpriteEffects.None,
       0.861f
     );
-  }
-
-  /// <summary>
-  /// Estimates the vanilla tooltip box bounds, replicating logic from IClickableMenu.drawHoverText.
-  /// </summary>
-  private static Rectangle EstimateVanillaTooltipBounds(Item item, bool informantSellPrice = false)
-  {
-    SpriteFont descFont = Game1.smallFont;
-    SpriteFont titleFont = Game1.dialogueFont;
-
-    string description = item.getDescription();
-    string title = item.DisplayName;
-    string category = item is Object obj ? obj.getCategoryName() : "";
-
-    int width =
-      Math.Max((int)descFont.MeasureString(description).X, (int)titleFont.MeasureString(title).X)
-      + 32;
-    int height =
-      (int)descFont.MeasureString(description).Y + 32 + (int)titleFont.MeasureString(title).Y + 16;
-
-    if (category.Length > 0)
-    {
-      width = Math.Max(width, (int)descFont.MeasureString(category).X + 32);
-      height += (int)descFont.MeasureString("T").Y;
-    }
-
-    // Food items add edibility stats rows
-    if (item is Object edible && edible.Edibility is not (-300 or 0))
-    {
-      int staminaRecovery = edible.staminaRecoveredOnConsumption();
-      int healthRecovery = edible.healthRecoveredOnConsumption();
-      height += 40 * ((staminaRecovery > 0 && healthRecovery > 0) ? 2 : 1);
-    }
-
-    // Informant's sell-price injects moneyAmountToShowAtBottom into drawToolTip,
-    // which the vanilla code adds as: max(font height + 4, 44)
-    if (informantSellPrice && item is Object sellable)
-    {
-      int sellPrice = Utility.getSellToStorePriceOfItem(sellable, false);
-      if (sellPrice >= 0 || sellable.canBeShipped())
-      {
-        height += (int)Math.Max(descFont.MeasureString(sellPrice.ToString()).Y + 4f, 44f);
-      }
-    }
-
-    height = Math.Max(height, 60);
-    width += 4;
-
-    // Position: same as game's drawHoverText
-    int x = Game1.getOldMouseX() + 32;
-    int y = Game1.getOldMouseY() + 32;
-
-    // Vanilla drawToolTip shifts the tooltip by +40 on both axes when the player is holding
-    // an item on the cursor (so it doesn't render under the dragged item sprite).
-    if (IsHoldingItemOnCursor())
-    {
-      x += 40;
-      y += 40;
-    }
-
-    // Screen edge adjustments matching game logic
-    Rectangle safeArea = Utility.getSafeArea();
-    if (x + width > safeArea.Right)
-    {
-      x = safeArea.Right - width;
-      y += 16;
-    }
-
-    if (y + height > safeArea.Bottom)
-    {
-      x += 16;
-      if (x + width > safeArea.Right)
-      {
-        x = safeArea.Right - width;
-      }
-
-      y = safeArea.Bottom - height;
-    }
-
-    return new Rectangle(x, y, width, height);
-  }
-
-  private static bool IsHoldingItemOnCursor()
-  {
-    if (Game1.player.CursorSlotItem != null)
-    {
-      return true;
-    }
-
-    if (Game1.activeClickableMenu is MenuWithInventory mwi && mwi.heldItem != null)
-    {
-      return true;
-    }
-
-    return false;
   }
 }

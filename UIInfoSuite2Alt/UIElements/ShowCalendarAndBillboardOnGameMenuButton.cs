@@ -59,9 +59,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
   private readonly bool _hasFullInventoryView;
   private readonly bool _hasCpCatValley;
 
-  private readonly PerScreen<Item?> _hoverItem = new();
-  private readonly PerScreen<Item?> _heldItem = new();
-
   private readonly PerScreen<int> _soPulseTimer = new();
   private readonly PerScreen<int> _soPulseDelay = new();
 
@@ -79,6 +76,7 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
   private int _cachedModQuestBoardsDay = -1;
 
   private static ShowCalendarAndBillboardOnGameMenuButton? _instance;
+  private static bool _enabled;
   #endregion
 
   #region Lifecycle
@@ -102,6 +100,7 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
 
   public void ToggleOption(bool showCalendarAndBillboard)
   {
+    _enabled = showCalendarAndBillboard;
     _helper.Events.Display.RenderedActiveMenu -= OnRenderedActiveMenu;
     StopWatchingMenuClose();
     _helper.Events.Input.ButtonPressed -= OnButtonPressed;
@@ -135,22 +134,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
       _soPulseTimer.Value = 1000;
       _soPulseDelay.Value = 3000;
     }
-
-    // Track hover/held items
-    _hoverItem.Value = Tools.GetHoveredItem();
-    IClickableMenu? menu = Game1.activeClickableMenu;
-    if (!GameMenuHelper.IsGameMenu(menu))
-    {
-      return;
-    }
-
-    if (
-      GameMenuHelper.IsTab(menu, GameMenu.inventoryTab)
-      && GameMenuHelper.GetCurrentPage(menu) is InventoryPage
-    )
-    {
-      _heldItem.Value = Game1.player.CursorSlotItem;
-    }
   }
 
   private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -180,12 +163,29 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
 
 
   #region Logic
-  private void DrawBillboard()
+  /// <summary>Called by the InventoryPage.draw transpiler; draws icon sprites and caches bounds for hover/snap passes.</summary>
+  public static void DrawIconsFromInventoryPagePatch(SpriteBatch b)
   {
-    IClickableMenu menu = Game1.activeClickableMenu;
-    if (menu == null)
+    if (!_enabled || _instance == null)
+    {
       return;
+    }
 
+    IClickableMenu? menu = Game1.activeClickableMenu;
+    if (
+      menu == null
+      || !GameMenuHelper.IsTab(menu, GameMenu.inventoryTab)
+      || GameMenuHelper.GetChildMenu(menu) != null
+    )
+    {
+      return;
+    }
+
+    _instance.ComputeBoundsAndDrawIcons(b, menu);
+  }
+
+  private void ComputeBoundsAndDrawIcons(SpriteBatch b, IClickableMenu menu)
+  {
     // Mod compatibility offsets
     int offset = 294;
 
@@ -201,10 +201,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
     int baseX = menu.xPositionOnScreen + menu.width - 120;
     int baseY = menu.yPositionOnScreen + menu.height - offset;
 
-    SpriteBatch b = Game1.spriteBatch;
-    int mouseX = Game1.getMouseX();
-    int mouseY = Game1.getMouseY();
-
     ParsedItemData calendarData = ItemRegistry.GetDataOrErrorItem("(F)1402");
     Rectangle calendarSrc = calendarData.GetSourceRect();
     Rectangle calendarDest = new(baseX, baseY - 28, calendarSrc.Width * 2, calendarSrc.Height * 2);
@@ -213,6 +209,99 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
     _calendarBounds.Value = new Rectangle(baseX, baseY - 6, DrawSize, DrawSize);
     _questBounds.Value = questDest;
 
+    bool soUnlocked = SpecialOrder.IsSpecialOrdersBoardUnlocked();
+    Rectangle specialOrdersDest = Rectangle.Empty;
+    if (soUnlocked)
+    {
+      int soWidth = DrawSize * 17 / 13;
+      specialOrdersDest = new Rectangle(
+        questDest.X - 4,
+        questDest.Y + DrawSize + IconSpacing,
+        soWidth,
+        DrawSize
+      );
+    }
+    _specialOrdersBounds.Value = specialOrdersDest;
+
+    bool qiUnlocked = IslandWest.IsQiWalnutRoomDoorUnlocked(out _);
+    Rectangle qiOrdersDest = Rectangle.Empty;
+    if (qiUnlocked)
+    {
+      int qiWidth = 15 * 2;
+      int qiHeight = 14 * 2;
+      qiOrdersDest = new Rectangle(
+        specialOrdersDest != Rectangle.Empty
+          ? specialOrdersDest.X - qiWidth - IconSpacing + 4
+          : questDest.X - 4,
+        (
+          specialOrdersDest != Rectangle.Empty
+            ? specialOrdersDest.Y
+            : questDest.Y + DrawSize + IconSpacing
+        ) + 2,
+        qiWidth,
+        qiHeight
+      );
+    }
+    _qiOrdersBounds.Value = qiOrdersDest;
+
+    DrawIcons(
+      b,
+      calendarData,
+      calendarDest,
+      calendarSrc,
+      questDest,
+      soUnlocked,
+      specialOrdersDest,
+      qiUnlocked,
+      qiOrdersDest
+    );
+  }
+
+  private void DrawBillboard()
+  {
+    // Icon sprites are drawn earlier via the InventoryPage transpiler; this pass only does hover text + gamepad snap.
+    IClickableMenu? menu = Game1.activeClickableMenu;
+    if (menu == null)
+    {
+      return;
+    }
+
+    SpriteBatch b = Game1.spriteBatch;
+    int mouseX = Game1.getMouseX();
+    int mouseY = Game1.getMouseY();
+
+    if (_calendarBounds.Value.Contains(mouseX, mouseY))
+    {
+      IClickableMenu.drawHoverText(b, I18n.Calendar(), Game1.dialogueFont);
+    }
+    else if (_questBounds.Value.Contains(mouseX, mouseY))
+    {
+      IClickableMenu.drawHoverText(b, I18n.Billboard(), Game1.dialogueFont);
+    }
+    else if (_specialOrdersBounds.Value.Contains(mouseX, mouseY))
+    {
+      IClickableMenu.drawHoverText(b, I18n.SpecialOrders(), Game1.dialogueFont);
+    }
+    else if (_qiOrdersBounds.Value.Contains(mouseX, mouseY))
+    {
+      IClickableMenu.drawHoverText(b, I18n.QiSpecialOrders(), Game1.dialogueFont);
+    }
+
+    InjectSnapComponents(menu);
+  }
+
+  private void DrawIcons(
+    SpriteBatch b,
+    ParsedItemData calendarData,
+    Rectangle calendarDest,
+    Rectangle calendarSrc,
+    Rectangle questDest,
+    bool soUnlocked,
+    Rectangle specialOrdersDest,
+    bool qiUnlocked,
+    Rectangle qiOrdersDest
+  )
+  {
     b.Draw(calendarData.GetTexture(), calendarDest, calendarSrc, Color.White);
     b.Draw(Game1.objectSpriteSheet, questDest, new Rectangle(144, 592, 16, 16), Color.White);
 
@@ -236,22 +325,11 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
       );
     }
 
-    // Special Orders board (if unlocked)
-    if (SpecialOrder.IsSpecialOrdersBoardUnlocked())
+    if (soUnlocked)
     {
-      int soWidth = DrawSize * 17 / 13;
-      Rectangle specialOrdersDest = new(
-        questDest.X - 4,
-        questDest.Y + DrawSize + IconSpacing,
-        soWidth,
-        DrawSize
-      );
-      _specialOrdersBounds.Value = specialOrdersDest;
-
       _townTexture ??= _helper.GameContent.Load<Texture2D>("Maps/spring_town");
       b.Draw(_townTexture, specialOrdersDest, new Rectangle(480, 1001, 17, 13), Color.White);
 
-      // Pulse when new orders available
       if (
         HasUnviewedOrders("") || GetAvailableModBoards().Any(mb => HasUnviewedOrders(mb.BoardType))
       )
@@ -262,28 +340,11 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
         );
       }
     }
-    else
-    {
-      _specialOrdersBounds.Value = Rectangle.Empty;
-    }
 
-    // Qi Special Orders (if Qi room unlocked)
-    if (IslandWest.IsQiWalnutRoomDoorUnlocked(out _))
+    if (qiUnlocked)
     {
-      int qiWidth = 15 * 2;
-      int qiHeight = 14 * 2;
-      Rectangle soBounds = _specialOrdersBounds.Value;
-      Rectangle qiOrdersDest = new(
-        soBounds != Rectangle.Empty ? soBounds.X - qiWidth - IconSpacing + 4 : questDest.X - 4,
-        (soBounds != Rectangle.Empty ? soBounds.Y : questDest.Y + DrawSize + IconSpacing) + 2,
-        qiWidth,
-        qiHeight
-      );
-      _qiOrdersBounds.Value = qiOrdersDest;
-
       b.Draw(Game1.objectSpriteSheet, qiOrdersDest, new Rectangle(288, 561, 15, 14), Color.White);
 
-      // Pulse when new Qi orders available
       if (HasUnviewedOrders("Qi"))
       {
         DrawPulsingExclamation(
@@ -292,52 +353,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
         );
       }
     }
-    else
-    {
-      _qiOrdersBounds.Value = Rectangle.Empty;
-    }
-
-    if (_heldItem.Value != null)
-    {
-      _heldItem.Value.drawInMenu(
-        b,
-        new Vector2(Game1.getOldMouseX() + 16, Game1.getOldMouseY() + 16),
-        1f
-      );
-    }
-
-    if (_hoverItem.Value != null)
-    {
-      IClickableMenu.drawToolTip(
-        b,
-        _hoverItem.Value.getDescription(),
-        _hoverItem.Value.DisplayName,
-        _hoverItem.Value,
-        _heldItem.Value != null
-      );
-    }
-
-    menu.drawMouse(b);
-
-    if (calendarDest.Contains(mouseX, mouseY))
-    {
-      IClickableMenu.drawHoverText(b, I18n.Calendar(), Game1.dialogueFont);
-    }
-    else if (questDest.Contains(mouseX, mouseY))
-    {
-      IClickableMenu.drawHoverText(b, I18n.Billboard(), Game1.dialogueFont);
-    }
-    else if (_specialOrdersBounds.Value.Contains(mouseX, mouseY))
-    {
-      IClickableMenu.drawHoverText(b, I18n.SpecialOrders(), Game1.dialogueFont);
-    }
-    else if (_qiOrdersBounds.Value.Contains(mouseX, mouseY))
-    {
-      IClickableMenu.drawHoverText(b, I18n.QiSpecialOrders(), Game1.dialogueFont);
-    }
-
-    // Gamepad navigation
-    InjectSnapComponents(menu);
   }
 
   private void DrawPulsingExclamation(SpriteBatch b, Vector2 position)
@@ -384,7 +399,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
       c.myID is CalendarSnapId or QuestSnapId or SpecialOrdersSnapId or QiOrdersSnapId
     );
 
-    // Always visible: calendar + quest
     _calendarSnap.Value.bounds = _calendarBounds.Value;
     _questSnap.Value.bounds = _questBounds.Value;
     page.allClickableComponents.Add(_calendarSnap.Value);
@@ -405,33 +419,48 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
       page.allClickableComponents.Add(_qiOrdersSnap.Value);
     }
 
-    // Wire bottom inventory slots → our icons
-    int lastSlotId = Game1.player.MaxItems - 1;
-    int secondLastSlotId = Game1.player.MaxItems - 2;
-    int thirdLastSlotId = Game1.player.MaxItems - 3;
-
-    ClickableComponent? lastSlot = page.getComponentWithID(lastSlotId);
-    if (lastSlot != null)
+    // Use inventory.capacity rather than MaxItems: Bigger Backpack can persist an inflated
+    // MaxItems in the save even after the mod is removed, leaving slots that don't exist.
+    int lastSlotId = (page as InventoryPage)?.inventory?.capacity - 1 ?? Game1.player.MaxItems - 1;
+    (int SlotOffset, int SnapId)[] slotWiring =
+    [
+      (0, QuestSnapId),
+      (-1, QuestSnapId),
+      (-2, CalendarSnapId),
+      (-3, CalendarSnapId),
+    ];
+    foreach ((int offset, int snapId) in slotWiring)
     {
-      lastSlot.downNeighborID = QuestSnapId;
+      ClickableComponent? slot = page.getComponentWithID(lastSlotId + offset);
+      if (slot != null)
+      {
+        slot.downNeighborID = snapId;
+      }
     }
-
-    ClickableComponent? secondLastSlot = page.getComponentWithID(secondLastSlotId);
-    if (secondLastSlot != null)
-    {
-      secondLastSlot.downNeighborID = QuestSnapId;
-    }
-
-    ClickableComponent? thirdLastSlot = page.getComponentWithID(thirdLastSlotId);
-    if (thirdLastSlot != null)
-    {
-      thirdLastSlot.downNeighborID = CalendarSnapId;
-    }
+    int thirdLastSlotId = lastSlotId - 2;
 
     ClickableComponent? trinketSlot = page.getComponentWithID(InventoryPage.region_trinkets);
     if (trinketSlot != null)
     {
       trinketSlot.rightNeighborID = CalendarSnapId;
+    }
+    else
+    {
+      // Without a trinket slot, vanilla routes Hat/Shirt/Pants right to TrashCan; redirect to Calendar so our icons remain reachable.
+      int[] rightColumnSlots =
+      [
+        InventoryPage.region_hat,
+        InventoryPage.region_shirt,
+        InventoryPage.region_pants,
+      ];
+      foreach (int slotId in rightColumnSlots)
+      {
+        ClickableComponent? slot = page.getComponentWithID(slotId);
+        if (slot != null)
+        {
+          slot.rightNeighborID = CalendarSnapId;
+        }
+      }
     }
 
     ClickableComponent? trashCan = page.getComponentWithID(InventoryPage.region_trashCan);
@@ -440,7 +469,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
       trashCan.leftNeighborID = QuestSnapId;
     }
 
-    // Row 1: Calendar ↔ Quest
     _calendarSnap.Value.rightNeighborID = QuestSnapId;
     _calendarSnap.Value.leftNeighborID =
       trinketSlot != null ? InventoryPage.region_trinkets : -99998;
@@ -450,7 +478,6 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
     _questSnap.Value.rightNeighborID = trashCan != null ? InventoryPage.region_trashCan : -99998;
     _questSnap.Value.upNeighborID = lastSlotId;
 
-    // Row 2: SO + Qi (conditional)
     if (hasSO && hasQi)
     {
       _calendarSnap.Value.downNeighborID = QiOrdersSnapId;
@@ -692,7 +719,7 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
   {
     if (
       !GameMenuHelper.IsTab(Game1.activeClickableMenu, GameMenu.inventoryTab)
-      || _heldItem.Value != null
+      || Game1.player.CursorSlotItem != null
     )
     {
       return false;

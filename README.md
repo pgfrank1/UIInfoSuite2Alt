@@ -56,6 +56,9 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.21**
+  - Fix duplicated tooltip on ammo-based items (e.g. slingshots) and double shadow on tooltips in the inventory menu
+  - Fix gamepad right-navigation from Hat/Shirt/Pants skipping Calendar/Billboard when trinket slot is absent
 - **v2.8.20**
   - Add "Max rows shown" dropdown for artisan tooltip (default 10, options: 5/10/15/20/30/50/100)
   - Exclude Binning Skill Composter from artisan machine tooltips

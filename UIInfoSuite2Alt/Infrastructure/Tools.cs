@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -10,6 +11,7 @@ using StardewValley.GameData.Crops;
 using StardewValley.GameData.FruitTrees;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
+using StardewValley.Tools;
 using StardewValley.WorldMaps;
 using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Compatibility.Helpers;
@@ -136,6 +138,138 @@ public static class Tools
         1f
       );
     }
+  }
+
+  /// <summary>Estimates the vanilla tooltip box bounds, replicating logic from IClickableMenu.drawHoverText.</summary>
+  public static Rectangle EstimateVanillaTooltipBounds(Item item, bool informantSellPrice = false)
+  {
+    SpriteFont descFont = Game1.smallFont;
+    SpriteFont titleFont = Game1.dialogueFont;
+
+    string description = item.getDescription();
+    string title = item.DisplayName;
+    string category = item is SObject obj ? obj.getCategoryName() : "";
+
+    int width =
+      Math.Max((int)descFont.MeasureString(description).X, (int)titleFont.MeasureString(title).X)
+      + 32;
+    int height =
+      (int)descFont.MeasureString(description).Y + 32 + (int)titleFont.MeasureString(title).Y + 16;
+
+    if (item is FishingRod)
+    {
+      int slots = item.attachmentSlots();
+      if (slots == 1)
+      {
+        height += 68;
+      }
+      else if (slots > 1)
+      {
+        height += 144;
+      }
+    }
+    else
+    {
+      height += 68 * item.attachmentSlots();
+    }
+
+    if (category.Length > 0)
+    {
+      width = Math.Max(width, (int)descFont.MeasureString(category).X + 32);
+      height += (int)descFont.MeasureString("T").Y;
+    }
+
+    // Delegate to the item's own extra-space calculation so ammo/buff/stat rows are accounted for.
+    try
+    {
+      var descBuilder = new StringBuilder(description);
+      Point extra = item.getExtraSpaceNeededForTooltipSpecialIcons(
+        descFont,
+        width,
+        92,
+        height,
+        descBuilder,
+        title,
+        -1
+      );
+      if (extra.X != 0)
+      {
+        width = extra.X;
+      }
+      if (extra.Y != 0)
+      {
+        height = extra.Y;
+      }
+    }
+    catch
+    {
+      // Modded items can throw here; fall back to the base estimate.
+    }
+
+    if (item is SObject edible && edible.Edibility is not (-300 or 0) && item is not MeleeWeapon)
+    {
+      int staminaRecovery = edible.staminaRecoveredOnConsumption();
+      int healthRecovery = edible.healthRecoveredOnConsumption();
+      height += 40 * ((staminaRecovery > 0 && healthRecovery > 0) ? 2 : 1);
+    }
+
+    // Informant's sell-price injects moneyAmountToShowAtBottom: max(font height + 4, 44).
+    if (informantSellPrice && item is SObject sellable)
+    {
+      int sellPrice = Utility.getSellToStorePriceOfItem(sellable, false);
+      if (sellPrice >= 0 || sellable.canBeShipped())
+      {
+        height += (int)Math.Max(descFont.MeasureString(sellPrice.ToString()).Y + 4f, 44f);
+      }
+    }
+
+    height = Math.Max(height, 60);
+    width += 4;
+
+    int x = Game1.getOldMouseX() + 32;
+    int y = Game1.getOldMouseY() + 32;
+
+    // Vanilla drawToolTip shifts by +40 on both axes while holding an item, to clear the dragged sprite.
+    if (IsHoldingItemOnCursor())
+    {
+      x += 40;
+      y += 40;
+    }
+
+    Rectangle safeArea = Utility.getSafeArea();
+    if (x + width > safeArea.Right)
+    {
+      x = safeArea.Right - width;
+      y += 16;
+    }
+
+    if (y + height > safeArea.Bottom)
+    {
+      x += 16;
+      if (x + width > safeArea.Right)
+      {
+        x = safeArea.Right - width;
+      }
+
+      y = safeArea.Bottom - height;
+    }
+
+    return new Rectangle(x, y, width, height);
+  }
+
+  public static bool IsHoldingItemOnCursor()
+  {
+    if (Game1.player.CursorSlotItem != null)
+    {
+      return true;
+    }
+
+    if (Game1.activeClickableMenu is MenuWithInventory mwi && mwi.heldItem != null)
+    {
+      return true;
+    }
+
+    return false;
   }
 
   public static Item? GetHoveredItem()
