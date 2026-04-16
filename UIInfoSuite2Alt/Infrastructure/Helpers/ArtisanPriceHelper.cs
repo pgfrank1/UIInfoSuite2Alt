@@ -50,6 +50,7 @@ public static class ArtisanPriceHelper
     "(BC)156", // Slime Incubator
     "(BC)114", // Charcoal Kiln
     "(BC)158", // Slime Egg-Press
+    "(BC)drbirbdev.BinningSkill_Composter", // Binning Skill Composter
   };
 
   private static readonly HashSet<string> _ownedMachines = new();
