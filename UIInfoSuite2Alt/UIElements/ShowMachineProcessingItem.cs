@@ -108,7 +108,7 @@ internal class ShowMachineProcessingItem : IDisposable
 
   private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
   {
-    if (!e.IsMultipleOf(4))
+    if (!e.IsMultipleOf(15))
     {
       return;
     }

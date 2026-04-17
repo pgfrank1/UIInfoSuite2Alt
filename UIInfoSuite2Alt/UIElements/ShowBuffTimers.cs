@@ -55,7 +55,7 @@ internal class ShowBuffTimers : IDisposable
 
   private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
   {
-    if (!e.IsMultipleOf(4))
+    if (!e.IsMultipleOf(15))
     {
       return;
     }
@@ -66,22 +66,12 @@ internal class ShowBuffTimers : IDisposable
       return;
     }
 
-    HashSet<string> currentBuffIds = [];
-    foreach (KeyValuePair<string, Buff> pair in Game1.player.buffs.AppliedBuffs)
-    {
-      // Only track non-permanent buffs
-      if (pair.Value.millisecondsDuration != -2)
-      {
-        currentBuffIds.Add(pair.Key);
-      }
-    }
-
-    // Play sound for each buff that was present last tick but is now gone
+    // Play sound if any previously-tracked buff is no longer applied
     if (_playExpireSound.Value && _previousBuffIds.Value.Count > 0)
     {
       foreach (string id in _previousBuffIds.Value)
       {
-        if (!currentBuffIds.Contains(id))
+        if (!Game1.player.buffs.AppliedBuffs.ContainsKey(id))
         {
           SoundHelper.Play(Sounds.BuffExpired);
           break; // one sound even if multiple buffs expire simultaneously
@@ -90,9 +80,13 @@ internal class ShowBuffTimers : IDisposable
     }
 
     _previousBuffIds.Value.Clear();
-    foreach (string id in currentBuffIds)
+    foreach (KeyValuePair<string, Buff> pair in Game1.player.buffs.AppliedBuffs)
     {
-      _previousBuffIds.Value.Add(id);
+      // Only track non-permanent buffs
+      if (pair.Value.millisecondsDuration != -2)
+      {
+        _previousBuffIds.Value.Add(pair.Key);
+      }
     }
   }
 

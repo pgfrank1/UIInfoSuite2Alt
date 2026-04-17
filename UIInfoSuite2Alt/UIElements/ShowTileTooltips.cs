@@ -201,7 +201,7 @@ internal class ShowTileTooltips : IDisposable
 
   private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
   {
-    if (!e.IsMultipleOf(4))
+    if (!e.IsMultipleOf(8))
     {
       return;
     }
@@ -209,6 +209,12 @@ internal class ShowTileTooltips : IDisposable
     _currentTileBuilding.Value = null;
     _currentTile.Value = null;
     _currentTerrain.Value = null;
+
+    // Skip scan if nothing can render this tick
+    if (!UIElementUtils.IsRenderingNormally() || Game1.activeClickableMenu != null)
+    {
+      return;
+    }
 
     Vector2 gamepadTile =
       Game1.player.CurrentTool != null
@@ -224,7 +230,9 @@ internal class ShowTileTooltips : IDisposable
       return;
     }
 
-    if (Game1.currentLocation.IsBuildableLocation())
+    // Only resolve the building if any building-tooltip feature is enabled
+    bool needsBuilding = ShowBarrelTooltip || ShowFishPondTooltip || ShowAnimalBuildingTooltip;
+    if (needsBuilding && Game1.currentLocation.IsBuildableLocation())
     {
       _currentTileBuilding.Value = Game1.currentLocation.getBuildingAt(tile);
     }
