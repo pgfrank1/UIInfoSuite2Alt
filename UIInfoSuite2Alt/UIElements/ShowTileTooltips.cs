@@ -33,6 +33,7 @@ internal readonly struct HoverSegment
   public Texture2D? Texture { get; }
   public Rectangle? SourceRect { get; }
   public float SpriteScale { get; }
+  public Rectangle? OverlaySourceRect { get; init; }
   public float TrailingGap { get; init; }
 
   public HoverSegment(string text, Color? color = null)
@@ -789,6 +790,20 @@ internal class ShowTileTooltips : IDisposable
             SpriteEffects.None,
             0.91f
           );
+          if (segment.OverlaySourceRect.HasValue)
+          {
+            b.Draw(
+              segment.Texture!,
+              new Vector2(segX, spriteCY),
+              segment.OverlaySourceRect.Value,
+              Color.White,
+              0f,
+              Vector2.Zero,
+              segment.SpriteScale,
+              SpriteEffects.None,
+              0.911f
+            );
+          }
           segX += spriteW;
         }
 
@@ -843,6 +858,20 @@ internal class ShowTileTooltips : IDisposable
               SpriteEffects.None,
               0.91f
             );
+            if (segment.OverlaySourceRect.HasValue)
+            {
+              b.Draw(
+                segment.Texture!,
+                new Vector2(rSegX, spriteCY),
+                segment.OverlaySourceRect.Value,
+                Color.White,
+                0f,
+                Vector2.Zero,
+                segment.SpriteScale,
+                SpriteEffects.None,
+                0.911f
+              );
+            }
             rSegX += spriteW;
           }
 
@@ -1278,18 +1307,24 @@ internal class ShowTileTooltips : IDisposable
           }
         }
 
-        int filledHearts = Math.Min(animal.friendshipTowardFarmer.Value / 200, 5);
+        int friendship = animal.friendshipTowardFarmer.Value;
         const int maxHearts = 5;
         Rectangle filledHeartRect = new(211, 428, 7, 6);
         Rectangle emptyHeartRect = new(218, 428, 7, 6);
+        Rectangle halfHeartRect = new(211, 428, 4, 6);
+        int halfHeartIndex = friendship % 200 >= 100 ? friendship / 200 : -1;
         const float heartScale = 3f;
         List<HoverSegment> heartSegments = new();
         for (int i = 0; i < maxHearts; i++)
         {
-          Rectangle rect = i < filledHearts ? filledHeartRect : emptyHeartRect;
+          Rectangle rect = friendship > (i + 1) * 195 ? filledHeartRect : emptyHeartRect;
           int gap = i < maxHearts - 1 ? 1 : 0;
           heartSegments.Add(
-            new HoverSegment(Game1.mouseCursors, rect, heartScale) { TrailingGap = gap }
+            new HoverSegment(Game1.mouseCursors, rect, heartScale)
+            {
+              OverlaySourceRect = halfHeartIndex == i ? halfHeartRect : null,
+              TrailingGap = gap,
+            }
           );
         }
 

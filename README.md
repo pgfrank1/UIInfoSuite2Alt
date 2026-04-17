@@ -57,8 +57,9 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.21**
-  - Fix duplicated tooltip on ammo-based items (e.g. slingshots) and double shadow on tooltips in the inventory menu
-  - Fix gamepad right-navigation from Hat/Shirt/Pants skipping Calendar/Billboard when trinket slot is absent
+  - Show half hearts when friendship is between whole heart levels on Animal builing tooltip
+  - Fix duplicated tooltip on ammo-based items and double shadow on tooltips in the inventory menu
+  - Fix gamepad right-navigation from clothing slots skipping Calendar/Billboard when trinket slot is absent
 - **v2.8.20**
   - Add "Max rows shown" dropdown for artisan tooltip (default 10, options: 5/10/15/20/30/50/100)
   - Exclude Binning Skill Composter from artisan machine tooltips
@@ -346,6 +347,7 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Daily Tasks Report Plus](https://www.nexusmods.com/stardewvalley/mods/20871)
 - [Full Inventory View](https://www.nexusmods.com/stardewvalley/mods/32625)
 - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538)
+- [Extra Machine Configs](https://www.nexusmods.com/stardewvalley/mods/22256)
 
 <p align="center">
   <a href="https://ko-fi.com/dazuki89" target="_BLANK">
