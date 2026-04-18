@@ -119,6 +119,7 @@ public class ModConfig
   public bool ShowTodaysGifts { get; set; } = true;
   public bool HideBirthdayIfFullFriendShip { get; set; } = true;
   public bool UseStackedBirthdayIcons { get; set; } = false;
+  public bool ShowUnrevealedBirthdayLoves { get; set; } = true;
   public bool ShowQuestCount { get; set; } = true;
   public bool ShowGoldenWalnutCount { get; set; } = true;
   public bool ShowGoldenWalnutAnywhere { get; set; } = false;

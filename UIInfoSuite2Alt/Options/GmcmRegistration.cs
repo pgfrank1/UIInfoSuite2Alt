@@ -277,6 +277,11 @@ public partial class ModEntry
       () => ModConfig.UseStackedBirthdayIcons,
       v => ModConfig.UseStackedBirthdayIcons = v
     );
+    AddSubBool(
+      nameof(ModConfig.ShowUnrevealedBirthdayLoves),
+      () => ModConfig.ShowUnrevealedBirthdayLoves,
+      v => ModConfig.ShowUnrevealedBirthdayLoves = v
+    );
     Spacer();
     AddBool(
       nameof(ModConfig.ShowTravelingMerchant),

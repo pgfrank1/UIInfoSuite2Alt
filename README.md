@@ -57,6 +57,7 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.21**
+  - Expand NPC birthday icon tooltip with friendship hearts and loved gifts the player owns (green = in inventory). Toggleable via "Show loved gifts in tooltip"
   - Show half hearts when friendship is between whole heart levels on Animal builing tooltip
   - Fix duplicated tooltip on ammo-based items and double shadow on tooltips in the inventory menu
   - Fix gamepad right-navigation from clothing slots skipping Calendar/Billboard when trinket slot is absent

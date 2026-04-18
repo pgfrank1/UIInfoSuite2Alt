@@ -232,6 +232,7 @@
   "ShowBirthdayIcon": "Show Birthday icon",
   "HideBirthdayIfFullFriendShip": "Hide on max friendship",
   "UseStackedBirthdayIcons": "Stack multiple birthdays",
+  "ShowUnrevealedBirthdayLoves": "Show loved gifts in tooltip",
   "ShowTravelingMerchant": "Show Traveling Merchant",
   "HideMerchantWhenVisited": "Hide when visited",
   "ShowMerchantBundleIcon": "Show bundle items indicator",

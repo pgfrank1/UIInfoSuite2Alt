@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -20,9 +20,20 @@ internal class ShowBirthdayIcon : IDisposable
 
   private readonly PerScreen<List<ClickableTextureComponent>> _birthdayIcons = new(() => []);
 
+  private readonly PerScreen<HashSet<string>> _ownedItemIds = new(() => new HashSet<string>());
+
+  private readonly PerScreen<HashSet<string>> _inventoryItemIds = new(() => new HashSet<string>());
+
+  private readonly PerScreen<Dictionary<string, List<LovedGift>>> _lovedGiftsByNpc = new(() =>
+    new Dictionary<string, List<LovedGift>>()
+  );
+
+  private readonly record struct LovedGift(Item Item, bool InInventory);
+
   private bool Enabled { get; set; }
   private bool HideBirthdayIfFullFriendShip { get; set; }
   private bool UseStackedBirthdayIcons { get; set; }
+  private bool ShowUnrevealedLoves { get; set; } = true;
   private readonly IModHelper _helper;
   #endregion
 
@@ -45,6 +56,7 @@ internal class ShowBirthdayIcon : IDisposable
     _helper.Events.GameLoop.DayStarted -= OnDayStarted;
     _helper.Events.Display.RenderingHud -= OnRenderingHud;
     _helper.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
+    _helper.Events.Player.InventoryChanged -= OnInventoryChanged;
 
     if (showBirthdayIcon)
     {
@@ -52,6 +64,7 @@ internal class ShowBirthdayIcon : IDisposable
       _helper.Events.GameLoop.DayStarted += OnDayStarted;
       _helper.Events.Display.RenderingHud += OnRenderingHud;
       _helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
+      _helper.Events.Player.InventoryChanged += OnInventoryChanged;
     }
   }
 
@@ -65,6 +78,12 @@ internal class ShowBirthdayIcon : IDisposable
   {
     UseStackedBirthdayIcons = useStackedBirthdayIcons;
     _birthdayIcons.Value.Clear();
+  }
+
+  public void ToggleShowUnrevealedLovesOption(bool showUnrevealedLoves)
+  {
+    ShowUnrevealedLoves = showUnrevealedLoves;
+    RecomputeLovedGifts();
   }
   #endregion
 
@@ -83,6 +102,54 @@ internal class ShowBirthdayIcon : IDisposable
     CheckForBirthday();
   }
 
+  private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+  {
+    if (!e.IsLocalPlayer || _birthdayNPCs.Value.Count == 0)
+    {
+      return;
+    }
+
+    bool changed = false;
+    foreach (Item item in e.Added)
+    {
+      if (string.IsNullOrEmpty(item?.QualifiedItemId))
+      {
+        continue;
+      }
+
+      if (_ownedItemIds.Value.Add(item.QualifiedItemId))
+      {
+        changed = true;
+      }
+
+      if (_inventoryItemIds.Value.Add(item.QualifiedItemId))
+      {
+        changed = true;
+      }
+    }
+
+    foreach (Item item in e.Removed)
+    {
+      if (string.IsNullOrEmpty(item?.QualifiedItemId))
+      {
+        continue;
+      }
+
+      if (!Game1.player.Items.Any(i => i?.QualifiedItemId == item.QualifiedItemId))
+      {
+        if (_inventoryItemIds.Value.Remove(item.QualifiedItemId))
+        {
+          changed = true;
+        }
+      }
+    }
+
+    if (changed)
+    {
+      RecomputeLovedGifts();
+    }
+  }
+
   private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
   {
     if (UIElementUtils.IsRenderingNormally())
@@ -97,12 +164,13 @@ internal class ShowBirthdayIcon : IDisposable
   private void CheckForGiftGiven()
   {
     List<NPC> npcs = _birthdayNPCs.Value;
-    // Iterate from the end so that removing items doesn't affect indices
+    // Iterate end-to-start so RemoveAt doesn't shift unread indices.
     for (int i = npcs.Count - 1; i >= 0; i--)
     {
       Friendship? friendship = GetFriendshipWithNPC(npcs[i].Name);
       if (friendship != null && friendship.GiftsToday > 0)
       {
+        _lovedGiftsByNpc.Value.Remove(npcs[i].Name);
         npcs.RemoveAt(i);
         _birthdayIcons.Value.Clear();
       }
@@ -113,6 +181,7 @@ internal class ShowBirthdayIcon : IDisposable
   {
     _birthdayNPCs.Value.Clear();
     _birthdayIcons.Value.Clear();
+    _lovedGiftsByNpc.Value.Clear();
     HashSet<string> seen = new();
     foreach (GameLocation? location in Game1.locations)
     {
@@ -145,6 +214,9 @@ internal class ShowBirthdayIcon : IDisposable
         $"ShowBirthdayIcon: birthdays today, npcs=[{string.Join(", ", _birthdayNPCs.Value.Select(n => n.Name))}]",
         LogLevel.Trace
       );
+
+      ScanOwnedItems();
+      RecomputeLovedGifts();
     }
   }
 
@@ -171,10 +243,109 @@ internal class ShowBirthdayIcon : IDisposable
     return null;
   }
 
+  private void ScanOwnedItems()
+  {
+    HashSet<string> ids = _ownedItemIds.Value;
+    HashSet<string> invIds = _inventoryItemIds.Value;
+    ids.Clear();
+    invIds.Clear();
+
+    Utility.ForEachItem(item =>
+    {
+      if (!string.IsNullOrEmpty(item?.QualifiedItemId))
+      {
+        ids.Add(item.QualifiedItemId);
+      }
+
+      return true;
+    });
+
+    foreach (Item? item in Game1.player.Items)
+    {
+      if (!string.IsNullOrEmpty(item?.QualifiedItemId))
+      {
+        invIds.Add(item.QualifiedItemId);
+      }
+    }
+
+    ModEntry.MonitorObject.Log(
+      $"ShowBirthdayIcon: owned item scan complete, uniqueItems={ids.Count}, inInventory={invIds.Count}",
+      LogLevel.Trace
+    );
+  }
+
+  private void RecomputeLovedGifts()
+  {
+    Dictionary<string, List<LovedGift>> map = _lovedGiftsByNpc.Value;
+    map.Clear();
+
+    if (_birthdayNPCs.Value.Count == 0 || _ownedItemIds.Value.Count == 0)
+    {
+      return;
+    }
+
+    // Materialize owned items once; all birthday NPCs share the same owned set.
+    List<Item> ownedItems = new();
+    foreach (string id in _ownedItemIds.Value)
+    {
+      Item? item = TryCreateItem(id);
+      if (item != null)
+      {
+        ownedItems.Add(item);
+      }
+    }
+
+    HashSet<string> inventoryIds = _inventoryItemIds.Value;
+
+    foreach (NPC npc in _birthdayNPCs.Value)
+    {
+      List<LovedGift> loved = new();
+      foreach (Item item in ownedItems)
+      {
+        int taste;
+        try
+        {
+          taste = npc.getGiftTasteForThisItem(item);
+        }
+        catch
+        {
+          continue;
+        }
+
+        if (taste != NPC.gift_taste_love)
+        {
+          continue;
+        }
+
+        loved.Add(new LovedGift(item, inventoryIds.Contains(item.QualifiedItemId)));
+      }
+
+      map[npc.Name] = loved
+        .OrderByDescending(g => g.InInventory)
+        .ThenBy(g => g.Item.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+        .ToList();
+    }
+  }
+
+  private static Item? TryCreateItem(string qualifiedId)
+  {
+    try
+    {
+      return ItemRegistry.Create(qualifiedId, allowNull: true);
+    }
+    catch
+    {
+      return null;
+    }
+  }
+
   private static readonly Rectangle BirthdayBackgroundSource = new(228, 409, 16, 16);
+  private static readonly Rectangle FilledHeartSource = new(211, 428, 7, 6);
+  private static readonly Rectangle EmptyHeartSource = new(218, 428, 7, 6);
   private const float IconScale = 2.9f;
   private const float HeadshotScale = 2f;
   private const int HeadshotSize = 16;
+  private const float HeartScale = 3f;
 
   private void EnqueueBirthdayIcons()
   {
@@ -186,7 +357,6 @@ internal class ShowBirthdayIcon : IDisposable
 
     List<ClickableTextureComponent> icons = _birthdayIcons.Value;
 
-    // Use stacked mode only when enabled AND 2+ NPCs have birthdays
     if (UseStackedBirthdayIcons && npcs.Count >= 2)
     {
       EnqueueStackedIcon(npcs, icons);
@@ -197,9 +367,8 @@ internal class ShowBirthdayIcon : IDisposable
     }
   }
 
-  private static void EnqueueIndividualIcons(List<NPC> npcs, List<ClickableTextureComponent> icons)
+  private void EnqueueIndividualIcons(List<NPC> npcs, List<ClickableTextureComponent> icons)
   {
-    // Rebuild icon list only when NPC count changes
     if (icons.Count != npcs.Count)
     {
       icons.Clear();
@@ -235,8 +404,7 @@ internal class ShowBirthdayIcon : IDisposable
         {
           if (icons[capturedI].containsPoint(Game1.getMouseX(), Game1.getMouseY()))
           {
-            string hoverText = string.Format(I18n.NpcBirthday(), npcs[capturedI].displayName);
-            IClickableMenu.drawHoverText(batch, hoverText, Game1.smallFont);
+            DrawIndividualTooltip(batch, npcs[capturedI]);
           }
         }
       );
@@ -245,7 +413,6 @@ internal class ShowBirthdayIcon : IDisposable
 
   private static void EnqueueStackedIcon(List<NPC> npcs, List<ClickableTextureComponent> icons)
   {
-    // Use a single icon entry for the stacked view
     if (icons.Count != 1 || icons[0].name != "Stacked")
     {
       icons.Clear();
@@ -268,7 +435,6 @@ internal class ShowBirthdayIcon : IDisposable
       {
         DrawBirthdayBackground(batch, pos);
 
-        // Draw digit count centered on the birthday icon
         int count = npcs.Count;
         int digitCount = count == 0 ? 1 : (int)Math.Floor(Math.Log10(count)) + 1;
         int totalDigitWidth = digitCount * Tools.TinyDigitStep;
@@ -318,12 +484,316 @@ internal class ShowBirthdayIcon : IDisposable
     return new Rectangle(pos.X - 7, pos.Y - 5, (int)(16.0 * IconScale), (int)(16.0 * IconScale));
   }
 
+  // Pixel-granular bottom-up fill mirroring ShowAccurateHearts.DrawPartialHeart.
+  // Assumes HeartScale is a whole-number scale factor.
+  private static void DrawPartialHeartFill(SpriteBatch batch, Vector2 heartPos, int partialPoints)
+  {
+    int scale = (int)HeartScale;
+    int totalHeight = FilledHeartSource.Height * scale;
+    int fillHeight = (int)
+      Math.Ceiling((double)partialPoints / NPC.friendshipPointsPerHeartLevel * totalHeight);
+    int completeRows = fillHeight / scale;
+    int partialPixels = fillHeight % scale;
+    var tint = Color.White * 0.7f;
+
+    if (completeRows > 0)
+    {
+      int srcY = FilledHeartSource.Y + FilledHeartSource.Height - completeRows;
+      int dstY = (int)heartPos.Y + (FilledHeartSource.Height - completeRows) * scale;
+      batch.Draw(
+        Game1.mouseCursors,
+        new Rectangle((int)heartPos.X, dstY, FilledHeartSource.Width * scale, completeRows * scale),
+        new Rectangle(FilledHeartSource.X, srcY, FilledHeartSource.Width, completeRows),
+        tint
+      );
+    }
+
+    if (partialPixels > 0)
+    {
+      int srcRow = FilledHeartSource.Height - completeRows - 1;
+      int srcY = FilledHeartSource.Y + srcRow;
+      int dstY = (int)heartPos.Y + srcRow * scale + (scale - partialPixels);
+      batch.Draw(
+        Game1.mouseCursors,
+        new Rectangle((int)heartPos.X, dstY, FilledHeartSource.Width * scale, partialPixels),
+        new Rectangle(FilledHeartSource.X, srcY, FilledHeartSource.Width, 1),
+        tint
+      );
+    }
+  }
+
+  private const int GiftsPerLine = 3;
+  private const float GiftCakeScale = 2f;
+  private const float GiftHeartOverlayScale = 2f;
+
+  private void DrawIndividualTooltip(SpriteBatch batch, NPC npc)
+  {
+    SpriteFont font = Game1.smallFont;
+    Friendship? friendship = GetFriendshipWithNPC(npc.Name);
+    int points = friendship?.Points ?? 0;
+    int maxHearts = Utility.GetMaximumHeartsForCharacter(npc);
+    int totalHeartSlots = Math.Max(maxHearts, 10);
+    bool isDatable = npc.datable.Value;
+    bool isDating = friendship?.IsDating() ?? false;
+    bool isMarried = friendship?.IsMarried() ?? false;
+
+    string title = string.Format(I18n.NpcBirthday(), npc.displayName);
+    float heartW = FilledHeartSource.Width * HeartScale;
+    float heartH = FilledHeartSource.Height * HeartScale;
+    float heartsRowWidth = totalHeartSlots * heartW + Math.Max(0, totalHeartSlots - 1) * HeartScale;
+
+    List<LovedGift> loved = _lovedGiftsByNpc.Value.TryGetValue(npc.Name, out List<LovedGift>? list)
+      ? list
+      : new List<LovedGift>();
+
+    // Build colored segments ("Name," or "Name" with inventory-aware color), chunked into rows.
+    List<(string Text, Color Color)> segments = new();
+    for (int i = 0; i < loved.Count; i++)
+    {
+      string text =
+        i < loved.Count - 1 ? loved[i].Item.DisplayName + "," : loved[i].Item.DisplayName;
+      Color color = loved[i].InInventory ? Tools.TooltipGreen : Game1.textColor;
+      segments.Add((text, color));
+    }
+
+    List<List<(string Text, Color Color)>> giftRows = new();
+    for (int start = 0; start < segments.Count; start += GiftsPerLine)
+    {
+      int end = Math.Min(start + GiftsPerLine, segments.Count);
+      giftRows.Add(segments.GetRange(start, end - start));
+    }
+
+    float spaceWidth = font.MeasureString(" ").X;
+
+    float giftCakeW = BirthdayBackgroundSource.Width * GiftCakeScale;
+    float giftCakeH = BirthdayBackgroundSource.Height * GiftCakeScale;
+    float giftIconGap = 6f;
+    float giftTextIndent = giftCakeW + giftIconGap;
+    float giftLineHeight = Math.Max(font.LineSpacing, giftCakeH);
+
+    const int padding = 16;
+    const int sectionGap = 6;
+
+    float titleWidth = font.MeasureString(title).X;
+    float maxGiftLineWidth = 0f;
+    foreach (var row in giftRows)
+    {
+      float w = 0f;
+      for (int j = 0; j < row.Count; j++)
+      {
+        w += font.MeasureString(row[j].Text).X;
+        if (j < row.Count - 1)
+        {
+          w += spaceWidth;
+        }
+      }
+
+      maxGiftLineWidth = Math.Max(maxGiftLineWidth, w);
+    }
+    bool showGiftSection = ShowUnrevealedLoves;
+    float giftSectionWidth =
+      !showGiftSection ? 0f
+      : loved.Count > 0 ? giftTextIndent + maxGiftLineWidth
+      : giftCakeW;
+
+    float innerWidth = Math.Max(Math.Max(titleWidth, heartsRowWidth), giftSectionWidth);
+
+    int tooltipWidth = (int)innerWidth + padding * 2;
+    int giftSectionHeight =
+      !showGiftSection ? 0
+      : loved.Count > 0 ? (int)(giftRows.Count * giftLineHeight)
+      : (int)giftCakeH;
+    int tooltipHeight =
+      padding * 2
+      + font.LineSpacing // title
+      + sectionGap
+      + (int)heartH // hearts row
+      + (showGiftSection ? sectionGap + giftSectionHeight : 0);
+
+    int mouseX = Game1.getMouseX();
+    int mouseY = Game1.getMouseY();
+    int x = mouseX + 32;
+    int y = mouseY + 32;
+    Rectangle safeArea = Utility.getSafeArea();
+    if (x + tooltipWidth > safeArea.Right)
+    {
+      x = safeArea.Right - tooltipWidth;
+    }
+    if (y + tooltipHeight > safeArea.Bottom)
+    {
+      y = safeArea.Bottom - tooltipHeight;
+    }
+
+    IClickableMenu.drawTextureBox(
+      batch,
+      Game1.menuTexture,
+      new Rectangle(0, 256, 60, 60),
+      x,
+      y,
+      tooltipWidth,
+      tooltipHeight,
+      Color.White
+    );
+
+    float textX = x + padding;
+    float textY = y + padding;
+
+    Tools.DrawShadowedText(
+      batch,
+      font,
+      title,
+      new Vector2(textX, textY),
+      Game1.textColor,
+      Game1.textShadowColor
+    );
+    textY += font.LineSpacing + sectionGap;
+
+    // hearts (mirrors SocialPage.drawNPCSlotHeart: always Math.Max(max, 10) slots,
+    // slots 8-9 rendered as "locked" for datable NPCs until the player is dating/married;
+    // partial heart uses pixel-granular bottom-up fill like ShowAccurateHearts)
+    int fullHearts = points / NPC.friendshipPointsPerHeartLevel;
+    int partialPoints = points % NPC.friendshipPointsPerHeartLevel;
+    for (int i = 0; i < totalHeartSlots; i++)
+    {
+      bool locked = isDatable && !isDating && !isMarried && i >= 8 && i < 10;
+      var heartPos = new Vector2(textX + i * (heartW + HeartScale), textY);
+
+      if (locked)
+      {
+        batch.Draw(
+          Game1.mouseCursors,
+          heartPos,
+          FilledHeartSource,
+          Color.Black * 0.35f,
+          0f,
+          Vector2.Zero,
+          HeartScale,
+          SpriteEffects.None,
+          0.91f
+        );
+      }
+      else if (i < fullHearts)
+      {
+        batch.Draw(
+          Game1.mouseCursors,
+          heartPos,
+          FilledHeartSource,
+          Color.White,
+          0f,
+          Vector2.Zero,
+          HeartScale,
+          SpriteEffects.None,
+          0.91f
+        );
+      }
+      else
+      {
+        batch.Draw(
+          Game1.mouseCursors,
+          heartPos,
+          EmptyHeartSource,
+          Color.White,
+          0f,
+          Vector2.Zero,
+          HeartScale,
+          SpriteEffects.None,
+          0.91f
+        );
+        if (i == fullHearts && partialPoints > 0)
+        {
+          DrawPartialHeartFill(batch, heartPos, partialPoints);
+        }
+      }
+    }
+    textY += heartH + sectionGap;
+
+    // gifts: heart icon (filled = owned loves; empty = none) + chunked item names
+    // Inventory-carried items rendered in green, sorted to the front (LA-style).
+    if (!showGiftSection)
+    {
+      return;
+    }
+
+    if (loved.Count > 0)
+    {
+      for (int i = 0; i < giftRows.Count; i++)
+      {
+        float lineY = textY + i * giftLineHeight;
+        if (i == 0)
+        {
+          DrawCakeWithHeartBadge(batch, textX, lineY, giftLineHeight, FilledHeartSource);
+        }
+
+        float textLineY = lineY + (giftLineHeight - font.LineSpacing) / 2f;
+        float segX = textX + giftTextIndent;
+        var row = giftRows[i];
+        for (int j = 0; j < row.Count; j++)
+        {
+          Tools.DrawShadowedText(
+            batch,
+            font,
+            row[j].Text,
+            new Vector2(segX, textLineY),
+            row[j].Color,
+            Game1.textShadowColor
+          );
+          segX += font.MeasureString(row[j].Text).X;
+          if (j < row.Count - 1)
+          {
+            segX += spaceWidth;
+          }
+        }
+      }
+    }
+    else
+    {
+      DrawCakeWithHeartBadge(batch, textX, textY, giftCakeH, EmptyHeartSource);
+    }
+  }
+
+  private static void DrawCakeWithHeartBadge(
+    SpriteBatch batch,
+    float textX,
+    float rowY,
+    float rowHeight,
+    Rectangle heartSource
+  )
+  {
+    float cakeW = BirthdayBackgroundSource.Width * GiftCakeScale;
+    float cakeH = BirthdayBackgroundSource.Height * GiftCakeScale;
+    float heartW = heartSource.Width * GiftHeartOverlayScale;
+    float heartH = heartSource.Height * GiftHeartOverlayScale;
+    float cakeY = rowY + (rowHeight - cakeH) / 2f;
+
+    batch.Draw(
+      Game1.mouseCursors,
+      new Vector2(textX, cakeY),
+      BirthdayBackgroundSource,
+      Color.White,
+      0f,
+      Vector2.Zero,
+      GiftCakeScale,
+      SpriteEffects.None,
+      0.91f
+    );
+    batch.Draw(
+      Game1.mouseCursors,
+      new Vector2(textX + cakeW - heartW, cakeY + cakeH - heartH),
+      heartSource,
+      Color.White,
+      0f,
+      Vector2.Zero,
+      GiftHeartOverlayScale,
+      SpriteEffects.None,
+      0.92f
+    );
+  }
+
   private static void DrawStackedTooltip(SpriteBatch batch, List<NPC> npcs)
   {
     SpriteFont font = Game1.smallFont;
     string header = I18n.BirthdaysToday();
 
-    // Measure tooltip dimensions
     float headshotDrawSize = HeadshotSize * HeadshotScale;
     float headshotPadding = 4f;
     float lineHeight = Math.Max(font.LineSpacing, headshotDrawSize);
@@ -344,7 +814,6 @@ internal class ShowBirthdayIcon : IDisposable
     int tooltipWidth = (int)contentWidth + padding * 2;
     int tooltipHeight = (int)(font.LineSpacing + 4 + npcs.Count * lineHeight) + padding * 2;
 
-    // Position tooltip near mouse
     int mouseX = Game1.getMouseX();
     int mouseY = Game1.getMouseY();
     int x = mouseX + 32;
@@ -360,7 +829,6 @@ internal class ShowBirthdayIcon : IDisposable
       y = safeArea.Bottom - tooltipHeight;
     }
 
-    // Draw tooltip background
     IClickableMenu.drawTextureBox(
       batch,
       Game1.menuTexture,
@@ -372,13 +840,18 @@ internal class ShowBirthdayIcon : IDisposable
       Color.White
     );
 
-    // Draw header
     float textX = x + padding;
     float textY = y + padding;
-    Utility.drawTextWithShadow(batch, header, font, new Vector2(textX, textY), Game1.textColor);
+    Tools.DrawShadowedText(
+      batch,
+      font,
+      header,
+      new Vector2(textX, textY),
+      Game1.textColor,
+      Game1.textShadowColor
+    );
     textY += font.LineSpacing + 4;
 
-    // Draw each NPC line: headshot + name
     foreach (NPC npc in npcs)
     {
       Rectangle headShot = npc.GetHeadShot();
@@ -398,12 +871,13 @@ internal class ShowBirthdayIcon : IDisposable
       );
 
       float nameY = textY + (lineHeight - font.LineSpacing) / 2f;
-      Utility.drawTextWithShadow(
+      Tools.DrawShadowedText(
         batch,
-        npc.displayName,
         font,
+        npc.displayName,
         new Vector2(textX + headshotDrawSize + headshotPadding, nameY),
-        Game1.textColor
+        Game1.textColor,
+        Game1.textShadowColor
       );
 
       textY += lineHeight;
