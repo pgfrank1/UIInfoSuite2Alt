@@ -590,24 +590,18 @@ internal class ShowBirthdayIcon : IDisposable
 
       maxGiftLineWidth = Math.Max(maxGiftLineWidth, w);
     }
-    bool showGiftSection = ShowUnrevealedLoves;
-    float giftSectionWidth =
-      !showGiftSection ? 0f
-      : loved.Count > 0 ? giftTextIndent + maxGiftLineWidth
-      : giftCakeW;
+    bool showGiftSection = ShowUnrevealedLoves && loved.Count > 0;
+    float giftSectionWidth = showGiftSection ? giftTextIndent + maxGiftLineWidth : 0f;
 
     float innerWidth = Math.Max(Math.Max(titleWidth, heartsRowWidth), giftSectionWidth);
 
     int tooltipWidth = (int)innerWidth + padding * 2;
-    int giftSectionHeight =
-      !showGiftSection ? 0
-      : loved.Count > 0 ? (int)(giftRows.Count * giftLineHeight)
-      : (int)giftCakeH;
+    int giftSectionHeight = showGiftSection ? (int)(giftRows.Count * giftLineHeight) : 0;
     int tooltipHeight =
       padding * 2
-      + font.LineSpacing // title
+      + font.LineSpacing
       + sectionGap
-      + (int)heartH // hearts row
+      + (int)heartH
       + (showGiftSection ? sectionGap + giftSectionHeight : 0);
 
     int mouseX = Game1.getMouseX();
@@ -707,47 +701,39 @@ internal class ShowBirthdayIcon : IDisposable
     }
     textY += heartH + sectionGap;
 
-    // gifts: heart icon (filled = owned loves; empty = none) + chunked item names
-    // Inventory-carried items rendered in green, sorted to the front (LA-style).
+    // Inventory-carried gifts render in green and sort to the front (LA-style).
     if (!showGiftSection)
     {
       return;
     }
 
-    if (loved.Count > 0)
+    for (int i = 0; i < giftRows.Count; i++)
     {
-      for (int i = 0; i < giftRows.Count; i++)
+      float lineY = textY + i * giftLineHeight;
+      if (i == 0)
       {
-        float lineY = textY + i * giftLineHeight;
-        if (i == 0)
-        {
-          DrawCakeWithHeartBadge(batch, textX, lineY, giftLineHeight, FilledHeartSource);
-        }
+        DrawCakeWithHeartBadge(batch, textX, lineY, giftLineHeight, FilledHeartSource);
+      }
 
-        float textLineY = lineY + (giftLineHeight - font.LineSpacing) / 2f;
-        float segX = textX + giftTextIndent;
-        var row = giftRows[i];
-        for (int j = 0; j < row.Count; j++)
+      float textLineY = lineY + (giftLineHeight - font.LineSpacing) / 2f;
+      float segX = textX + giftTextIndent;
+      var row = giftRows[i];
+      for (int j = 0; j < row.Count; j++)
+      {
+        Tools.DrawShadowedText(
+          batch,
+          font,
+          row[j].Text,
+          new Vector2(segX, textLineY),
+          row[j].Color,
+          Game1.textShadowColor
+        );
+        segX += font.MeasureString(row[j].Text).X;
+        if (j < row.Count - 1)
         {
-          Tools.DrawShadowedText(
-            batch,
-            font,
-            row[j].Text,
-            new Vector2(segX, textLineY),
-            row[j].Color,
-            Game1.textShadowColor
-          );
-          segX += font.MeasureString(row[j].Text).X;
-          if (j < row.Count - 1)
-          {
-            segX += spaceWidth;
-          }
+          segX += spaceWidth;
         }
       }
-    }
-    else
-    {
-      DrawCakeWithHeartBadge(batch, textX, textY, giftCakeH, EmptyHeartSource);
     }
   }
 
