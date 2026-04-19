@@ -41,8 +41,7 @@ internal class ModOptionsDropdown : ModOptionsElement
     RecalculateBounds();
   }
 
-  private bool _canClick =>
-    _parent is not ModOptionsCheckbox parentCheckbox || parentCheckbox.IsChecked;
+  private bool _canClick => IsEffectivelyEnabled();
 
   private void RecalculateBounds()
   {

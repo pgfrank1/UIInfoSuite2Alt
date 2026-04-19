@@ -31,8 +31,7 @@ internal class ModOptionsCheckbox : ModOptionsElement
     _toggleOptionsDelegate(_isChecked);
   }
 
-  private bool _canClick =>
-    _parent is not ModOptionsCheckbox parentCheckbox || parentCheckbox._isChecked;
+  private bool _canClick => IsEffectivelyEnabled();
 
   public override void ReceiveLeftClick(int x, int y)
   {

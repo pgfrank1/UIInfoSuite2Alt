@@ -63,6 +63,16 @@ public class ModOptionsElement
 
   public Rectangle Bounds { get; protected set; }
 
+  protected bool IsEffectivelyEnabled()
+  {
+    for (ModOptionsElement? node = _parent; node != null; node = node._parent)
+    {
+      if (node is ModOptionsCheckbox cb && !cb.IsChecked)
+        return false;
+    }
+    return true;
+  }
+
   public virtual void ReceiveLeftClick(int x, int y) { }
 
   public virtual void LeftClickHeld(int x, int y) { }
