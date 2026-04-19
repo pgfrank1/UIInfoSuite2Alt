@@ -1582,24 +1582,9 @@ internal class ModOptionsPageHandler : IDisposable
 
     Tools.DrawMouseCursor();
 
-    // Re-draw game menu hover text above our tab
-    if (!gameMenu.hoverText.Equals(""))
-    {
-      IClickableMenu.drawHoverText(Game1.spriteBatch, gameMenu.hoverText, Game1.smallFont);
-    }
-
-    // Our tab's hover text
     if (_modOptionsTab.Value?.containsPoint(Game1.getMouseX(), Game1.getMouseY()) == true)
     {
       IClickableMenu.drawHoverText(Game1.spriteBatch, I18n.OptionsTabTooltip(), Game1.smallFont);
-
-      if (!gameMenu.hoverText.Equals(""))
-      {
-        ModEntry.MonitorObject.LogOnce(
-          "ModOptionsPageHandler: both mod and game displaying hover text",
-          LogLevel.Warn
-        );
-      }
     }
   }
 
