@@ -125,8 +125,13 @@ public static class DropsHelper
     {
       displayName = TokenParser.ParseText(treeData.DisplayName);
 
-      // Work around Content Patcher mods with mismatched i18n keys
-      if (displayName.Contains("(no translation:"))
+      // Work around Content Patcher mods with mismatched i18n keys. SDV returns either
+      // "(no translation:KEY)" or the raw "Assets\\Path:key" when LocalizedText can't resolve.
+      if (
+        displayName.Contains("(no translation:")
+        || displayName.StartsWith("Strings\\", StringComparison.Ordinal)
+        || displayName.StartsWith("Strings/", StringComparison.Ordinal)
+      )
       {
         displayName = null;
       }

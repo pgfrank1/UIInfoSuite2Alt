@@ -28,6 +28,10 @@ internal class ShowBirthdayIcon : IDisposable
     new Dictionary<string, List<LovedGift>>()
   );
 
+  private readonly PerScreen<Dictionary<string, List<Item>>> _lovedItemsByNpc = new(() =>
+    new Dictionary<string, List<Item>>()
+  );
+
   private readonly record struct LovedGift(Item Item, bool InInventory);
 
   private bool Enabled { get; set; }
@@ -83,7 +87,7 @@ internal class ShowBirthdayIcon : IDisposable
   public void ToggleShowUnrevealedLovesOption(bool showUnrevealedLoves)
   {
     ShowUnrevealedLoves = showUnrevealedLoves;
-    RecomputeLovedGifts();
+    RebuildLovedGiftsView();
   }
   #endregion
 
@@ -109,7 +113,7 @@ internal class ShowBirthdayIcon : IDisposable
       return;
     }
 
-    bool changed = false;
+    bool inventoryChanged = false;
     foreach (Item item in e.Added)
     {
       if (string.IsNullOrEmpty(item?.QualifiedItemId))
@@ -117,14 +121,9 @@ internal class ShowBirthdayIcon : IDisposable
         continue;
       }
 
-      if (_ownedItemIds.Value.Add(item.QualifiedItemId))
-      {
-        changed = true;
-      }
-
       if (_inventoryItemIds.Value.Add(item.QualifiedItemId))
       {
-        changed = true;
+        inventoryChanged = true;
       }
     }
 
@@ -139,14 +138,14 @@ internal class ShowBirthdayIcon : IDisposable
       {
         if (_inventoryItemIds.Value.Remove(item.QualifiedItemId))
         {
-          changed = true;
+          inventoryChanged = true;
         }
       }
     }
 
-    if (changed)
+    if (inventoryChanged)
     {
-      RecomputeLovedGifts();
+      RebuildLovedGiftsView();
     }
   }
 
@@ -171,6 +170,7 @@ internal class ShowBirthdayIcon : IDisposable
       if (friendship != null && friendship.GiftsToday > 0)
       {
         _lovedGiftsByNpc.Value.Remove(npcs[i].Name);
+        _lovedItemsByNpc.Value.Remove(npcs[i].Name);
         npcs.RemoveAt(i);
         _birthdayIcons.Value.Clear();
       }
@@ -182,6 +182,7 @@ internal class ShowBirthdayIcon : IDisposable
     _birthdayNPCs.Value.Clear();
     _birthdayIcons.Value.Clear();
     _lovedGiftsByNpc.Value.Clear();
+    _lovedItemsByNpc.Value.Clear();
     HashSet<string> seen = new();
     foreach (GameLocation? location in Game1.locations)
     {
@@ -216,7 +217,8 @@ internal class ShowBirthdayIcon : IDisposable
       );
 
       ScanOwnedItems();
-      RecomputeLovedGifts();
+      RecomputeLovedItemsByNpc();
+      RebuildLovedGiftsView();
     }
   }
 
@@ -274,18 +276,19 @@ internal class ShowBirthdayIcon : IDisposable
     );
   }
 
-  private void RecomputeLovedGifts()
+  // Heavy: iterates every owned item id, asks each birthday NPC for gift taste once.
+  // Only run when the owned-id set changes (DayStarted scan, or a new id appears via pickup).
+  private void RecomputeLovedItemsByNpc()
   {
-    Dictionary<string, List<LovedGift>> map = _lovedGiftsByNpc.Value;
-    map.Clear();
+    Dictionary<string, List<Item>> cache = _lovedItemsByNpc.Value;
+    cache.Clear();
 
     if (_birthdayNPCs.Value.Count == 0 || _ownedItemIds.Value.Count == 0)
     {
       return;
     }
 
-    // Materialize owned items once; all birthday NPCs share the same owned set.
-    List<Item> ownedItems = new();
+    List<Item> ownedItems = new(_ownedItemIds.Value.Count);
     foreach (string id in _ownedItemIds.Value)
     {
       Item? item = TryCreateItem(id);
@@ -295,11 +298,9 @@ internal class ShowBirthdayIcon : IDisposable
       }
     }
 
-    HashSet<string> inventoryIds = _inventoryItemIds.Value;
-
     foreach (NPC npc in _birthdayNPCs.Value)
     {
-      List<LovedGift> loved = new();
+      List<Item> loved = new();
       foreach (Item item in ownedItems)
       {
         int taste;
@@ -312,18 +313,44 @@ internal class ShowBirthdayIcon : IDisposable
           continue;
         }
 
-        if (taste != NPC.gift_taste_love)
+        if (taste == NPC.gift_taste_love)
         {
-          continue;
+          loved.Add(item);
         }
-
-        loved.Add(new LovedGift(item, inventoryIds.Contains(item.QualifiedItemId)));
       }
 
-      map[npc.Name] = loved
-        .OrderByDescending(g => g.InInventory)
-        .ThenBy(g => g.Item.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-        .ToList();
+      loved.Sort(
+        (a, b) => StringComparer.CurrentCultureIgnoreCase.Compare(a.DisplayName, b.DisplayName)
+      );
+      cache[npc.Name] = loved;
+    }
+  }
+
+  private void RebuildLovedGiftsView()
+  {
+    Dictionary<string, List<LovedGift>> map = _lovedGiftsByNpc.Value;
+    map.Clear();
+
+    if (_birthdayNPCs.Value.Count == 0)
+    {
+      return;
+    }
+
+    HashSet<string> inventoryIds = _inventoryItemIds.Value;
+    foreach (NPC npc in _birthdayNPCs.Value)
+    {
+      if (!_lovedItemsByNpc.Value.TryGetValue(npc.Name, out List<Item>? loved))
+      {
+        continue;
+      }
+
+      List<LovedGift> view = new(loved.Count);
+      foreach (Item item in loved)
+      {
+        view.Add(new LovedGift(item, inventoryIds.Contains(item.QualifiedItemId)));
+      }
+
+      map[npc.Name] = view.OrderByDescending(g => g.InInventory).ToList();
     }
   }
 

@@ -56,6 +56,9 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.22**
+  - Fix performance issues on item pickup when an NPC birthday is active
+  - Fix fruit tree tooltip showing raw `Strings\Objects:...` path when a CP mod's LocalizedText key is missing (e.g. RSV)
 - **v2.8.21**
   - Expand NPC birthday icon tooltip with friendship hearts and loved gifts the player owns (green = in inventory). Toggleable via "Show loved gifts in tooltip"
   - Show half hearts when friendship is between whole heart levels on Animal builing tooltip
