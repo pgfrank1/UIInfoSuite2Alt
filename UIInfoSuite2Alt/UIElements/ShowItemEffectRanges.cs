@@ -534,7 +534,7 @@ internal class ShowItemEffectRanges : IDisposable
 
         if (seedSpreadChance <= 0f)
         {
-          string treeName = ShowTileTooltips.GetTreeTypeName(tree.treeType.Value) + I18n.Tree();
+          string treeName = ShowTileTooltips.GetTreeDisplayName(tree.treeType.Value);
           _rangeTooltipInfo.Value = new RangeTooltipInfo
           {
             ObjectName = treeName,
@@ -549,7 +549,7 @@ internal class ShowItemEffectRanges : IDisposable
 
           string treeName = ButtonShowAllRanges
             ? I18n.WildTree()
-            : ShowTileTooltips.GetTreeTypeName(tree.treeType.Value) + I18n.Tree();
+            : ShowTileTooltips.GetTreeDisplayName(tree.treeType.Value);
 
           int tilesBeforeAdd = _effectiveAreaOther.Value.Count;
           AddTilesToHighlightedArea(
@@ -608,7 +608,7 @@ internal class ShowItemEffectRanges : IDisposable
         }
         else
         {
-          string treeName = ShowTileTooltips.GetTreeTypeName(tree.treeType.Value) + I18n.Tree();
+          string treeName = ShowTileTooltips.GetTreeDisplayName(tree.treeType.Value);
           _rangeTooltipInfo.Value = new RangeTooltipInfo
           {
             ObjectName = treeName,

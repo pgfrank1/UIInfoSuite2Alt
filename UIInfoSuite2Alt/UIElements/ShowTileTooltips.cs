@@ -967,6 +967,32 @@ internal class ShowTileTooltips : IDisposable
       });
   }
 
+  internal const string TreeDisplayNameCustomField = "UIInfoSuite.ExtendedData/DisplayName";
+
+  internal static bool TryGetTreeCustomDisplayName(string treeType, out string displayName)
+  {
+    if (
+      Tree.TryGetData(treeType, out var data)
+      && data.CustomFields != null
+      && data.CustomFields.TryGetValue(TreeDisplayNameCustomField, out string? value)
+      && !string.IsNullOrWhiteSpace(value)
+    )
+    {
+      displayName = value;
+      return true;
+    }
+
+    displayName = string.Empty;
+    return false;
+  }
+
+  internal static string GetTreeDisplayName(string treeType)
+  {
+    return TryGetTreeCustomDisplayName(treeType, out string custom)
+      ? custom
+      : GetTreeTypeName(treeType) + I18n.Tree();
+  }
+
   // See: stardewvalleywiki.com/Trees
   internal static string GetTreeTypeName(string treeType)
   {
@@ -1610,9 +1636,11 @@ internal class ShowTileTooltips : IDisposable
       }
 
       bool isStump = tree.stump.Value;
-      string treeTypeName = GetTreeTypeName(tree.treeType.Value);
       string stumpText = isStump ? $" ({I18n.Stump()})" : "";
-      entries.Add($"{treeTypeName}{I18n.Tree()}{stumpText}");
+      string treeHeader = TryGetTreeCustomDisplayName(tree.treeType.Value, out string custom)
+        ? custom
+        : $"{GetTreeTypeName(tree.treeType.Value)}{I18n.Tree()}";
+      entries.Add($"{treeHeader}{stumpText}");
 
       if (tree.growthStage.Value >= MAX_TREE_GROWTH_STAGE)
       {
