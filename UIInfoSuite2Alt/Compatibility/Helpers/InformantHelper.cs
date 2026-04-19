@@ -239,10 +239,10 @@ internal static class InformantHelper
         Texture2D curatorSheet = _helper.GameContent.Load<Texture2D>("Characters/Curator");
         _aquariumIcon = Tools.CropTexture(curatorSheet, new Rectangle(0, 1, 16, 16));
       }
-      catch (Exception)
+      catch (Exception ex)
       {
         ModEntry.MonitorObject.Log(
-          "InformantHelper: failed to load Curator sprite for Aquarium decorator",
+          $"InformantHelper: failed to load Curator sprite for Aquarium decorator, {ex.Message}",
           LogLevel.Warn
         );
       }

@@ -605,7 +605,6 @@ public partial class ModEntry
       setValue: v => ModConfig.MaxArtisanRows = int.Parse(v),
       allowedValues: maxArtisanRowValues
     );
-    // Spacer();
     AddSubBool(
       nameof(ModConfig.ShowInventoryItemBundleBanner),
       () => ModConfig.ShowInventoryItemBundleBanner,
