@@ -38,6 +38,7 @@ internal class ShowItemHoverInformation : IDisposable
 
   private readonly DonationIconRow _donationIcons = new();
   private readonly MuseumDonationProvider _museumProvider = new();
+  private readonly List<CmfDonationProvider> _cmfProviders = new();
 
   private (Texture2D texture, Rectangle sourceRect)? _ubIconOverride;
 
@@ -63,10 +64,14 @@ internal class ShowItemHoverInformation : IDisposable
     _helper.Events.Display.RenderedActiveMenu -= OnRenderedActiveMenu;
     _helper.Events.Display.RenderedHud -= OnRenderedHud;
     _helper.Events.Display.Rendering -= OnRendering;
+    _helper.Events.GameLoop.SaveLoaded -= OnSaveLoaded;
+    _helper.Events.GameLoop.ReturnedToTitle -= OnReturnedToTitle;
+    _helper.Events.Content.AssetsInvalidated -= OnAssetsInvalidated;
 
     if (showItemHoverInformation)
     {
       _museumProvider.Initialize();
+      CustomMuseumFrameworkHelper.Initialize(_helper);
       ArtisanPriceHelper.EnsureInitialized(_helper);
       _cornucopiaArtisanMachinesLoaded = _helper.ModRegistry.IsLoaded(
         ModCompat.CornucopiaArtisanMachines
@@ -75,7 +80,68 @@ internal class ShowItemHoverInformation : IDisposable
       _helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
       _helper.Events.Display.RenderedHud += OnRenderedHud;
       _helper.Events.Display.Rendering += OnRendering;
+      _helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+      _helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
+      _helper.Events.Content.AssetsInvalidated += OnAssetsInvalidated;
+
+      if (Context.IsWorldReady)
+      {
+        RefreshCmfProviders();
+      }
     }
+    else
+    {
+      ClearCmfProviders();
+    }
+  }
+
+  private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+  {
+    RefreshCmfProviders();
+  }
+
+  private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
+  {
+    ClearCmfProviders();
+  }
+
+  private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+  {
+    foreach (var name in e.NamesWithoutLocale)
+    {
+      if (name.IsEquivalentTo(CustomMuseumFrameworkHelper.MuseumsAssetName))
+      {
+        RefreshCmfProviders();
+        return;
+      }
+    }
+  }
+
+  private void RefreshCmfProviders()
+  {
+    ClearCmfProviders();
+
+    if (!CustomMuseumFrameworkHelper.IsModLoaded)
+    {
+      return;
+    }
+
+    Dictionary<string, CmfMuseumData> museums = CustomMuseumFrameworkHelper.LoadMuseums();
+    foreach (var pair in museums)
+    {
+      var provider = new CmfDonationProvider(_helper, pair.Key, pair.Value);
+      _cmfProviders.Add(provider);
+      _donationIcons.AddProvider(provider);
+    }
+  }
+
+  private void ClearCmfProviders()
+  {
+    for (int i = 0; i < _cmfProviders.Count; i++)
+    {
+      _donationIcons.RemoveProvider(_cmfProviders[i]);
+    }
+    _cmfProviders.Clear();
   }
 
   private void OnRendering(object? sender, EventArgs e)

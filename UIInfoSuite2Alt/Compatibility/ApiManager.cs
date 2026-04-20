@@ -38,6 +38,7 @@ public static class ModCompat
   public const string CornucopiaArtisanMachines = "Cornucopia.ArtisanMachines";
   public const string BinningSkill = "drbirbdev.BinningSkill";
   public const string GarbageDay = "furyx639.GarbageDay";
+  public const string CustomMuseumFramework = "Spiderbuttons.CMF";
 
   // original UIInfoSuite variants
   public const string UIInfoSuite2 = "Annosz.UiInfoSuite2";

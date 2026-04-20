@@ -22,6 +22,11 @@ internal class DonationIconRow
     _providers.Add(provider);
   }
 
+  public void RemoveProvider(IDonationIconProvider provider)
+  {
+    _providers.Remove(provider);
+  }
+
   /// <summary>
   /// Checks whether any provider needs a donation for this item.
   /// </summary>
