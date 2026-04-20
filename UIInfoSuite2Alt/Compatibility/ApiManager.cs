@@ -36,6 +36,8 @@ public static class ModCompat
   public const string FullInventoryView = "CpdnCristiano.FullInventoryView";
   public const string CatValley = "RimeNovi.CatValley";
   public const string CornucopiaArtisanMachines = "Cornucopia.ArtisanMachines";
+  public const string BinningSkill = "drbirbdev.BinningSkill";
+  public const string GarbageDay = "furyx639.GarbageDay";
 
   // original UIInfoSuite variants
   public const string UIInfoSuite2 = "Annosz.UiInfoSuite2";

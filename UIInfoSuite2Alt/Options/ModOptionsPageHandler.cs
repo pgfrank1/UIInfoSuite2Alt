@@ -206,6 +206,7 @@ internal class ModOptionsPageHandler : IDisposable
     var showMachineProcessingItem = new ShowMachineProcessingItem(helper);
     var showTileTooltips = new ShowTileTooltips(helper, showScarecrowAndSprinklerRange);
     var showArtifactSpotTooltip = new ShowArtifactSpotTooltip(helper);
+    var showGarbageCanTooltip = new ShowGarbageCanTooltip(helper);
     var showToolUpgradeStatus = new ShowToolUpgradeStatus(helper);
     var showRobinBuildingStatusIcon = new ShowRobinBuildingStatusIcon(helper);
     var showSeasonalBerry = new ShowSeasonalBerry(helper);
@@ -236,6 +237,7 @@ internal class ModOptionsPageHandler : IDisposable
       showMachineProcessingItem,
       showTileTooltips,
       showArtifactSpotTooltip,
+      showGarbageCanTooltip,
       showToolUpgradeStatus,
       showRobinBuildingStatusIcon,
       showSeasonalBerry,
@@ -724,6 +726,16 @@ internal class ModOptionsPageHandler : IDisposable
         showArtifactSpotTooltip.ToggleOption,
         () => config.ShowArtifactSpotTooltip,
         Set(v => config.ShowArtifactSpotTooltip = v),
+        showWorldTooltipCheckbox
+      )
+    );
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.ShowGarbageCanTooltip)),
+        whichOption++,
+        showGarbageCanTooltip.ToggleOption,
+        () => config.ShowGarbageCanTooltip,
+        Set(v => config.ShowGarbageCanTooltip = v),
         showWorldTooltipCheckbox
       )
     );

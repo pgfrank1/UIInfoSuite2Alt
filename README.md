@@ -56,6 +56,11 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.23**
+  - Add garbage can tooltip showing todays predicted drop:
+    - [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073) compatibility: shows required level when the can is locked
+    - [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204) compatibility: lists pre-rolled chest contents (up to 5, with "+X ..." overflow)
+  - Fix double shadow on mod options tab tooltip
 - **v2.8.22**
   - Fix performance issues on item pickup when an NPC birthday is active
   - Fix fruit tree tooltip showing raw `Strings\Objects:...` path when a CP mod's LocalizedText key is missing (e.g. RSV)
@@ -352,6 +357,8 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Full Inventory View](https://www.nexusmods.com/stardewvalley/mods/32625)
 - [Animal Husbandry](https://www.nexusmods.com/stardewvalley/mods/1538)
 - [Extra Machine Configs](https://www.nexusmods.com/stardewvalley/mods/22256)
+- [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073)
+- [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204)
 
 <p align="center">
   <a href="https://ko-fi.com/dazuki89" target="_BLANK">

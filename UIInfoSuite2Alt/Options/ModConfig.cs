@@ -85,6 +85,7 @@ public class ModConfig
     KeybindList.ForSingle(SButton.LeftControl);
   public bool ShowForageableTooltip { get; set; } = true;
   public bool ShowArtifactSpotTooltip { get; set; } = true;
+  public bool ShowGarbageCanTooltip { get; set; } = true;
   public bool ShowHarvestQuality { get; set; } = true;
   public int MachineProcessingIconsMode { get; set; } = 1;
   public bool MachineProcessingIconsVisible { get; set; } = true;

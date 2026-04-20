@@ -454,6 +454,11 @@ public partial class ModEntry
       v => ModConfig.ShowArtifactSpotTooltip = v
     );
     AddSubBool(
+      nameof(ModConfig.ShowGarbageCanTooltip),
+      () => ModConfig.ShowGarbageCanTooltip,
+      v => ModConfig.ShowGarbageCanTooltip = v
+    );
+    AddSubBool(
       nameof(ModConfig.ShowHarvestQuality),
       () => ModConfig.ShowHarvestQuality,
       v => ModConfig.ShowHarvestQuality = v
