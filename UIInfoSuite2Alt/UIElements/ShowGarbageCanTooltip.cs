@@ -303,6 +303,16 @@ internal class ShowGarbageCanTooltip : IDisposable
         textColor,
         shadowColor
       );
+      if (alreadyChecked)
+      {
+        int strikeRight = (int)(x + 16 + font.MeasureString(emptyText).X);
+        int strikeY = (int)(rowY + lineHeight / 2f) - 1;
+        b.Draw(
+          Game1.staminaRect,
+          new Rectangle(x + 16, strikeY, strikeRight - (x + 16), 2),
+          textColor
+        );
+      }
       return;
     }
 
