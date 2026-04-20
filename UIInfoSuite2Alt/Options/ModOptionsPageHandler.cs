@@ -46,6 +46,7 @@ internal class ModOptionsPageHandler : IDisposable
 
   // Gamepad nav component for our tab (not added to GameMenu.tabs — breaks game logic). Vanilla only.
   private readonly PerScreen<ClickableComponent?> _modOptionsTab = new();
+  private readonly PerScreen<string> _suppressedTabHoverText = new(() => "");
 
   private readonly PerScreen<int?> _modOptionsTabPageNumber = new();
 
@@ -1570,6 +1571,18 @@ internal class ModOptionsPageHandler : IDisposable
     {
       // Draw behind the menu so it's visible during transitions (e.g. collections letter view)
       DrawButton(gameMenu);
+
+      // Suppress vanilla tab tooltip so we can draw it after our tab in OnRenderedMenu.
+      // Only suppress when OnRenderedMenu will actually run (mirrors its guards), otherwise
+      // the tooltip would be cleared and never restored.
+      if (
+        gameMenu.currentTab != GameMenu.mapTab
+        && gameMenu.GetCurrentPage() is not CollectionsPage { letterviewerSubMenu: not null }
+      )
+      {
+        _suppressedTabHoverText.Value = gameMenu.hoverText;
+        gameMenu.hoverText = "";
+      }
     }
   }
 
@@ -1591,6 +1604,14 @@ internal class ModOptionsPageHandler : IDisposable
     }
 
     DrawButton(gameMenu);
+
+    // Restore and draw the vanilla tab tooltip on top of our tab.
+    if (!string.IsNullOrEmpty(_suppressedTabHoverText.Value))
+    {
+      gameMenu.hoverText = _suppressedTabHoverText.Value;
+      _suppressedTabHoverText.Value = "";
+      IClickableMenu.drawHoverText(Game1.spriteBatch, gameMenu.hoverText, Game1.smallFont);
+    }
 
     Tools.DrawMouseCursor();
 
