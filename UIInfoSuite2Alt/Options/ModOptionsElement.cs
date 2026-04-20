@@ -68,7 +68,9 @@ public class ModOptionsElement
     for (ModOptionsElement? node = _parent; node != null; node = node._parent)
     {
       if (node is ModOptionsCheckbox cb && !cb.IsChecked)
+      {
         return false;
+      }
     }
     return true;
   }
