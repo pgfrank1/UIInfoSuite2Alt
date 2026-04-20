@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -18,6 +19,7 @@ internal class SunberryMuseumDonationProvider : IDonationIconProvider
 
   private readonly IModHelper _helper;
   private readonly bool _isModLoaded;
+  private readonly HashSet<string> _loggedForeignDropBoxes = [];
   private (Texture2D texture, Rectangle sourceRect)? _icon;
   private bool _iconInitialized;
 
@@ -50,8 +52,10 @@ internal class SunberryMuseumDonationProvider : IDonationIconProvider
           continue;
         }
 
-        if (donate.dropBox.Value != DropBoxId)
+        string boxId = donate.dropBox.Value ?? string.Empty;
+        if (boxId != DropBoxId)
         {
+          LogForeignDropBox(order.questKey.Value, boxId);
           continue;
         }
 
@@ -68,6 +72,32 @@ internal class SunberryMuseumDonationProvider : IDonationIconProvider
     }
 
     return false;
+  }
+
+  private void LogForeignDropBox(string? questKey, string dropBoxId)
+  {
+    if (string.IsNullOrEmpty(dropBoxId) || questKey is null)
+    {
+      return;
+    }
+
+    if (
+      !questKey.Contains("SBV", StringComparison.OrdinalIgnoreCase)
+      && !questKey.Contains("Sunberry", StringComparison.OrdinalIgnoreCase)
+    )
+    {
+      return;
+    }
+
+    if (!_loggedForeignDropBoxes.Add(dropBoxId))
+    {
+      return;
+    }
+
+    ModEntry.MonitorObject.Log(
+      $"SunberryMuseumDonationProvider: SBV quest uses unknown dropBox, questKey={questKey}, dropBox={dropBoxId}, expected={DropBoxId}",
+      LogLevel.Trace
+    );
   }
 
   public (Texture2D texture, Rectangle sourceRect)? GetIcon()
