@@ -52,6 +52,7 @@ internal class ShowItemHoverInformation : IDisposable
 
     _donationIcons.AddProvider(_museumProvider);
     _donationIcons.AddProvider(new AquariumDonationProvider(helper));
+    _donationIcons.AddProvider(new SunberryMuseumDonationProvider(helper));
   }
 
   public void Dispose()

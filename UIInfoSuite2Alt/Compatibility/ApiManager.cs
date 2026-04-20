@@ -14,6 +14,7 @@ public static class ModCompat
   public const string FerngillEconomy = "paulsteele.fse";
   public const string RidgesideVillage = "Rafseazz.RidgesideVillage";
   public const string SunberryVillage = "SunberryTeam.SBVSMAPI";
+  public const string SunberryVillageCp = "skellady.SBVCP";
   public const string EscasModdingPlugins = "Esca.EMP";
   public const string SwordAndSorcery = "KCC.SnS";
   public const string NpcMapLocations = "Bouhm.NPCMapLocations";

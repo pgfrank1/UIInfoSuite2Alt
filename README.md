@@ -62,6 +62,7 @@
     - [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204) compatibility: lists pre-rolled chest contents (up to 5, with "+X ..." overflow)
   - [Custom Museum Framework](https://www.nexusmods.com/stardewvalley/mods/34530) compatibility: show donation icon on item hover for undonated items in modded museums
     - Added icon for [Visit Mount Vapius](https://www.nexusmods.com/stardewvalley/mods/9600) Natural Reserve
+  - [Sunberry Village](https://www.nexusmods.com/stardewvalley/mods/11111) Museum compatibility: show Elias donation icon on item hover for items required by an active Sunberry Museum special order
   - Fix double shadow on mod options tab tooltip
 - **v2.8.22**
   - Fix performance issues on item pickup when an NPC birthday is active
