@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.GameData.GarbageCans;
 using UIInfoSuite2Alt.Compatibility;
@@ -49,10 +50,25 @@ internal static class GarbageCanPredictor
       return;
     }
 
-    if (location.TryGetGarbageItem(id, farmer.DailyLuck, out Item? item, out _, out _))
+    if (
+      location.TryGetGarbageItem(
+        id,
+        farmer.DailyLuck,
+        out Item? item,
+        out _,
+        out _,
+        LogGarbageError
+      )
+      && item != null
+    )
     {
       items.Add(item);
     }
+  }
+
+  private static void LogGarbageError(string message)
+  {
+    ModEntry.MonitorObject.Log($"GarbageCanPredictor: {message}", LogLevel.Trace);
   }
 
   private static bool TryGetBinningLockLevel(string id, Farmer farmer, out int requiredLevel)
