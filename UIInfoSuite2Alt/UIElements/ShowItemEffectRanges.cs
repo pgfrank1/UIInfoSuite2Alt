@@ -27,7 +27,6 @@ internal class ShowItemEffectRanges : IDisposable
 
   private readonly IModHelper _helper;
   private readonly Lazy<Texture2D> _tileTexture;
-  private readonly Lazy<Texture2D> _tileBombTexture;
   private readonly Lazy<Texture2D> _wildTreeTexture;
   private readonly PerScreen<bool> _isBombRange = new(() => false);
 
@@ -79,9 +78,6 @@ internal class ShowItemEffectRanges : IDisposable
   {
     _helper = helper;
     _tileTexture = new Lazy<Texture2D>(() =>
-      AssetHelper.TryLoadTexture(_helper, "assets/tile.png")
-    );
-    _tileBombTexture = new Lazy<Texture2D>(() =>
       AssetHelper.TryLoadTexture(_helper, "assets/tile_muted.png")
     );
     _wildTreeTexture = new Lazy<Texture2D>(() =>
@@ -93,6 +89,7 @@ internal class ShowItemEffectRanges : IDisposable
   {
     ToggleOption(false);
     ToggleShowBombRangeOption(false);
+    ToggleButtonControlShowOption(false);
   }
 
   public void ToggleOption(bool showItemEffectRanges)
@@ -198,8 +195,8 @@ internal class ShowItemEffectRanges : IDisposable
     Color tileColor = _isBombRange.Value
       ? Color.Lime
       : _rangeTooltipInfo.Value?.TileColor ?? Color.LawnGreen;
-    float tileOpacity = _isBombRange.Value ? 0.3f : 0.5f;
-    Texture2D texture = _isBombRange.Value ? _tileBombTexture.Value : _tileTexture.Value;
+    float tileOpacity = _isBombRange.Value ? 0.3f : 0.7f;
+    Texture2D texture = _tileTexture.Value;
 
     // Compute visible tile bounds to skip off-screen draw calls
     xTile.Dimensions.Rectangle viewport = Game1.viewport;
@@ -213,7 +210,7 @@ internal class ShowItemEffectRanges : IDisposable
     DrawTileHighlights(
       e,
       _effectiveAreaOther.Value,
-      _tileBombTexture.Value,
+      texture,
       tileColor * otherOpacity,
       minTileX,
       minTileY,
@@ -238,7 +235,7 @@ internal class ShowItemEffectRanges : IDisposable
       e,
       _effectiveAreaIntersection.Value,
       texture,
-      Color.DarkOrange * (tileOpacity + 0.2f),
+      Color.DarkOrange * 0.85f,
       minTileX,
       minTileY,
       maxTileX,

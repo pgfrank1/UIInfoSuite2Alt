@@ -56,6 +56,9 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.24**
+  - Fix crash on garbage can hover with [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073) installed
+  - Item effect range overlay now uses a single muted tile texture with consistent opacity across held/placed/overlap passes
 - **v2.8.23**
   - Add garbage can tooltip showing todays content
     - [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073) compatibility: shows required level when the can is locked
