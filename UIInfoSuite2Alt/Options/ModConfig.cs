@@ -64,6 +64,7 @@ public class ModConfig
   public bool ShowHeartFills { get; set; } = true;
   public bool ShowExtraItemInformation { get; set; } = true;
   public bool ShowInventoryItemSellPrice { get; set; } = true;
+  public bool GatePricesByPriceCatalogue { get; set; } = false;
   public bool ShowInventoryItemArtisanPrices { get; set; } = true;
   public bool OnlyShowKnownArtisanMachines { get; set; } = true;
   public int MaxArtisanRows { get; set; } = 10;

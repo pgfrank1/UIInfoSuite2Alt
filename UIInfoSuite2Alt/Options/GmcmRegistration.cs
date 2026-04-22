@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
 using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Compatibility.Helpers;
 using UIInfoSuite2Alt.Infrastructure;
@@ -590,6 +587,12 @@ public partial class ModEntry
       v => ModConfig.ShowInventoryItemSellPrice = v
     );
     configMenu.AddParagraph(ModManifest, text: () => I18n.ShowInventoryItemSellPrice_Note());
+    configMenu.AddBoolOption(
+      ModManifest,
+      name: () => "    > " + Helper.SafeGetString(nameof(ModConfig.GatePricesByPriceCatalogue)),
+      getValue: () => ModConfig.GatePricesByPriceCatalogue,
+      setValue: v => ModConfig.GatePricesByPriceCatalogue = v
+    );
     configMenu.AddBoolOption(
       ModManifest,
       name: () => "    > " + Helper.SafeGetString(nameof(ModConfig.ShowInventoryItemArtisanPrices)),

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using UIInfoSuite2Alt.Infrastructure;
 
@@ -45,35 +46,70 @@ internal class ShowShopHarvestPrices : IDisposable
       return;
     }
 
-    // draw shop harvest prices
     int value = Tools.GetHarvestPrice(hoverItem);
 
-    if (value > 0)
+    if (value <= 0)
     {
-      int xPosition = menu.xPositionOnScreen - 30;
-      int yPosition = menu.yPositionOnScreen + 580;
-      IClickableMenu.drawTextureBox(
-        Game1.spriteBatch,
-        xPosition + 20,
-        yPosition - 52,
-        264,
-        108,
-        Color.White
+      return;
+    }
+
+    bool gated =
+      ModEntry.ModConfig.GatePricesByPriceCatalogue
+      && Game1.player.stats.Get(StardewValley.Constants.StatKeys.Book_PriceCatalogue) == 0;
+
+    int xPosition = menu.xPositionOnScreen - 30;
+    int yPosition = menu.yPositionOnScreen + 580;
+    int boxHeight = gated ? 124 : 108;
+    IClickableMenu.drawTextureBox(
+      Game1.spriteBatch,
+      xPosition + 20,
+      yPosition - 52,
+      264,
+      boxHeight,
+      Color.White
+    );
+    // Title "Harvest Price"
+    string textToRender = I18n.HarvestPrice();
+    Game1.spriteBatch.DrawString(
+      Game1.dialogueFont,
+      textToRender,
+      new Vector2(xPosition + 30, yPosition - 38),
+      Color.Black * 0.2f
+    );
+    Game1.spriteBatch.DrawString(
+      Game1.dialogueFont,
+      textToRender,
+      new Vector2(xPosition + 32, yPosition - 40),
+      Color.Black * 0.8f
+    );
+
+    if (gated)
+    {
+      // Book icon + "Price unknown..." text
+      ParsedItemData bookData = ItemRegistry.GetDataOrErrorItem("(O)Book_PriceCatalogue");
+      Game1.spriteBatch.Draw(
+        bookData.GetTexture(),
+        new Vector2(xPosition + 56, yPosition + 28),
+        bookData.GetSourceRect(),
+        Color.White,
+        0,
+        new Vector2(8, 8),
+        Game1.pixelZoom * 0.75f,
+        SpriteEffects.None,
+        0.85f
       );
-      // Title "Harvest Price"
-      string textToRender = I18n.HarvestPrice();
+      string unreadText = I18n.PriceCatalogueNotRead();
+      var textPos = new Vector2(xPosition + 80, yPosition + 14);
       Game1.spriteBatch.DrawString(
-        Game1.dialogueFont,
-        textToRender,
-        new Vector2(xPosition + 30, yPosition - 38),
+        Game1.smallFont,
+        unreadText,
+        textPos + new Vector2(2, 2),
         Color.Black * 0.2f
       );
-      Game1.spriteBatch.DrawString(
-        Game1.dialogueFont,
-        textToRender,
-        new Vector2(xPosition + 32, yPosition - 40),
-        Color.Black * 0.8f
-      );
+      Game1.spriteBatch.DrawString(Game1.smallFont, unreadText, textPos, Color.Black * 0.8f);
+    }
+    else
+    {
       // Tree Icon
       xPosition += 80;
       Game1.spriteBatch.Draw(

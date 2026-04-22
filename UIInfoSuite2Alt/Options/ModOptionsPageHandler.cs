@@ -938,6 +938,16 @@ internal class ModOptionsPageHandler : IDisposable
         isIndented: true
       )
     );
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.GatePricesByPriceCatalogue)),
+        whichOption++,
+        _ => { },
+        () => config.GatePricesByPriceCatalogue,
+        Set(v => config.GatePricesByPriceCatalogue = v),
+        sellPriceCheckbox
+      )
+    );
     var artisanPricesCheckbox = new ModOptionsCheckbox(
       _helper.SafeGetString(nameof(config.ShowInventoryItemArtisanPrices)),
       whichOption++,

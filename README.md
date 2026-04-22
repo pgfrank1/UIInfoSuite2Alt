@@ -57,6 +57,8 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.25**
+  - Add option to gate sell/stack/artisan prices and shop harvest prices behind reading the Price Catalogue (default off)
 - **v2.8.24**
   - Fix random crash on garbage can hover with [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073) installed
   - Item effect range overlay now uses the single muted tile texture instead (same sprite being used as bomb area)

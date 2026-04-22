@@ -217,6 +217,8 @@
   "OnlyShowKnownArtisanMachines": "...for known/owned machines",
   "MaxArtisanRows": "Max artisan rows",
   "ShowInventoryItemSellPrice.Note": "Note: Also enables this mod's extended tooltip",
+  "GatePricesByPriceCatalogue": "Price Catalogue required",
+  "PriceCatalogueNotRead": "Price unknown...",
   "ShowInventoryItemBundleBanner": "Show bundle banner",
   "ShowInventoryItemDonationStatus": "Show donation status",
   "ShowInventoryItemShippingStatus": "Show shipping status",

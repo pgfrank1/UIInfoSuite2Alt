@@ -188,7 +188,12 @@ internal class ShowItemHoverInformation : IDisposable
       bool showDonation = config.ShowInventoryItemDonationStatus;
       bool showShipping = config.ShowInventoryItemShippingStatus;
 
-      int itemPrice = showPrice ? Tools.GetSellToStorePrice(_hoverItem.Value) : 0;
+      bool priceCatalogueGate =
+        config.GatePricesByPriceCatalogue
+        && Game1.player.stats.Get(StardewValley.Constants.StatKeys.Book_PriceCatalogue) == 0;
+      bool showPriceAllowed = showPrice && !priceCatalogueGate;
+
+      int itemPrice = showPriceAllowed ? Tools.GetSellToStorePrice(_hoverItem.Value) : 0;
 
       var stackPrice = 0;
       if (itemPrice > 0 && _hoverItem.Value.Stack > 1)
@@ -196,10 +201,13 @@ internal class ShowItemHoverInformation : IDisposable
         stackPrice = itemPrice * _hoverItem.Value.Stack;
       }
 
-      int cropPrice = showPrice ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
+      int cropPrice = showPriceAllowed ? Tools.GetHarvestPrice(_hoverItem.Value) : 0;
+
+      bool showUnreadBookRow =
+        showPrice && priceCatalogueGate && Tools.GetSellToStorePrice(_hoverItem.Value) > 0;
 
       // Artisan good prices. Sub-option of ShowInventoryItemSellPrice.
-      bool showArtisan = showPrice && config.ShowInventoryItemArtisanPrices;
+      bool showArtisan = showPriceAllowed && config.ShowInventoryItemArtisanPrices;
       bool filterKnownMachines = showArtisan && config.OnlyShowKnownArtisanMachines;
       ArtisanPriceHelper.ArtisanEntry[] artisanEntries =
         showArtisan && itemPrice > 0
@@ -289,7 +297,17 @@ internal class ShowItemHoverInformation : IDisposable
         }
       }
 
-      bool hasPriceRows = itemPrice > 0 || stackPrice > 0 || cropPrice > 0 || artisanRowCount > 0;
+      bool hasPriceRows =
+        itemPrice > 0
+        || stackPrice > 0
+        || cropPrice > 0
+        || artisanRowCount > 0
+        || showUnreadBookRow;
+
+      string unreadBookText = showUnreadBookRow ? I18n.PriceCatalogueNotRead() : string.Empty;
+      int unreadBookTextWidth = showUnreadBookRow
+        ? (int)Game1.smallFont.MeasureString(unreadBookText).X
+        : 0;
 
       var drawPositionOffset = new Vector2();
       int windowWidth,
@@ -316,43 +334,34 @@ internal class ShowItemHoverInformation : IDisposable
           + Math.Max(
             minTextWidth,
             Math.Max(
-              artisanMaxTextWidth,
+              unreadBookTextWidth,
               Math.Max(
-                wolBonusTextWidth,
-                Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+                artisanMaxTextWidth,
+                Math.Max(
+                  wolBonusTextWidth,
+                  Math.Max(stackTextWidth, Math.Max(itemTextWidth, cropTextWidth))
+                )
               )
             )
           );
         windowWidth = Math.Max(bundleHeaderWidth, largestTextWidth);
 
-        windowHeight = 20 + 16;
-        if (itemPrice > 0)
-        {
-          windowHeight += 40;
-        }
+        int priceRowCount =
+          (showUnreadBookRow ? 1 : 0)
+          + (itemPrice > 0 ? 1 : 0)
+          + (stackPrice > 0 ? 1 : 0)
+          + (cropPrice > 0 ? 1 : 0)
+          + artisanRowCount;
 
-        if (stackPrice > 0)
-        {
-          windowHeight += 40;
-        }
-
-        if (cropPrice > 0)
-        {
-          windowHeight += 40;
-        }
-
+        windowHeight = 20 + 16 + priceRowCount * 40;
         if (wolBonusPct != null)
         {
           windowHeight += 32;
         }
 
-        if (artisanRowCount > 0)
+        if (artisanTruncated)
         {
-          windowHeight += 40 * artisanRowCount;
-          if (artisanTruncated)
-          {
-            windowHeight += 32;
-          }
+          windowHeight += 32;
         }
 
         if (!string.IsNullOrEmpty(requiredBundleName))
@@ -424,6 +433,26 @@ internal class ShowItemHoverInformation : IDisposable
           windowHeight,
           Color.White
         );
+
+        if (showUnreadBookRow)
+        {
+          ParsedItemData bookData = ItemRegistry.GetDataOrErrorItem("(O)Book_PriceCatalogue");
+          spriteBatch.Draw(
+            bookData.GetTexture(),
+            drawPosition + iconCenterOffset,
+            bookData.GetSourceRect(),
+            Color.White,
+            0,
+            new Vector2(8, 8),
+            Game1.pixelZoom * 0.75f,
+            SpriteEffects.None,
+            0.95f
+          );
+
+          DrawSmallTextWithShadow(spriteBatch, unreadBookText, drawPosition + textOffset);
+
+          drawPosition.Y += rowHeight;
+        }
 
         if (itemPrice > 0)
         {
