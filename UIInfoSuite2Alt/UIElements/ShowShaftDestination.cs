@@ -19,6 +19,7 @@ internal class ShowShaftDestination : IDisposable
   private const string MineTilesheetId = "mine";
   private const int QuarryMineShaft = 77377;
   private const int SkullCavernDisplayOffset = 120;
+  private const int DamagePerFloor = 3;
 
   private readonly IModHelper _helper;
   private readonly PerScreen<Vector2?> _hoveredTile = new();
@@ -119,19 +120,37 @@ internal class ShowShaftDestination : IDisposable
       return;
     }
 
-    DrawTooltip(Game1.spriteBatch, tile.Value, _predictedFall.Value, _destinationFloor.Value);
+    int damage = Math.Min(
+      _predictedFall.Value * DamagePerFloor,
+      Math.Max(0, Game1.player.health - 1)
+    );
+    DrawTooltip(
+      Game1.spriteBatch,
+      tile.Value,
+      _predictedFall.Value,
+      _destinationFloor.Value,
+      damage
+    );
   }
 
-  private static void DrawTooltip(SpriteBatch b, Vector2 hoverTile, int fallFloors, int destination)
+  private static void DrawTooltip(
+    SpriteBatch b,
+    Vector2 hoverTile,
+    int fallFloors,
+    int destination,
+    int damage
+  )
   {
     SpriteFont font = Game1.smallFont;
 
     string floorPart = I18n.ShaftDestination_Floor(floor: destination) + " ";
-    string fallPart = $"+{fallFloors}";
+    string fallPart = $"+{fallFloors} ";
+    string damagePart = I18n.ShaftDestination_Damage(hp: damage);
     Vector2 floorSize = font.MeasureString(floorPart);
     Vector2 fallSize = font.MeasureString(fallPart);
+    Vector2 damageSize = font.MeasureString(damagePart);
 
-    int width = (int)(floorSize.X + fallSize.X) + 32 + 4;
+    int width = (int)(floorSize.X + fallSize.X + damageSize.X) + 32 + 4;
     int height = font.LineSpacing + 32;
 
     int overrideX = -1;
@@ -193,6 +212,14 @@ internal class ShowShaftDestination : IDisposable
       fallPart,
       new Vector2(textX + floorSize.X, textY),
       Tools.TooltipYellow,
+      Game1.textShadowColor
+    );
+    Tools.DrawShadowedText(
+      b,
+      font,
+      damagePart,
+      new Vector2(textX + floorSize.X + fallSize.X, textY),
+      Tools.TooltipRed,
       Game1.textShadowColor
     );
   }

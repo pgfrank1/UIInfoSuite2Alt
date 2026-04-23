@@ -201,6 +201,7 @@
   "GarbageCan.LockedBinning": "Requires Binning level {{level}}",
   "ShowShaftDestination": "Show Skull Cavern hole level",
   "ShaftDestination.Floor": "Floor {{floor}}",
+  "ShaftDestination.Damage": "(-{{hp}} Health)",
   "ShowHarvestQuality": "Show quality prediction",
   "ShowHarvestQuality.Note": "Note: Other mods that change how crop or\nforageable quality is calculated may cause\ninaccurate predictions. Disable this option\nif quality stars appear incorrect.",
   "MachineProcessingIconsMode": "Machine processing icons",
