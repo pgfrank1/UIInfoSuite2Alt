@@ -456,6 +456,11 @@ public partial class ModEntry
       v => ModConfig.ShowGarbageCanTooltip = v
     );
     AddSubBool(
+      nameof(ModConfig.ShowShaftDestination),
+      () => ModConfig.ShowShaftDestination,
+      v => ModConfig.ShowShaftDestination = v
+    );
+    AddSubBool(
       nameof(ModConfig.ShowHarvestQuality),
       () => ModConfig.ShowHarvestQuality,
       v => ModConfig.ShowHarvestQuality = v
