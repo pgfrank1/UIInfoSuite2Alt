@@ -151,7 +151,7 @@ internal class ShowShaftDestination : IDisposable
     Vector2 damageSize = font.MeasureString(damagePart);
 
     int width = (int)(floorSize.X + fallSize.X + damageSize.X) + 32 + 4;
-    int height = font.LineSpacing + 32;
+    int height = font.LineSpacing + 38;
 
     int overrideX = -1;
     int overrideY = -1;
