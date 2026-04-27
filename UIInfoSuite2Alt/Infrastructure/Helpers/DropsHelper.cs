@@ -162,11 +162,13 @@ public static class DropsHelper
     }
 
     string cleanName = displayName.Replace(" Sapling", "");
-    string treeSuffix = I18n.Tree();
     string finalName;
 
+    bool isEnglish =
+      LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.en;
     if (
-      cleanName.EndsWith(treeSuffix.Trim(), StringComparison.OrdinalIgnoreCase)
+      !isEnglish
+      || cleanName.EndsWith(I18n.Tree().Trim(), StringComparison.OrdinalIgnoreCase)
       || cleanName.EndsWith("Tree", StringComparison.OrdinalIgnoreCase)
     )
     {
@@ -174,7 +176,7 @@ public static class DropsHelper
     }
     else
     {
-      finalName = $"{cleanName}{treeSuffix}";
+      finalName = $"{cleanName}{I18n.Tree()}";
     }
 
     return new FruitTreeInfo(finalName, drops);

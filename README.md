@@ -57,6 +57,8 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.26**
+  - Fix redundant suffix addition to fruit tree names in other languages
 - **v2.8.25**
   - Add option to gate sell/stack/artisan prices and shop harvest prices behind reading the Price Catalogue (default off)
   - Add Skull Cavern hole hover tooltip showing the destination floor and fall distance
