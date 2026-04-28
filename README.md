@@ -52,6 +52,7 @@
 - [한국어](https://www.nexusmods.com/stardewvalley/mods/43452) - jjongleee
 - [Española](https://www.nexusmods.com/stardewvalley/mods/43900) - SrNemoa
 - [Magyar](https://www.nexusmods.com/stardewvalley/mods/45218) - ArcsiHUN
+- [Polski]() - zieloneoczka
 
 ![New features](.github/assets/patch-notes.png)
 
