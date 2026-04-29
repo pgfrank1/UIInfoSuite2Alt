@@ -88,6 +88,13 @@ public partial class ModEntry
     );
     configMenu.AddKeybindList(
       ModManifest,
+      name: () => I18n.Keybinds_OpenQiSpecialOrdersBoardKeybind_DisplayedName(),
+      tooltip: () => I18n.Keybinds_OpenQiSpecialOrdersBoardKeybind_Tooltip(),
+      getValue: () => ModConfig.OpenQiSpecialOrdersBoardKeybind,
+      setValue: value => ModConfig.OpenQiSpecialOrdersBoardKeybind = value
+    );
+    configMenu.AddKeybindList(
+      ModManifest,
       name: () => I18n.Keybinds_HideTreesKeybind_DisplayedName(),
       tooltip: () => I18n.Keybinds_HideTreesKeybind_Tooltip(),
       getValue: () => ModConfig.HideTreesKeybind,

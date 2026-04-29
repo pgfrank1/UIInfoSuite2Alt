@@ -870,6 +870,15 @@ internal class ShowCalendarAndBillboardOnGameMenuButton : IDisposable
     Game1.activeClickableMenu = new SpecialOrdersBoard();
   }
 
+  public static void OpenQiSpecialOrdersBoardFromKeybind()
+  {
+    if (!IslandWest.IsQiWalnutRoomDoorUnlocked(out _))
+      return;
+
+    MarkBoardViewed("Qi");
+    Game1.activeClickableMenu = new SpecialOrdersBoard("Qi");
+  }
+
   #region RSV Quest Board Support
   private void InitRsvQuestReflection()
   {

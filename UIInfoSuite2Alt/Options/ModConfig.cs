@@ -48,6 +48,8 @@ public class ModConfig
   public KeybindList OpenCalendarKeybind { get; set; } = KeybindList.ForSingle(SButton.B);
   public KeybindList OpenQuestBoardKeybind { get; set; } = KeybindList.ForSingle(SButton.H);
   public KeybindList OpenSpecialOrdersBoardKeybind { get; set; } = KeybindList.ForSingle(SButton.J);
+  public KeybindList OpenQiSpecialOrdersBoardKeybind { get; set; } =
+    KeybindList.Parse("LeftControl + Q");
   public KeybindList HideTreesKeybind { get; set; } = KeybindList.ForSingle(SButton.F7);
   public bool ShowHideTreesBanner { get; set; } = true;
   public KeybindList ShowOneRange { get; set; } = KeybindList.ForSingle(SButton.LeftControl);

@@ -334,6 +334,11 @@ public partial class ModEntry : Mod
         helper.Input.SuppressActiveKeybinds(ModConfig.OpenSpecialOrdersBoardKeybind);
         ShowCalendarAndBillboardOnGameMenuButton.OpenSpecialOrdersBoardFromKeybind();
       }
+      else if (ModConfig.OpenQiSpecialOrdersBoardKeybind.JustPressed())
+      {
+        helper.Input.SuppressActiveKeybinds(ModConfig.OpenQiSpecialOrdersBoardKeybind);
+        ShowCalendarAndBillboardOnGameMenuButton.OpenQiSpecialOrdersBoardFromKeybind();
+      }
     }
     else if (Game1.activeClickableMenu != null)
     {
@@ -358,6 +363,15 @@ public partial class ModEntry : Mod
       )
       {
         helper.Input.SuppressActiveKeybinds(ModConfig.OpenSpecialOrdersBoardKeybind);
+        Game1.playSound("bigDeSelect");
+        Game1.exitActiveMenu();
+      }
+      else if (
+        ModConfig.OpenQiSpecialOrdersBoardKeybind.JustPressed()
+        && Game1.activeClickableMenu is SpecialOrdersBoard
+      )
+      {
+        helper.Input.SuppressActiveKeybinds(ModConfig.OpenQiSpecialOrdersBoardKeybind);
         Game1.playSound("bigDeSelect");
         Game1.exitActiveMenu();
       }

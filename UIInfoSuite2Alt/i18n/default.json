@@ -11,6 +11,8 @@
   "Keybinds.OpenQuestBoardKeybind.Tooltip": "Opens the quest board.",
   "Keybinds.OpenSpecialOrdersBoardKeybind.DisplayedName": "Special orders board keybind",
   "Keybinds.OpenSpecialOrdersBoardKeybind.Tooltip": "Opens the special orders board.",
+  "Keybinds.OpenQiSpecialOrdersBoardKeybind.DisplayedName": "Qi's special orders board keybind",
+  "Keybinds.OpenQiSpecialOrdersBoardKeybind.Tooltip": "Opens Qi's special orders board.",
   "Keybinds.HideTreesKeybind.DisplayedName": "Hide trees keybind",
   "Keybinds.HideTreesKeybind.Tooltip": "Toggles tree visibility on/off. Resets when returning to title/restart game.",
   "HUD.TreesHidden": "Trees Hidden/Minimized - Press {{keybind}} to restore (Hide this message in GMCM)",
