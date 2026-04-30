@@ -118,7 +118,7 @@ Add multiple entries in one patch, or use separate patches with different `When`
 }
 ```
 
-A maximum of **5 custom CP icons** can be shown at any given time. Any beyond that are not displayed.
+A maximum of **15 custom CP icons** can be shown at any given time. Any beyond that are not displayed.
 
 
 ## Multi-Line Hover Text
