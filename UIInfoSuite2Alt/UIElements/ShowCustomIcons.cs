@@ -14,7 +14,7 @@ namespace UIInfoSuite2Alt.UIElements;
 
 internal class ShowCustomIcons : IDisposable
 {
-  private const int MaxVisibleIcons = 5;
+  private const int MaxVisibleIcons = 15;
 
   private readonly IModHelper _helper;
   private readonly PerScreen<Dictionary<string, CustomIconData>> _activeIcons = new(() => []);
