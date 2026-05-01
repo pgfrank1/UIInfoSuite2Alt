@@ -254,15 +254,19 @@ public static class ArtisanPriceHelper
         continue;
       }
 
-      foreach (MachineOutputRule rule in machineData.OutputRules)
+      foreach (MachineOutputRule? rule in machineData.OutputRules)
       {
-        if (rule.Triggers == null)
+        if (rule?.Triggers == null)
         {
           continue;
         }
 
-        foreach (MachineOutputTriggerRule trig in rule.Triggers)
+        foreach (MachineOutputTriggerRule? trig in rule.Triggers)
         {
+          if (trig == null)
+          {
+            continue;
+          }
           if (!trig.Trigger.HasFlag(MachineOutputTrigger.ItemPlacedInMachine))
           {
             continue;

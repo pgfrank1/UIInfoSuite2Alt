@@ -58,6 +58,8 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.27**
+  - Fix crash in artisan price tooltip when a mod's machine data contains null output rules
 - **v2.8.26**
   - Add keybind to open Qi's Special Orders board directly (default: Ctrl+Q)
   - Fix redundant suffix addition to fruit tree names in other languages
