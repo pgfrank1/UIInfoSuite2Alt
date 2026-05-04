@@ -60,6 +60,7 @@
 
 - **v2.8.27**
   - Fix crash in artisan price tooltip when a mod's machine data contains null output rules
+  - Fix [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414) tooltip shift applying even when FSE's tooltip is disabled in its config
 - **v2.8.26**
   - Add keybind to open Qi's Special Orders board directly (default: Ctrl+Q)
   - Fix redundant suffix addition to fruit tree names in other languages

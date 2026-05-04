@@ -387,6 +387,7 @@ internal class ShowItemHoverInformation : IDisposable
       // Avoid overlapping Ferngill Simple Economy tooltip
       if (
         hoveredObject != null
+        && FerngillEconomyHelper.IsTooltipEnabled()
         && ApiManager.GetApi(ModCompat.FerngillEconomy, out IFerngillSimpleEconomyApi? fseApi)
         && fseApi.IsLoaded()
         && fseApi.ItemIsInEconomy(hoveredObject)

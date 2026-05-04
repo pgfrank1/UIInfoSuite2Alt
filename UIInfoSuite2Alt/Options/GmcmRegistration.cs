@@ -29,6 +29,7 @@ public partial class ModEntry
     ApiManager.TryRegisterApi<IExtraMachineConfigApi>(Helper, ModCompat.ExtraMachineConfig);
 
     WalkOfLifeHelper.Initialize(Helper);
+    FerngillEconomyHelper.Initialize(Helper);
 
     UnlockableBundleHelper.Initialize(Helper);
     BundleHelper.ShowLockedBundles = ModConfig.ShowLockedBundleItems;

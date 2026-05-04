@@ -44,8 +44,6 @@ internal static class InformantHelper
     RegisterDecorators(helper);
 
     helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
-
-    ModEntry.MonitorObject.Log("InformantHelper: Informant Detected", LogLevel.Info);
   }
 
   private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -142,14 +140,7 @@ internal static class InformantHelper
       }
 
       _reflectionInitialized = _displayIdsProperty != null;
-      if (_reflectionInitialized)
-      {
-        ModEntry.MonitorObject.Log(
-          "InformantHelper: reflection initialized, per-feature compat enabled",
-          LogLevel.Info
-        );
-      }
-      else
+      if (!_reflectionInitialized)
       {
         ModEntry.MonitorObject.Log(
           "InformantHelper: could not find DisplayIds property on config",
@@ -215,11 +206,6 @@ internal static class InformantHelper
         () => "Stardew Aquarium",
         () => "Shows an icon on fish not yet donated to the Aquarium",
         GetAquariumDecoratorIcon
-      );
-
-      ModEntry.MonitorObject.Log(
-        "InformantHelper: Registered Stardew Aquarium Decorator",
-        LogLevel.Info
       );
     }
   }
