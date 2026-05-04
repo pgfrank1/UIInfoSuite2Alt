@@ -142,9 +142,17 @@ internal class ShowArtifactSpotTooltip : IDisposable
 
     // FTM BuriedItems: read custom items directly instead of predicting vanilla drops
     List<PredictedDrop>? ftmItems = TryGetFtmBuriedItems(obj);
+
+    // SpaceCore till spots: store their drop in modData instead of the vanilla drop table
+    List<PredictedDrop>? scItems = TryGetSpaceCoreTillDrop(obj);
+
     if (ftmItems != null)
     {
       _predictedItems.Value = ftmItems;
+    }
+    else if (scItems != null)
+    {
+      _predictedItems.Value = scItems;
     }
     else
     {
@@ -182,6 +190,18 @@ internal class ShowArtifactSpotTooltip : IDisposable
     {
       return null;
     }
+  }
+
+  // SpaceCore stores the drop in modData["spacechase0.SpaceCore/TillDropOverride"] when placing till spots.
+  private static List<PredictedDrop>? TryGetSpaceCoreTillDrop(Object obj)
+  {
+    if (!obj.modData.TryGetValue("spacechase0.SpaceCore/TillDropOverride", out string? itemId))
+    {
+      return null;
+    }
+
+    Item? item = ItemRegistry.Create(itemId, allowNull: true);
+    return item != null ? [new PredictedDrop(item)] : null;
   }
 
   private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
