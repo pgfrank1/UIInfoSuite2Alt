@@ -941,7 +941,8 @@ internal class ShowItemEffectRanges : IDisposable
       {
         var tileVec = new Vector2(point.X, point.Y);
         bool isTillable =
-          location.doesTileHaveProperty(point.X, point.Y, "Diggable", "Back") != null
+          location is SlimeHutch
+          || location.doesTileHaveProperty(point.X, point.Y, "Diggable", "Back") != null
           || location.isTileHoeDirt(tileVec);
         if (!isTillable || IsTileBlocked(location, tileVec))
         {
@@ -1065,6 +1066,12 @@ internal class ShowItemEffectRanges : IDisposable
   /// </summary>
   private static bool IsTileBlocked(GameLocation location, Vector2 tile)
   {
+    // Inside a Slime Hutch, sprinklers fill water troughs regardless of tile passability
+    if (location is SlimeHutch)
+    {
+      return false;
+    }
+
     // Map layout (cliffs, built-in fences, walls on Buildings layer)
     if (!location.isTilePassable(tile))
     {

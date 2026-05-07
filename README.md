@@ -63,6 +63,7 @@
   - Fix [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414) tooltip shift applying even when FSE's tooltip is disabled in its config
   - Fix artifact spot tooltip showing wrong item for [SpaceCore](https://www.nexusmods.com/stardewvalley/mods/1348)-managed till spots (e.g. Cornucopia Ube Seeds showing as Winter Root)
   - Fix Golden Walnut counter overlapping the Volcano Dungeon level counter in the top-left corner
+  - Fix item effect range not displaying inside Slime Hutch (including water trough coverage)
 - **v2.8.26**
   - Add keybind to open Qi's Special Orders board directly (default: Ctrl+Q)
   - Fix redundant suffix addition to fruit tree names in other languages
