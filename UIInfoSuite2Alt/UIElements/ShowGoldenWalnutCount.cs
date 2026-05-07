@@ -6,6 +6,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.BellsAndWhistles;
+using StardewValley.Locations;
 using UIInfoSuite2Alt.Infrastructure;
 
 namespace UIInfoSuite2Alt.UIElements;
@@ -288,6 +290,15 @@ internal class ShowGoldenWalnutCount : IDisposable
   #endregion
 
   #region Logic
+  private static float GetTopLeftYOffset()
+  {
+    if (Game1.currentLocation is VolcanoDungeon volcano && volcano.level.Value > 0)
+    {
+      return 16 + SpriteText.getHeightOfString("9") + PanelGap;
+    }
+    return 8f;
+  }
+
   private int GetWalnutCount(string key)
   {
     return _walnutData.TryGetValue(key, out WalnutInfo? info) ? info.Count : 1;
@@ -357,9 +368,9 @@ internal class ShowGoldenWalnutCount : IDisposable
     int panelWidth = contentWidth + CornerScaled * 2;
     int panelHeight = contentHeight + CornerScaled * 2;
 
-    // Top-left corner with margin
+    // Top-left corner with margin; shift down when in Volcano dungeon to avoid overlapping the level counter
     float panelX = 8f;
-    float panelY = 8f;
+    float panelY = GetTopLeftYOffset();
 
     // Draw 9-slice background
     var dest = new Rectangle((int)panelX, (int)panelY, panelWidth, panelHeight);
