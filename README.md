@@ -59,7 +59,7 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.27**
-  - Fix crash in artisan price tooltip when a mod's machine data contains null output rules
+  - Fix NRE crash in artisan price tooltip when a mod's machine data contains null output rules
   - Fix [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414) tooltip shift applying even when FSE's tooltip is disabled in its config
   - Fix artifact spot tooltip showing wrong item for [SpaceCore](https://www.nexusmods.com/stardewvalley/mods/1348)-managed till spots (e.g. Cornucopia Ube Seeds showing as Winter Root)
   - Fix Golden Walnut counter overlapping the Volcano Dungeon level counter in the top-left corner
