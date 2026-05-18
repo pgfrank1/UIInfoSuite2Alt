@@ -54,6 +54,7 @@
 - [Magyar](https://www.nexusmods.com/stardewvalley/mods/45218) - ArcsiHUN
 - [Polski](https://www.nexusmods.com/stardewvalley/mods/45467) - zieloneoczka
 - [Français](https://www.nexusmods.com/stardewvalley/mods/46333) - Furaxx31
+- [Bahasa Indonesia](https://www.nexusmods.com/stardewvalley/mods/46341) - BabangUcok
 
 ![New features](.github/assets/patch-notes.png)
 
