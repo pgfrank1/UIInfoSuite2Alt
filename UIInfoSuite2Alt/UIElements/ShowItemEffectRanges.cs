@@ -25,8 +25,9 @@ internal class ShowItemEffectRanges : IDisposable
   private readonly PerScreen<HashSet<Point>> _effectiveAreaIntersection = new(() => []);
   private readonly PerScreen<HashSet<Point>> _seenTiles = new(() => []);
 
+  private static readonly Rectangle TileSpriteRect = new(194, 388, 16, 16);
+
   private readonly IModHelper _helper;
-  private readonly Lazy<Texture2D> _tileTexture;
   private readonly Lazy<Texture2D> _wildTreeTexture;
   private readonly PerScreen<bool> _isBombRange = new(() => false);
 
@@ -77,9 +78,6 @@ internal class ShowItemEffectRanges : IDisposable
   public ShowItemEffectRanges(IModHelper helper)
   {
     _helper = helper;
-    _tileTexture = new Lazy<Texture2D>(() =>
-      AssetHelper.TryLoadTexture(_helper, "assets/tile_muted.png")
-    );
     _wildTreeTexture = new Lazy<Texture2D>(() =>
       AssetHelper.TryLoadTexture(_helper, "assets/wild_tree_tooltip.png")
     );
@@ -196,7 +194,6 @@ internal class ShowItemEffectRanges : IDisposable
       ? Color.Lime
       : _rangeTooltipInfo.Value?.TileColor ?? Color.LawnGreen;
     float tileOpacity = _isBombRange.Value ? 0.3f : 0.7f;
-    Texture2D texture = _tileTexture.Value;
 
     // Compute visible tile bounds to skip off-screen draw calls
     xTile.Dimensions.Rectangle viewport = Game1.viewport;
@@ -210,7 +207,6 @@ internal class ShowItemEffectRanges : IDisposable
     DrawTileHighlights(
       e,
       _effectiveAreaOther.Value,
-      texture,
       tileColor * otherOpacity,
       minTileX,
       minTileY,
@@ -222,7 +218,6 @@ internal class ShowItemEffectRanges : IDisposable
     DrawTileHighlights(
       e,
       _effectiveAreaCurrent.Value,
-      texture,
       tileColor * tileOpacity,
       minTileX,
       minTileY,
@@ -234,7 +229,6 @@ internal class ShowItemEffectRanges : IDisposable
     DrawTileHighlights(
       e,
       _effectiveAreaIntersection.Value,
-      texture,
       Color.DarkOrange * 0.85f,
       minTileX,
       minTileY,
@@ -246,7 +240,6 @@ internal class ShowItemEffectRanges : IDisposable
   private static void DrawTileHighlights(
     RenderingHudEventArgs e,
     IEnumerable<Point> tiles,
-    Texture2D texture,
     Color color,
     int minTileX,
     int minTileY,
@@ -266,11 +259,11 @@ internal class ShowItemEffectRanges : IDisposable
         point.Y * Utility.ModifyCoordinateFromUIScale(Game1.tileSize)
       );
       e.SpriteBatch.Draw(
-        texture,
+        Game1.mouseCursors,
         Utility.ModifyCoordinatesForUIScale(
           Game1.GlobalToLocal(Utility.ModifyCoordinatesForUIScale(position))
         ),
-        null,
+        TileSpriteRect,
         color,
         0.0f,
         Vector2.Zero,
