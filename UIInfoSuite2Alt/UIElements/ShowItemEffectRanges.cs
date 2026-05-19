@@ -190,11 +190,6 @@ internal class ShowItemEffectRanges : IDisposable
 
   private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
   {
-    Color tileColor = _isBombRange.Value
-      ? Color.Lime
-      : _rangeTooltipInfo.Value?.TileColor ?? Color.LawnGreen;
-    float tileOpacity = _isBombRange.Value ? 0.3f : 0.7f;
-
     // Compute visible tile bounds to skip off-screen draw calls
     xTile.Dimensions.Rectangle viewport = Game1.viewport;
     int minTileX = viewport.X / Game1.tileSize - 1;
@@ -202,34 +197,30 @@ internal class ShowItemEffectRanges : IDisposable
     int maxTileX = (viewport.X + viewport.Width) / Game1.tileSize + 1;
     int maxTileY = (viewport.Y + viewport.Height) / Game1.tileSize + 1;
 
-    // Placed items: faded, softer texture
-    float otherOpacity = 0.5f;
     DrawTileHighlights(
       e,
       _effectiveAreaOther.Value,
-      tileColor * otherOpacity,
+      Color.Lime * 0.8f,
       minTileX,
       minTileY,
       maxTileX,
       maxTileY
     );
 
-    // Held item: prominent
     DrawTileHighlights(
       e,
       _effectiveAreaCurrent.Value,
-      tileColor * tileOpacity,
+      Color.Lime * 0.8f,
       minTileX,
       minTileY,
       maxTileX,
       maxTileY
     );
 
-    // Overlap: orange
     DrawTileHighlights(
       e,
       _effectiveAreaIntersection.Value,
-      Color.DarkOrange * 0.85f,
+      Color.Orange,
       minTileX,
       minTileY,
       maxTileX,
