@@ -57,7 +57,6 @@ internal class ShowItemEffectRanges : IDisposable
     public int RawTotalTiles;
     public string? SubHeader;
     public string? WarningMessage;
-    public Color TileColor = Color.LawnGreen;
     public Texture2D? SpriteTexture;
     public Rectangle? SpriteSourceRect;
 
