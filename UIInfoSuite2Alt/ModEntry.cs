@@ -301,18 +301,12 @@ public partial class ModEntry : Mod
 
   public static void RegisterCalendarAndQuestKeyBindings(IModHelper helper, bool subscribe)
   {
-    if (_calendarAndQuestKeyBindingsHandler == null)
-    {
-      _calendarAndQuestKeyBindingsHandler = (sender, e) =>
-        HandleCalendarAndQuestKeyBindings(helper);
-    }
-
-    helper.Events.Input.ButtonsChanged -= _calendarAndQuestKeyBindingsHandler;
-
-    if (subscribe)
-    {
-      helper.Events.Input.ButtonsChanged += _calendarAndQuestKeyBindingsHandler;
-    }
+    SetButtonsChangedSubscription(
+      helper,
+      subscribe,
+      ref _calendarAndQuestKeyBindingsHandler,
+      () => HandleCalendarAndQuestKeyBindings(helper)
+    );
   }
 
   private static void HandleCalendarAndQuestKeyBindings(IModHelper helper)
@@ -380,18 +374,12 @@ public partial class ModEntry : Mod
 
   public static void RegisterMonsterEradicationKeyBindings(IModHelper helper, bool subscribe)
   {
-    if (_monsterEradicationKeyBindingsHandler == null)
-    {
-      _monsterEradicationKeyBindingsHandler = (sender, e) =>
-        HandleMonsterEradicationKeyBindings(helper);
-    }
-
-    helper.Events.Input.ButtonsChanged -= _monsterEradicationKeyBindingsHandler;
-
-    if (subscribe)
-    {
-      helper.Events.Input.ButtonsChanged += _monsterEradicationKeyBindingsHandler;
-    }
+    SetButtonsChangedSubscription(
+      helper,
+      subscribe,
+      ref _monsterEradicationKeyBindingsHandler,
+      () => HandleMonsterEradicationKeyBindings(helper)
+    );
   }
 
   private static void HandleMonsterEradicationKeyBindings(IModHelper helper)
@@ -405,17 +393,12 @@ public partial class ModEntry : Mod
 
   public static void RegisterHideTreesKeyBinding(IModHelper helper, bool subscribe)
   {
-    if (_hideTreesKeyBindingsHandler == null)
-    {
-      _hideTreesKeyBindingsHandler = (sender, e) => HandleHideTreesKeyBinding(helper);
-    }
-
-    helper.Events.Input.ButtonsChanged -= _hideTreesKeyBindingsHandler;
-
-    if (subscribe)
-    {
-      helper.Events.Input.ButtonsChanged += _hideTreesKeyBindingsHandler;
-    }
+    SetButtonsChangedSubscription(
+      helper,
+      subscribe,
+      ref _hideTreesKeyBindingsHandler,
+      () => HandleHideTreesKeyBinding(helper)
+    );
   }
 
   private static void HandleHideTreesKeyBinding(IModHelper helper)
@@ -424,6 +407,23 @@ public partial class ModEntry : Mod
     {
       helper.Input.SuppressActiveKeybinds(ModConfig.HideTreesKeybind);
       HideTreesPatch.Toggle();
+    }
+  }
+
+  private static void SetButtonsChangedSubscription(
+    IModHelper helper,
+    bool subscribe,
+    ref EventHandler<ButtonsChangedEventArgs>? handler,
+    Action onPressed
+  )
+  {
+    handler ??= (_, _) => onPressed();
+
+    helper.Events.Input.ButtonsChanged -= handler;
+
+    if (subscribe)
+    {
+      helper.Events.Input.ButtonsChanged += handler;
     }
   }
   #endregion
