@@ -62,6 +62,7 @@
 
 - **v2.8.28**
   - Item effect range tiles now use the vanilla game sprite (same as original UIInfoSuite2) instead of the custom muted tile texture
+  - Minor internal code cleanup
 - **v2.8.27**
   - Fix NRE crash in artisan price tooltip when a mod's machine data contains null output rules
   - Fix [Ferngill Simple Economy](https://www.nexusmods.com/stardewvalley/mods/21414) tooltip shift applying even when FSE's tooltip is disabled in its config
