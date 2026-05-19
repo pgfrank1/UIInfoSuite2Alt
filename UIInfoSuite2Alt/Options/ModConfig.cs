@@ -100,7 +100,7 @@ public class ModConfig
   public bool ShowAnimalsNeedPets { get; set; } = true;
   public bool HideAnimalPetOnMaxFriendship { get; set; } = true;
   public bool ShowItemEffectRanges { get; set; } = true;
-  public bool ShowPlacedItemRanges { get; set; } = false;
+  public bool ShowPlacedItemRanges { get; set; } = true;
   public bool ButtonControlShow { get; set; } = true;
   public bool ShowRangeTooltip { get; set; } = true;
   public bool ShowBombRange { get; set; } = true;
