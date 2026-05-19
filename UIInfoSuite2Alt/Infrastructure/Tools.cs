@@ -12,7 +12,6 @@ using StardewValley.GameData.FruitTrees;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
-using StardewValley.WorldMaps;
 using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Compatibility.Helpers;
 using SObject = StardewValley.Object;
@@ -297,29 +296,6 @@ public static class Tools
     return hoverItem;
   }
 
-  public static void GetSubTexture(
-    Color[] output,
-    Color[] originalColors,
-    Rectangle sourceBounds,
-    Rectangle clipArea
-  )
-  {
-    if (output.Length < clipArea.Width * clipArea.Height)
-    {
-      return;
-    }
-
-    var dest = 0;
-    for (var yOffset = 0; yOffset < clipArea.Height; yOffset++)
-    {
-      for (var xOffset = 0; xOffset < clipArea.Width; xOffset++)
-      {
-        int idx = clipArea.X + xOffset + sourceBounds.Width * (yOffset + clipArea.Y);
-        output[dest++] = originalColors[idx];
-      }
-    }
-  }
-
   public static void SetSubTexture(
     Color[] sourceColors,
     Color[] destColors,
@@ -354,75 +330,6 @@ public static class Tools
         destColors[idx] = sourcePixel;
       }
     }
-  }
-
-  public static void CopySection(
-    Texture2D sourceTexture,
-    Texture2D destinationTexture,
-    Rectangle sourceRectangle,
-    Point destinationPosition,
-    bool overlayTransparent = false
-  )
-  {
-    // Validate source bounds
-    if (
-      sourceRectangle.X < 0
-      || sourceRectangle.Y < 0
-      || sourceRectangle.X + sourceRectangle.Width > sourceTexture.Width
-      || sourceRectangle.Y + sourceRectangle.Height > sourceTexture.Height
-    )
-    {
-      throw new ArgumentOutOfRangeException(
-        nameof(sourceRectangle),
-        "Source rectangle is out of bounds of the source texture."
-      );
-    }
-
-    // Validate destination bounds
-    if (
-      destinationPosition.X < 0
-      || destinationPosition.Y < 0
-      || destinationPosition.X + sourceRectangle.Width > destinationTexture.Width
-      || destinationPosition.Y + sourceRectangle.Height > destinationTexture.Height
-    )
-    {
-      throw new ArgumentOutOfRangeException(
-        nameof(destinationPosition),
-        "Destination position is out of bounds of the destination texture."
-      );
-    }
-
-    var emptyColor = Color.Transparent;
-    var sourceData = new Color[sourceRectangle.Width * sourceRectangle.Height];
-    sourceTexture.GetData(0, sourceRectangle, sourceData, 0, sourceData.Length);
-
-    // Extract destination data
-    var destinationData = new Color[destinationTexture.Width * destinationTexture.Height];
-    destinationTexture.GetData(destinationData);
-
-    // Copy source into destination
-    for (var y = 0; y < sourceRectangle.Height; y++)
-    {
-      for (var x = 0; x < sourceRectangle.Width; x++)
-      {
-        int destIndex =
-          (destinationPosition.Y + y) * destinationTexture.Width + destinationPosition.X + x;
-        int sourceIndex = y * sourceRectangle.Width + x;
-
-        Color sourcePixel = sourceData[sourceIndex];
-
-        // Skip transparent pixels in overlay mode
-        if (overlayTransparent && emptyColor.Equals(sourcePixel))
-        {
-          continue;
-        }
-
-        destinationData[destIndex] = sourcePixel;
-      }
-    }
-
-    // Write back
-    destinationTexture.SetData(destinationData);
   }
 
   /// <summary>Extract a source rectangle from a spritesheet into a new standalone texture.</summary>
@@ -530,13 +437,6 @@ public static class Tools
     }
 
     return days.Count == 0 ? null : days.Max();
-  }
-
-  public static MapAreaPosition? GetMapPositionDataSafe(GameLocation location, Point position)
-  {
-    MapAreaPosition? mapAreaPosition = WorldMapManager.GetPositionData(location, position)?.Data;
-
-    return mapAreaPosition ?? WorldMapManager.GetPositionData(Game1.getFarm(), Point.Zero)?.Data;
   }
 
   #region Text Drawing
