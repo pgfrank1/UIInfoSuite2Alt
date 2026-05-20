@@ -62,6 +62,7 @@
 
 - **v2.8.28**
   - Item effect range tiles now use the vanilla game sprite (same as original UIInfoSuite2) instead of the custom muted tile texture
+  - Fix item effect range (sprinklers, scarecrows) not highlighting tiles occupied by Garden Pots
   - Minor internal code cleanup
 - **v2.8.27**
   - Fix NRE crash in artisan price tooltip when a mod's machine data contains null output rules

@@ -10,6 +10,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Network;
+using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using UIInfoSuite2Alt.Compatibility;
 using UIInfoSuite2Alt.Infrastructure;
@@ -926,7 +927,8 @@ internal class ShowItemEffectRanges : IDisposable
         bool isTillable =
           location is SlimeHutch
           || location.doesTileHaveProperty(point.X, point.Y, "Diggable", "Back") != null
-          || location.isTileHoeDirt(tileVec);
+          || location.isTileHoeDirt(tileVec)
+          || (location.Objects.TryGetValue(tileVec, out Object? potObj) && potObj is IndoorPot);
         if (!isTillable || IsTileBlocked(location, tileVec))
         {
           continue;
@@ -990,7 +992,10 @@ internal class ShowItemEffectRanges : IDisposable
             {
               bool isTillable =
                 location.doesTileHaveProperty(point.X, point.Y, "Diggable", "Back") != null
-                || location.isTileHoeDirt(tileVec);
+                || location.isTileHoeDirt(tileVec)
+                || (
+                  location.Objects.TryGetValue(tileVec, out Object? potObj) && potObj is IndoorPot
+                );
               if (!isTillable || IsTileBlocked(location, tileVec))
               {
                 continue;
@@ -1061,8 +1066,12 @@ internal class ShowItemEffectRanges : IDisposable
       return true;
     }
 
-    // Objects (fences, crafted items, etc.)
-    if (location.Objects.TryGetValue(tile, out Object? obj) && !obj.isPassable())
+    // Objects (fences, crafted items, etc.) - garden pots are valid planting targets
+    if (
+      location.Objects.TryGetValue(tile, out Object? obj)
+      && !obj.isPassable()
+      && obj is not IndoorPot
+    )
     {
       return true;
     }
