@@ -326,6 +326,11 @@ public partial class ModEntry
       v => ModConfig.ShowFestivalIcon = v
     );
     AddBool(
+      nameof(ModConfig.ShowCraneGameIcon),
+      () => ModConfig.ShowCraneGameIcon,
+      v => ModConfig.ShowCraneGameIcon = v
+    );
+    AddBool(
       nameof(ModConfig.ShowWhenNewRecipesAreAvailable),
       () => ModConfig.ShowWhenNewRecipesAreAvailable,
       v => ModConfig.ShowWhenNewRecipesAreAvailable = v

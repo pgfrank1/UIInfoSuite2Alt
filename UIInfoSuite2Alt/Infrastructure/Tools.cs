@@ -343,6 +343,20 @@ public static class Tools
     return cropped;
   }
 
+  public static Texture2D RecolorTexture(Texture2D source, Color color)
+  {
+    var pixels = new Color[source.Width * source.Height];
+    source.GetData(pixels);
+    for (int i = 0; i < pixels.Length; i++)
+    {
+      if (pixels[i].A > 0)
+        pixels[i] = new Color(color.R, color.G, color.B, pixels[i].A);
+    }
+    var result = new Texture2D(Game1.graphics.GraphicsDevice, source.Width, source.Height);
+    result.SetData(pixels);
+    return result;
+  }
+
   public static IEnumerable<int> GetDaysFromCondition(
     GameStateQuery.ParsedGameStateQuery parsedGameStateQuery
   )

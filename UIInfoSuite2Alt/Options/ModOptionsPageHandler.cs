@@ -216,6 +216,7 @@ internal class ModOptionsPageHandler : IDisposable
     var showQuestCount = new ShowQuestCount(helper);
     var showGoldenWalnutCount = new ShowGoldenWalnutCount(helper);
     var showFestivalIcon = new ShowFestivalIcon(helper);
+    var showCraneGameAvailable = new ShowCraneGameAvailable(helper);
     var showBuffTimers = new ShowBuffTimers(helper);
     var showCustomIcons = new ShowCustomIcons(helper);
     var showFishOnCatch = new ShowFishOnCatch();
@@ -249,6 +250,7 @@ internal class ModOptionsPageHandler : IDisposable
       showGoldenWalnutCount,
       showBuffTimers,
       showFestivalIcon,
+      showCraneGameAvailable,
       showCustomIcons,
       showFishOnCatch,
       showGrangeScore,
@@ -491,13 +493,21 @@ internal class ModOptionsPageHandler : IDisposable
         booksellerIcon
       )
     );
+    var festivalIconCheckbox = new ModOptionsCheckbox(
+      _helper.SafeGetString(nameof(config.ShowFestivalIcon)),
+      whichOption++,
+      showFestivalIcon.ToggleOption,
+      () => config.ShowFestivalIcon,
+      Set(v => config.ShowFestivalIcon = v)
+    );
+    _currentTarget.Add(festivalIconCheckbox);
     _currentTarget.Add(
       new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.ShowFestivalIcon)),
+        _helper.SafeGetString(nameof(config.ShowCraneGameIcon)),
         whichOption++,
-        showFestivalIcon.ToggleOption,
-        () => config.ShowFestivalIcon,
-        Set(v => config.ShowFestivalIcon = v)
+        showCraneGameAvailable.ToggleOption,
+        () => config.ShowCraneGameIcon,
+        Set(v => config.ShowCraneGameIcon = v)
       )
     );
     var queenOfSauceCheckbox = new ModOptionsCheckbox(

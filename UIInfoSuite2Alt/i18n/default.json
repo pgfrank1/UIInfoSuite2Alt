@@ -271,6 +271,8 @@
   "UseVerticalIconLayout": "Stack icons vertically",
   "IconsPerRow": "Icons before wrapping",
   "ShowFestivalIcon": "Show festival reminder",
+  "ShowCraneGameIcon": "Show crane game available",
+  "CraneGameAvailable": "Crane Game in the Movie Theater is available today!",
   "ShowFishOnCatch": "Always show hooked fish identity",
   "ShowFishQualityStar": "Show quality star",
   "ShowBuffTimers": "Show buff duration timers",

@@ -60,6 +60,8 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.29**
+  - Add HUD icon showing when the Movie Theater crane game is available today
 - **v2.8.28**
   - Item effect range tiles now use the vanilla game sprite (same as original UIInfoSuite2) instead of the custom muted tile texture
   - Fix item effect range (sprinklers, scarecrows) not highlighting tiles occupied by Garden Pots

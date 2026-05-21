@@ -132,6 +132,7 @@ public class ModConfig
   public bool UseVerticalIconLayout { get; set; } = false;
   public int IconsPerRow { get; set; } = 10;
   public bool ShowFestivalIcon { get; set; } = true;
+  public bool ShowCraneGameIcon { get; set; } = true;
   public bool ShowFishOnCatch { get; set; } = false;
   public bool ShowFishQualityStar { get; set; } = false;
   public bool ShowBuffTimers { get; set; } = true;
