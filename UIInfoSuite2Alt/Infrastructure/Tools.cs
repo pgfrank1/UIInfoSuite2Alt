@@ -78,12 +78,35 @@ public static class Tools
         return null;
       }
 
+      // ItemId can be null when the entry uses an item query (RandomItemId, etc.);
+      // pick the first literal ItemId we find.
+      string? fruitId = fruitTreeData
+        .Fruit.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.ItemId))
+        ?.ItemId;
+      if (string.IsNullOrWhiteSpace(fruitId))
+      {
+        ModEntry.MonitorObject.LogOnce(
+          $"Tools.GetHarvest: fruit tree '{item.ItemId}' has no literal fruit ItemId (uses item query?); skipping harvest price",
+          LogLevel.Trace
+        );
+        return null;
+      }
+
       // TODO support multiple items returned
-      return ItemRegistry.Create<SObject>(fruitTreeData.Fruit[0].ItemId);
+      return ItemRegistry.Create<SObject>(fruitId);
     }
 
-    if (Crop.TryGetData(item.ItemId, out CropData cropData) && cropData.HarvestItemId is not null)
+    if (Crop.TryGetData(item.ItemId, out CropData cropData))
     {
+      if (string.IsNullOrWhiteSpace(cropData.HarvestItemId))
+      {
+        ModEntry.MonitorObject.LogOnce(
+          $"Tools.GetHarvest: crop '{item.ItemId}' has no literal HarvestItemId (uses item query?); skipping harvest price",
+          LogLevel.Trace
+        );
+        return null;
+      }
+
       return ItemRegistry.Create<SObject>(cropData.HarvestItemId);
     }
 
@@ -94,7 +117,17 @@ public static class Tools
       && drops.Count > 0
     )
     {
-      return ItemRegistry.Create<SObject>(drops[0].ItemId);
+      string? dropId = drops.FirstOrDefault(d => !string.IsNullOrWhiteSpace(d.ItemId))?.ItemId;
+      if (string.IsNullOrWhiteSpace(dropId))
+      {
+        ModEntry.MonitorObject.LogOnce(
+          $"Tools.GetHarvest: custom bush '{item.QualifiedItemId}' has no literal drop ItemId; skipping harvest price",
+          LogLevel.Trace
+        );
+        return null;
+      }
+
+      return ItemRegistry.Create<SObject>(dropId);
     }
 
     // Vanilla tea sapling fallback (no Custom Bush mod)
