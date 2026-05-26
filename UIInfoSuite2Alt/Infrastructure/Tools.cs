@@ -93,7 +93,7 @@ public static class Tools
       }
 
       // TODO support multiple items returned
-      return ItemRegistry.Create<SObject>(fruitId);
+      return TryCreateHarvest(fruitId, item.ItemId);
     }
 
     if (Crop.TryGetData(item.ItemId, out CropData cropData))
@@ -107,7 +107,7 @@ public static class Tools
         return null;
       }
 
-      return ItemRegistry.Create<SObject>(cropData.HarvestItemId);
+      return TryCreateHarvest(cropData.HarvestItemId, item.ItemId);
     }
 
     // Custom Bush saplings and vanilla tea sapling
@@ -127,16 +127,34 @@ public static class Tools
         return null;
       }
 
-      return ItemRegistry.Create<SObject>(dropId);
+      return TryCreateHarvest(dropId, item.QualifiedItemId);
     }
 
     // Vanilla tea sapling fallback (no Custom Bush mod)
     if (item.QualifiedItemId == "(O)251")
     {
-      return ItemRegistry.Create<SObject>("(O)614");
+      return TryCreateHarvest("(O)614", item.QualifiedItemId);
     }
 
     return null;
+  }
+
+  // Wraps ItemRegistry.Create so a third-party Harmony patch on Object..ctor (e.g. ItemExtensions,
+  // AlternativeTextures) can't spam the tooltip event with exceptions every frame.
+  private static SObject? TryCreateHarvest(string harvestItemId, string seedItemId)
+  {
+    try
+    {
+      return ItemRegistry.Create<SObject>(harvestItemId, allowNull: true);
+    }
+    catch (Exception ex)
+    {
+      ModEntry.MonitorObject.LogOnce(
+        $"Tools.GetHarvest: failed to create harvest item '{harvestItemId}' for seed '{seedItemId}'; skipping harvest price. Error: {ex.Message}",
+        LogLevel.Warn
+      );
+      return null;
+    }
   }
 
   public static int GetHarvestPrice(Item item)
