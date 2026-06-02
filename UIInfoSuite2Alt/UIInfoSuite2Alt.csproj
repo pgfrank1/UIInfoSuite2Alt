@@ -20,7 +20,6 @@
 
   <Import Project="stardewvalley.targets" Condition="Exists('stardewvalley.targets')" />
 
-  <!-- Clean deployed assets before SMAPI deploy to prevent stale files from lingering -->
   <Target
     Name="CleanDeployedAssets"
     BeforeTargets="AfterBuild"
