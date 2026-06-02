@@ -438,6 +438,14 @@ internal class ModOptionsPageHandler : IDisposable
         birthdayIcon
       )
     );
+    _currentTarget.Add(
+      new ModOptionsElement(
+        I18n.ShowUnrevealedBirthdayLoves_Note(),
+        isSmallText: true,
+        isIndented: true
+      )
+    );
+    OptionsSpacer();
     var travellingMerchantIcon = new ModOptionsCheckbox(
       _helper.SafeGetString(nameof(config.ShowTravelingMerchant)),
       whichOption++,

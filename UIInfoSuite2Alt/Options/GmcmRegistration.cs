@@ -287,6 +287,7 @@ public partial class ModEntry
       () => ModConfig.ShowUnrevealedBirthdayLoves,
       v => ModConfig.ShowUnrevealedBirthdayLoves = v
     );
+    configMenu.AddParagraph(ModManifest, text: () => I18n.ShowUnrevealedBirthdayLoves_Note());
     Spacer();
     AddBool(
       nameof(ModConfig.ShowTravelingMerchant),

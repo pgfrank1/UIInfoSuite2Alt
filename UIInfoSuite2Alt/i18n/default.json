@@ -240,6 +240,7 @@
   "HideBirthdayIfFullFriendShip": "Hide on max friendship",
   "UseStackedBirthdayIcons": "Stack multiple birthdays",
   "ShowUnrevealedBirthdayLoves": "Show loved gifts in tooltip",
+  "ShowUnrevealedBirthdayLoves.Note": "Note: Lists only loved gifts you already\nown (inventory, chests, etc.), not every\ngift the NPC loves. Items in your backpack\nshow in green and are listed first.",
   "ShowTravelingMerchant": "Show Traveling Merchant",
   "HideMerchantWhenVisited": "Hide when visited",
   "ShowMerchantBundleIcon": "Show bundle items indicator",
