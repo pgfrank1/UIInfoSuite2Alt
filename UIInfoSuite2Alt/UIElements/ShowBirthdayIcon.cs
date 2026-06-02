@@ -308,8 +308,12 @@ internal class ShowBirthdayIcon : IDisposable
         {
           taste = npc.getGiftTasteForThisItem(item);
         }
-        catch
+        catch (Exception ex)
         {
+          ModEntry.MonitorObject.LogOnce(
+            $"ShowBirthdayIcon: failed to get gift taste for '{item.QualifiedItemId}' / NPC '{npc.Name}'; skipping. Error: {ex.Message}",
+            LogLevel.Trace
+          );
           continue;
         }
 

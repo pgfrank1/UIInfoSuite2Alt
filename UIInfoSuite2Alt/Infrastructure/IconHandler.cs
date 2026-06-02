@@ -89,7 +89,10 @@ public sealed class IconHandler
       return;
     }
 
-    // Stable sort: config order, then registration order (cached to avoid per-frame allocation)
+    // Stable sort: config order, then registration order. The sorted list instance is reused
+    // across frames to avoid reallocating it, but contents are rebuilt every frame: icons are
+    // re-enqueued each frame and _lastSortedCount is reset to -1 below, so the count guard always
+    // re-sorts. (The guard is vestigial - kept only because it is harmless.)
     List<QueuedIcon> sorted = _sortedCache.Value;
     if (_lastSortedCount.Value != icons.Count)
     {
@@ -118,11 +121,14 @@ public sealed class IconHandler
       yPos -= 30;
     }
 
-    // Draw icons with fixed spacing, wrapping after IconsPerRow
+    // Draw icons with fixed spacing, wrapping after IconsPerRow.
+    // Clamp to >= 1: the UI constrains this to 1-10, but config.json is hand-editable and a 0
+    // would throw DivideByZeroException below on every frame.
+    int perRow = Math.Max(1, IconsPerRow);
     for (int i = 0; i < sorted.Count; i++)
     {
-      int col = i % IconsPerRow;
-      int row = i / IconsPerRow;
+      int col = i % perRow;
+      int row = i / perRow;
       Point pos = UseVerticalLayout
         ? new Point(xBase - IconGap * row, yPos + IconGap * col)
         : new Point(xBase - IconGap * col, yPos + IconGap * row);

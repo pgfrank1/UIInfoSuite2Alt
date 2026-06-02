@@ -281,9 +281,13 @@ public static class ArtisanPriceHelper
             {
               qid = ItemRegistry.QualifyItemId(trig.RequiredItemId);
             }
-            catch
+            catch (Exception ex)
             {
-              // ignore malformed ids
+              // Malformed id - fall back to the raw RequiredItemId below.
+              ModEntry.MonitorObject.LogOnce(
+                $"ArtisanPriceHelper: failed to qualify RequiredItemId '{trig.RequiredItemId}'; using raw id. Error: {ex.Message}",
+                LogLevel.Trace
+              );
             }
             string key = qid ?? trig.RequiredItemId;
             AddToIndex(_machinesByRequiredQid, key, machineQid);

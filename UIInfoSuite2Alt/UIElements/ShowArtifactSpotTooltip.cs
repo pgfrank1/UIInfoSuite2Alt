@@ -186,8 +186,12 @@ internal class ShowArtifactSpotTooltip : IDisposable
       var items = _helper.Reflection.GetField<IList<Item>>(obj, "Items").GetValue();
       return items?.Count > 0 ? items.Select(i => new PredictedDrop(i)).ToList() : null;
     }
-    catch
+    catch (Exception ex)
     {
+      ModEntry.MonitorObject.LogOnce(
+        $"ShowArtifactSpotTooltip: failed to read FTM buried items via reflection; skipping prediction. Error: {ex.Message}",
+        LogLevel.Trace
+      );
       return null;
     }
   }

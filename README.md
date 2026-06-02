@@ -65,6 +65,7 @@
   - Add HUD icon showing when the Movie Theater crane game is available today
   - Fix crash when hovering modded seeds/saplings with randomized harvest items in shops
   - Fix tooltip event spam when other mods (e.g. Item Extensions, Alternative Textures) crash inside their Harmony patches during harvest item lookup
+  - Fix potential crash when `IconsPerRow` is manually set to 0 in config.json
 - **v2.8.28**
   - Item effect range tiles now use the vanilla game sprite (same as original UIInfoSuite2) instead of the custom muted tile texture
   - Fix item effect range (sprinklers, scarecrows) not highlighting tiles occupied by Garden Pots
