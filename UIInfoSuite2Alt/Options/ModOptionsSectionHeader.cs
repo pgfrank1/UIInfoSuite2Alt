@@ -24,6 +24,8 @@ internal class ModOptionsSectionHeader : ModOptionsElement
     IsExpanded = isExpanded;
   }
 
+  public override bool IsInteractive => true;
+
   private void EnsureBounds()
   {
     if (_boundsInitialized)
@@ -94,6 +96,6 @@ internal class ModOptionsSectionHeader : ModOptionsElement
   public override Point? GetRelativeSnapPoint(Rectangle slotBounds)
   {
     EnsureBounds();
-    return new Point(Bounds.Width / 2, slotBounds.Height / 2);
+    return new Point(DefaultX * Game1.pixelZoom + 16, slotBounds.Height / 2 - 12);
   }
 }

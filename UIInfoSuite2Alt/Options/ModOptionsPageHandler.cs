@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Xna.Framework;
@@ -445,7 +445,7 @@ internal class ModOptionsPageHandler : IDisposable
         isIndented: true
       )
     );
-    OptionsSpacer();
+
     var travellingMerchantIcon = new ModOptionsCheckbox(
       _helper.SafeGetString(nameof(config.ShowTravelingMerchant)),
       whichOption++,
@@ -783,7 +783,7 @@ internal class ModOptionsPageHandler : IDisposable
     _currentTarget.Add(
       new ModOptionsElement(I18n.ShowHarvestQuality_Note(), isSmallText: true, isIndented: true)
     );
-    OptionsSpacer();
+
     showMachineProcessingItem.SetMode(config.MachineProcessingIconsMode);
     _currentTarget.Add(
       new ModOptionsDropdown(
@@ -868,7 +868,6 @@ internal class ModOptionsPageHandler : IDisposable
         isIndented: true
       )
     );
-    OptionsSpacer();
 
     // --- Experience & Skills ---
     BeginSection("experience-skills", () => I18n.Section_ExperienceAndSkills(), () => bannerExp);
@@ -1811,3 +1810,4 @@ internal class ModOptionsPageState
   public int? currentComponent;
   public int? currentIndex;
 }
+

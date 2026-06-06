@@ -45,6 +45,18 @@ internal class ModOptionsSmallButton : ModOptionsElement
     Bounds = new Rectangle(buttonX, Bounds.Y, buttonWidth, (int)textSize.Y + 20);
   }
 
+  public override int Height
+  {
+    get
+    {
+      EnsureBounds();
+      int slotHeight = Game1.activeClickableMenu != null
+        ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
+        : 68;
+      return System.Math.Max(slotHeight, Bounds.Height + Game1.pixelZoom * 2 + Bounds.Y);
+    }
+  }
+
   public override void ReceiveLeftClick(int x, int y)
   {
     if (Bounds.Contains(x, y))
