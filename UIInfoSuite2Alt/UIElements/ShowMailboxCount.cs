@@ -65,12 +65,15 @@ internal class ShowMailboxCount : IDisposable
         Math.Round(Math.Sin(Game1.currentGameTime.TotalGameTime.TotalMilliseconds / 250.0), 2);
     float layerDepth = (float)((tileX + 1) * 64) / 10000f + (float)(tileY * 64) / 10000f + 1E-04f;
 
-    // Position at bottom-right of the bubble, matching the vanilla bubble's coordinates
-    Vector2 numberPos = Game1.GlobalToLocal(
-      Game1.viewport,
-      new Vector2(tileX * 64 + 56 + xOffset, tileY * 64 - 96 - 48 + bobbing + 60)
+    Vector2 globalPosition = new Vector2(tileX * 64 + 8 + xOffset, tileY * 64 - 96 - 48 + bobbing + 8);
+    Vector2 localPosition = Game1.GlobalToLocal(Game1.viewport, globalPosition);
+    
+    float scale = 3f;
+    Vector2 numberPos = localPosition + new Vector2(
+      64f - Utility.getWidthOfTinyDigitString(count, scale) + scale,
+      47f
     );
 
-    Utility.drawTinyDigits(count, b, numberPos, 4f, layerDepth, Color.White * 0.8f);
+    Utility.drawTinyDigits(count, b, numberPos, scale, layerDepth, Color.Blue);
   }
 }
