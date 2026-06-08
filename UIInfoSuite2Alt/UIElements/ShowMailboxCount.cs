@@ -43,17 +43,17 @@ internal class ShowMailboxCount : IDisposable
     switch (Game1.currentLocation)
     {
       case Farm:
-      {
-        Point mailboxPosition = Game1.player.getMailboxPosition();
-        DrawMailCount(e.SpriteBatch, count, mailboxPosition.X, mailboxPosition.Y, 0f);
-        break;
-      }
+        {
+          Point mailboxPosition = Game1.player.getMailboxPosition();
+          DrawMailCount(e.SpriteBatch, count, mailboxPosition.X, mailboxPosition.Y, 0f);
+          break;
+        }
       case IslandWest island when island.farmhouseMailbox.Value:
-      {
-        // Island mailbox is at fixed tile (81, 40) with -8f x-offset matching vanilla
-        DrawMailCount(e.SpriteBatch, count, 81, 40, -8f);
-        break;
-      }
+        {
+          // Island mailbox is at fixed tile (81, 40) with -8f x-offset matching vanilla
+          DrawMailCount(e.SpriteBatch, count, 81, 40, -8f);
+          break;
+        }
     }
   }
 
@@ -67,13 +67,13 @@ internal class ShowMailboxCount : IDisposable
 
     Vector2 globalPosition = new Vector2(tileX * 64 + 8 + xOffset, tileY * 64 - 96 - 48 + bobbing + 8);
     Vector2 localPosition = Game1.GlobalToLocal(Game1.viewport, globalPosition);
-    
+
     float scale = 3f;
     Vector2 numberPos = localPosition + new Vector2(
       64f - Utility.getWidthOfTinyDigitString(count, scale) + scale,
       47f
     );
 
-    Utility.drawTinyDigits(count, b, numberPos, scale, layerDepth, Color.Blue);
+    Utility.drawTinyDigits(count, b, numberPos, scale, layerDepth, Color.White * 0.8f);
   }
 }
