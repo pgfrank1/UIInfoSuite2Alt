@@ -70,9 +70,10 @@ public class ModOptionsElement
     get
     {
       int slotWidth = Game1.activeClickableMenu?.width ?? 800;
-      int slotHeight = Game1.activeClickableMenu != null
-        ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
-        : 68;
+      int slotHeight =
+        Game1.activeClickableMenu != null
+          ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
+          : 68;
 
       float textHeight = 0;
 
@@ -144,7 +145,8 @@ public class ModOptionsElement
       float drawY = slotY + Bounds.Y;
       if (_isVertCentered && Game1.activeClickableMenu != null)
       {
-        int slotHeight = (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
+        int slotHeight =
+          (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
         float textHeight = Game1.smallFont.MeasureString(parsedText).Y;
         drawY = slotY + (slotHeight - textHeight) / 2f;
       }
@@ -191,7 +193,8 @@ public class ModOptionsElement
       int drawY = slotY + Bounds.Y;
       if (_isVertCentered && Game1.activeClickableMenu != null)
       {
-        int slotHeight = (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
+        int slotHeight =
+          (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
         int textHeight = SpriteText.getHeightOfString(parsedText);
         drawY = slotY + (slotHeight - textHeight) / 2 + Game1.pixelZoom * 3;
       }

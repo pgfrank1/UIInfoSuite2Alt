@@ -1810,4 +1810,3 @@ internal class ModOptionsPageState
   public int? currentComponent;
   public int? currentIndex;
 }
-

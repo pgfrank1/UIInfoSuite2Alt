@@ -50,9 +50,10 @@ internal class ModOptionsSmallButton : ModOptionsElement
     get
     {
       EnsureBounds();
-      int slotHeight = Game1.activeClickableMenu != null
-        ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
-        : 68;
+      int slotHeight =
+        Game1.activeClickableMenu != null
+          ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
+          : 68;
       return System.Math.Max(slotHeight, Bounds.Height + Game1.pixelZoom * 2 + Bounds.Y);
     }
   }

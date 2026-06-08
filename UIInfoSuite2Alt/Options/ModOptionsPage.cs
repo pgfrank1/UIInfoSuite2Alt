@@ -12,7 +12,6 @@ namespace UIInfoSuite2Alt.Options;
 /// <summary>Our mod options made page to be added to <see cref="GameMenu.pages" /></summary>
 public class ModOptionsPage : IClickableMenu, IDisposable
 {
-  
   private readonly ClickableTextureComponent _downArrow;
   private readonly IModEvents _events;
   private readonly List<ModOptionsElement> _options;
@@ -139,7 +138,8 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         break;
       }
     }
-    currentlySnappedComponent = firstInteractive != -1 ? getComponentWithID(firstInteractive) : null;
+    currentlySnappedComponent =
+      firstInteractive != -1 ? getComponentWithID(firstInteractive) : null;
     snapCursorToCurrentSnappedComponent();
   }
 
@@ -175,7 +175,10 @@ public class ModOptionsPage : IClickableMenu, IDisposable
               int slotIndex = targetOptionIndex - _currentItemIndex;
               if (slotIndex >= 0 && slotIndex < _optionSlots.Count)
               {
-                if (_optionSlots[slotIndex].bounds.Bottom > bottomY && _currentItemIndex < GetMaxScrollIndex())
+                if (
+                  _optionSlots[slotIndex].bounds.Bottom > bottomY
+                  && _currentItemIndex < GetMaxScrollIndex()
+                )
                 {
                   _currentItemIndex++;
                   LayoutSlots();
@@ -576,21 +579,31 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     batch.End();
 
     RasterizerState scissorState = new RasterizerState { ScissorTestEnable = true };
-    batch.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, scissorState);
+    batch.Begin(
+      SpriteSortMode.FrontToBack,
+      BlendState.NonPremultiplied,
+      SamplerState.PointClamp,
+      null,
+      scissorState
+    );
 
     Rectangle prevScissor = batch.GraphicsDevice.ScissorRectangle;
     Rectangle newScissor = new Rectangle(
-        xPositionOnScreen, 
-        yPositionOnScreen + Game1.tileSize, 
-        width, 
-        height - Game1.tileSize * 3 / 2 - 10
+      xPositionOnScreen,
+      yPositionOnScreen + Game1.tileSize,
+      width,
+      height - Game1.tileSize * 3 / 2 - 10
     );
 
     // Ensure scissor rectangle stays within screen bounds to avoid MonoGame crashes
-    if (newScissor.X < 0) newScissor.X = 0;
-    if (newScissor.Y < 0) newScissor.Y = 0;
-    if (newScissor.Right > batch.GraphicsDevice.Viewport.Width) newScissor.Width = batch.GraphicsDevice.Viewport.Width - newScissor.X;
-    if (newScissor.Bottom > batch.GraphicsDevice.Viewport.Height) newScissor.Height = batch.GraphicsDevice.Viewport.Height - newScissor.Y;
+    if (newScissor.X < 0)
+      newScissor.X = 0;
+    if (newScissor.Y < 0)
+      newScissor.Y = 0;
+    if (newScissor.Right > batch.GraphicsDevice.Viewport.Width)
+      newScissor.Width = batch.GraphicsDevice.Viewport.Width - newScissor.X;
+    if (newScissor.Bottom > batch.GraphicsDevice.Viewport.Height)
+      newScissor.Height = batch.GraphicsDevice.Viewport.Height - newScissor.Y;
 
     batch.GraphicsDevice.ScissorRectangle = newScissor;
 
@@ -682,12 +695,12 @@ public class ModOptionsPage : IClickableMenu, IDisposable
       int totalHeight = 0;
       for (int i = _currentItemIndex; i < _options.Count; i++)
       {
-         totalHeight += _options[i].Height;
+        totalHeight += _options[i].Height;
       }
       int availableHeight = bottomY - topY;
       if (totalHeight > availableHeight)
       {
-         currentY = bottomY - totalHeight;
+        currentY = bottomY - totalHeight;
       }
     }
 
@@ -743,28 +756,27 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         if (_options[j].IsInteractive)
         {
           int slotJ = j - _currentItemIndex;
-          nextInteractive = slotJ < _optionSlots.Count
-            ? slotJ
-            : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+          nextInteractive =
+            slotJ < _optionSlots.Count ? slotJ : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
           break;
         }
       }
-  
+
       int prevInteractive = -1;
       for (int j = _currentItemIndex + i - 1; j >= 0; j--)
       {
         if (_options[j].IsInteractive)
         {
           int slotJ = j - _currentItemIndex;
-          prevInteractive = slotJ >= 0
-            ? slotJ
-            : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+          prevInteractive = slotJ >= 0 ? slotJ : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
           break;
         }
       }
-  
-      _optionSlots[i].downNeighborID = nextInteractive != -1 ? nextInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
-      _optionSlots[i].upNeighborID = prevInteractive != -1 ? prevInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+
+      _optionSlots[i].downNeighborID =
+        nextInteractive != -1 ? nextInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+      _optionSlots[i].upNeighborID =
+        prevInteractive != -1 ? prevInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
     }
 
     if (currentlySnappedComponent != null && currentlySnappedComponent.myID >= _optionSlots.Count)
@@ -820,4 +832,3 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     _events.Display.MenuChanged -= OnMenuChanged;
   }
 }
-
