@@ -79,7 +79,7 @@ internal static class QualityPrediction
     if (data != null)
     {
       int min = data.HarvestMinQuality;
-      int max = data.HarvestMaxQuality ?? quality;
+      int max = Math.Max(min, data.HarvestMaxQuality ?? quality);
       quality = Math.Clamp(quality, min, max);
     }
 

@@ -61,6 +61,8 @@
 
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
+- **v2.8.30**
+  - Fix crash when hovering crops from mods that set a minimum harvest quality (e.g. always gold/iridium)
 - **v2.8.29**
   - Add HUD icon showing when the Movie Theater crane game is available today
   - Fix crash when hovering modded seeds/saplings with randomized harvest items in shops
