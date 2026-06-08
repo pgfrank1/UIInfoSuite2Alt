@@ -63,6 +63,7 @@
 
 - **v2.8.30**
   - Fix crash when hovering crops from mods that set a minimum harvest quality (e.g. always gold/iridium)
+  - Fix item effect range grid not aligning with the actual placement tile when placing items with a gamepad
 - **v2.8.29**
   - Add HUD icon showing when the Movie Theater crane game is available today
   - Fix crash when hovering modded seeds/saplings with randomized harvest items in shops

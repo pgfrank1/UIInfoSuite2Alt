@@ -792,9 +792,28 @@ internal class ShowItemEffectRanges : IDisposable
     {
       string itemName = currentItem.Name;
 
-      // Use the raw cursor tile for range visualization so the preview stays under the cursor
-      // even when the game's valid-placement snap would jump to a distant tile (e.g. over flooring).
-      Vector2 cursorTile = Utility.snapToInt(Game1.GetPlacementGrabTile());
+      // Match the game's ghost-preview tile (Object.drawPlacementBounds): raw cursor for mouse,
+      // valid-placement snap for gamepad (else the grid drifts off the actual placement tile).
+      Vector2 grabTile = Game1.GetPlacementGrabTile();
+      Vector2 cursorTile;
+      if (Game1.IsPerformingMousePlacement())
+      {
+        cursorTile = Utility.snapToInt(grabTile);
+      }
+      else
+      {
+        Game1.isCheckingNonMousePlacement = true;
+        cursorTile = Utility.snapToInt(
+          Utility.GetNearbyValidPlacementPosition(
+            Game1.player,
+            Game1.currentLocation,
+            currentItem,
+            (int)grabTile.X * Game1.tileSize,
+            (int)grabTile.Y * Game1.tileSize
+          ) / Game1.tileSize
+        );
+        Game1.isCheckingNonMousePlacement = false;
+      }
 
       if (_showItemEffectRanges)
       {
