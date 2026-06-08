@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,7 +12,6 @@ namespace UIInfoSuite2Alt.Options;
 /// <summary>Our mod options made page to be added to <see cref="GameMenu.pages" /></summary>
 public class ModOptionsPage : IClickableMenu, IDisposable
 {
-  private const int visibleSlots = 7;
   private readonly ClickableTextureComponent _downArrow;
   private readonly IModEvents _events;
   private readonly List<ModOptionsElement> _options;
@@ -88,29 +87,7 @@ public class ModOptionsPage : IClickableMenu, IDisposable
       height - Game1.tileSize * 2 - _upArrow.bounds.Height - Game1.pixelZoom * 2
     );
 
-    for (var i = 0; i < visibleSlots; ++i)
-    {
-      // tqdv: I'm not sure where Game1.tileSize and Game1.pixelZoom come from
-      var component = new ClickableComponent(
-        new Rectangle(
-          xPositionOnScreen + Game1.tileSize / 4,
-          yPositionOnScreen
-            + Game1.tileSize * 5 / 4
-            + Game1.pixelZoom
-            + i * (height - Game1.tileSize * 2) / visibleSlots,
-          width - Game1.tileSize / 2,
-          (height - Game1.tileSize * 2) / visibleSlots + Game1.pixelZoom
-        ),
-        i.ToString()
-      )
-      {
-        myID = i,
-        downNeighborID = i + 1 < visibleSlots ? i + 1 : ClickableComponent.CUSTOM_SNAP_BEHAVIOR,
-        upNeighborID = i - 1 >= 0 ? i - 1 : ClickableComponent.CUSTOM_SNAP_BEHAVIOR,
-        fullyImmutable = true,
-      };
-      _optionSlots.Add(component);
-    }
+    LayoutSlots();
 
     events.Display.MenuChanged += OnMenuChanged;
   }
@@ -125,19 +102,6 @@ public class ModOptionsPage : IClickableMenu, IDisposable
       xPositionOnScreen = e.NewMenu.xPositionOnScreen;
       yPositionOnScreen = e.NewMenu.yPositionOnScreen + 10;
       height = e.NewMenu.height;
-
-      for (var i = 0; i < _optionSlots.Count; ++i)
-      {
-        ClickableComponent next = _optionSlots[i];
-        next.bounds.X = xPositionOnScreen + Game1.tileSize / 4;
-        next.bounds.Y =
-          yPositionOnScreen
-          + Game1.tileSize * 5 / 4
-          + Game1.pixelZoom
-          + i * (height - Game1.tileSize * 2) / 7;
-        next.bounds.Width = width - Game1.tileSize / 2;
-        next.bounds.Height = (height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
-      }
 
       _upArrow.bounds.X = xPositionOnScreen + width + Game1.tileSize / 4;
       _upArrow.bounds.Y = yPositionOnScreen + Game1.tileSize;
@@ -156,54 +120,222 @@ public class ModOptionsPage : IClickableMenu, IDisposable
 
       _scrollBarRunner.X = _scrollBar.bounds.X;
       _scrollBarRunner.Y = _scrollBar.bounds.Y;
-      _scrollBarRunner.Width = _scrollBar.bounds.Width;
       _scrollBarRunner.Height =
         height - Game1.tileSize * 2 - _upArrow.bounds.Height - Game1.pixelZoom * 2;
+
+      LayoutSlots();
     }
   }
 
   public override void snapToDefaultClickableComponent()
   {
-    currentlySnappedComponent = getComponentWithID(1);
+    int firstInteractive = -1;
+    for (int i = 0; i < _optionSlots.Count; i++)
+    {
+      if (_options[_currentItemIndex + i].IsInteractive)
+      {
+        firstInteractive = i;
+        break;
+      }
+    }
+    currentlySnappedComponent =
+      firstInteractive != -1 ? getComponentWithID(firstInteractive) : null;
     snapCursorToCurrentSnappedComponent();
   }
 
   protected override void customSnapBehavior(int direction, int oldRegion, int oldID)
   {
-    if (oldID == visibleSlots - 1 && direction == Game1.down)
+    if (direction == Game1.down)
     {
-      if (_currentItemIndex + visibleSlots < _options.Count)
+      int lastInteractiveID = -1;
+      for (int i = _optionSlots.Count - 1; i >= 0; i--)
       {
-        DownArrowPressed();
-        Game1.playSound("shiny4");
+        if (_options[_currentItemIndex + i].IsInteractive)
+        {
+          lastInteractiveID = i;
+          break;
+        }
+      }
+
+      if (oldID == lastInteractiveID)
+      {
+        if (_currentItemIndex < GetMaxScrollIndex())
+        {
+          int targetOptionIndex = _currentItemIndex + oldID + 1;
+          while (targetOptionIndex < _options.Count && !_options[targetOptionIndex].IsInteractive)
+          {
+            targetOptionIndex++;
+          }
+
+          if (targetOptionIndex < _options.Count)
+          {
+            int bottomY = yPositionOnScreen + height - Game1.tileSize;
+            while (true)
+            {
+              int slotIndex = targetOptionIndex - _currentItemIndex;
+              if (slotIndex >= 0 && slotIndex < _optionSlots.Count)
+              {
+                if (
+                  _optionSlots[slotIndex].bounds.Bottom > bottomY
+                  && _currentItemIndex < GetMaxScrollIndex()
+                )
+                {
+                  _currentItemIndex++;
+                  LayoutSlots();
+                }
+                else
+                {
+                  break;
+                }
+              }
+              else if (slotIndex >= _optionSlots.Count && _currentItemIndex < GetMaxScrollIndex())
+              {
+                _currentItemIndex++;
+                LayoutSlots();
+              }
+              else
+              {
+                break;
+              }
+            }
+
+            SetScrollBarToCurrentItem();
+            int newSlotIndex = targetOptionIndex - _currentItemIndex;
+            if (newSlotIndex >= 0 && newSlotIndex < _optionSlots.Count)
+            {
+              currentlySnappedComponent = _optionSlots[newSlotIndex];
+              snapCursorToCurrentSnappedComponent();
+              Game1.playSound("shiny4");
+            }
+          }
+        }
       }
     }
-    else if (oldID == 0 && direction == Game1.up)
+    else if (direction == Game1.up)
     {
-      if (_currentItemIndex > 0)
+      int firstInteractiveID = -1;
+      for (int i = 0; i < _optionSlots.Count; i++)
       {
-        UpArrowPressed();
-        Game1.playSound("shiny4");
-      }
-      else
-      {
-        // Already at the top, move to the menu tab
-        currentlySnappedComponent = getComponentWithID(ModOptionsPageHandler.ModTabSnapId);
-        if (currentlySnappedComponent != null)
+        if (_options[_currentItemIndex + i].IsInteractive)
         {
-          // Set the down neighbor of the tab to the first slot, instead of the default (which is the second slot)
-          currentlySnappedComponent.downNeighborID = 0;
+          firstInteractiveID = i;
+          break;
         }
+      }
 
-        snapCursorToCurrentSnappedComponent();
+      if (oldID == firstInteractiveID)
+      {
+        if (_currentItemIndex > 0)
+        {
+          int targetOptionIndex = _currentItemIndex + oldID - 1;
+          while (targetOptionIndex >= 0 && !_options[targetOptionIndex].IsInteractive)
+          {
+            targetOptionIndex--;
+          }
+
+          if (targetOptionIndex >= 0)
+          {
+            int topY = yPositionOnScreen + Game1.tileSize * 5 / 4 + Game1.pixelZoom;
+            while (true)
+            {
+              int slotIndex = targetOptionIndex - _currentItemIndex;
+              if (slotIndex >= 0 && slotIndex < _optionSlots.Count)
+              {
+                if (_optionSlots[slotIndex].bounds.Top < topY && _currentItemIndex > 0)
+                {
+                  _currentItemIndex--;
+                  LayoutSlots();
+                }
+                else
+                {
+                  break;
+                }
+              }
+              else if (slotIndex < 0 && _currentItemIndex > 0)
+              {
+                _currentItemIndex--;
+                LayoutSlots();
+              }
+              else
+              {
+                break;
+              }
+            }
+
+            SetScrollBarToCurrentItem();
+            int newSlotIndex = targetOptionIndex - _currentItemIndex;
+            if (newSlotIndex >= 0 && newSlotIndex < _optionSlots.Count)
+            {
+              currentlySnappedComponent = _optionSlots[newSlotIndex];
+              snapCursorToCurrentSnappedComponent();
+              Game1.playSound("shiny4");
+            }
+          }
+        }
+        else
+        {
+          // Already at the top, move to the menu tab
+          currentlySnappedComponent = getComponentWithID(ModOptionsPageHandler.ModTabSnapId);
+          if (currentlySnappedComponent != null)
+          {
+            // Set the down neighbor of the tab to the first slot, instead of the default (which is the second slot)
+            currentlySnappedComponent.downNeighborID = 0;
+          }
+
+          snapCursorToCurrentSnappedComponent();
+        }
       }
     }
   }
 
   public override void snapCursorToCurrentSnappedComponent()
   {
-    if (currentlySnappedComponent != null)
+    if (currentlySnappedComponent != null && currentlySnappedComponent.myID < _optionSlots.Count)
     {
+      int targetOptionIndex = _currentItemIndex + currentlySnappedComponent.myID;
+      int bottomY = yPositionOnScreen + height - Game1.tileSize;
+      int topY = yPositionOnScreen + Game1.tileSize * 5 / 4 + Game1.pixelZoom;
+
+      bool scrolled = false;
+      while (true)
+      {
+        int slotIndex = targetOptionIndex - _currentItemIndex;
+        if (slotIndex >= 0 && slotIndex < _optionSlots.Count)
+        {
+          ClickableComponent slot = _optionSlots[slotIndex];
+          if (slot.bounds.Bottom > bottomY && _currentItemIndex < GetMaxScrollIndex())
+          {
+            _currentItemIndex++;
+            LayoutSlots();
+            scrolled = true;
+          }
+          else if (slot.bounds.Top < topY && _currentItemIndex > 0)
+          {
+            _currentItemIndex--;
+            LayoutSlots();
+            scrolled = true;
+          }
+          else
+          {
+            break;
+          }
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      if (scrolled)
+      {
+        SetScrollBarToCurrentItem();
+        int newSlotIndex = targetOptionIndex - _currentItemIndex;
+        if (newSlotIndex >= 0 && newSlotIndex < _optionSlots.Count)
+        {
+          currentlySnappedComponent = _optionSlots[newSlotIndex];
+        }
+      }
+
       ModOptionsElement? snappedElement = GetVisibleOption(currentlySnappedComponent.myID);
       if (snappedElement != null)
       {
@@ -218,18 +350,14 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         }
       }
 
-      if (currentlySnappedComponent.myID < visibleSlots)
-      {
-        // Positioning taken from OptionsPage.snapCursorToCurrentSnappedComponent
-        Game1.setMousePosition(
-          currentlySnappedComponent.bounds.Left + 48,
-          currentlySnappedComponent.bounds.Center.Y - 12
-        );
-      }
-      else
-      {
-        base.snapCursorToCurrentSnappedComponent();
-      }
+      Game1.setMousePosition(
+        currentlySnappedComponent.bounds.Left + 48,
+        currentlySnappedComponent.bounds.Center.Y - 12
+      );
+    }
+    else
+    {
+      base.snapCursorToCurrentSnappedComponent();
     }
   }
 
@@ -237,12 +365,13 @@ public class ModOptionsPage : IClickableMenu, IDisposable
   {
     if (_options.Count > 0)
     {
+      int maxScroll = GetMaxScrollIndex();
       _scrollBar.bounds.Y =
-        _scrollBarRunner.Height / Math.Max(1, _options.Count - 7 + 1) * _currentItemIndex
+        _scrollBarRunner.Height / Math.Max(1, maxScroll + 1) * _currentItemIndex
         + _upArrow.bounds.Bottom
         + Game1.pixelZoom;
 
-      if (_currentItemIndex == _options.Count - 7)
+      if (_currentItemIndex == maxScroll)
       {
         _scrollBar.bounds.Y = _downArrow.bounds.Y - _scrollBar.bounds.Height - Game1.pixelZoom;
       }
@@ -271,12 +400,13 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         _currentItemIndex = Math.Max(
           0,
           Math.Min(
-            _options.Count - visibleSlots,
+            GetMaxScrollIndex(),
             _options.Count * (y - _scrollBarRunner.Y) / _scrollBarRunner.Height
           )
         );
 
         SetScrollBarToCurrentItem();
+        LayoutSlots();
 
         if (yBefore != _scrollBar.bounds.Y)
         {
@@ -336,7 +466,7 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         UpArrowPressed();
         Game1.playSound("shiny4");
       }
-      else if (direction < 0 && _currentItemIndex + visibleSlots < _options.Count)
+      else if (direction < 0 && _currentItemIndex < GetMaxScrollIndex())
       {
         DownArrowPressed();
         Game1.playSound("shiny4");
@@ -367,6 +497,7 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     _downArrow.scale = _downArrow.baseScale;
     ++_currentItemIndex;
     SetScrollBarToCurrentItem();
+    LayoutSlots();
   }
 
   private void UpArrowPressed()
@@ -374,13 +505,14 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     _upArrow.scale = _upArrow.baseScale;
     --_currentItemIndex;
     SetScrollBarToCurrentItem();
+    LayoutSlots();
   }
 
   public override void receiveLeftClick(int x, int y, bool playSound = true)
   {
     if (!GameMenu.forcePreventClose)
     {
-      if (_downArrow.containsPoint(x, y) && _currentItemIndex < Math.Max(0, _options.Count - 7))
+      if (_downArrow.containsPoint(x, y) && _currentItemIndex < GetMaxScrollIndex())
       {
         DownArrowPressed();
         Game1.playSound("shwip");
@@ -409,7 +541,7 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         base.releaseLeftClick(x, y);
       }
 
-      _currentItemIndex = Math.Max(0, Math.Min(_options.Count - visibleSlots, _currentItemIndex));
+      _currentItemIndex = Math.Max(0, Math.Min(GetMaxScrollIndex(), _currentItemIndex));
       for (var i = 0; i < _optionSlots.Count; ++i)
       {
         if (
@@ -445,7 +577,36 @@ public class ModOptionsPage : IClickableMenu, IDisposable
   {
     Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen - 10, width, height, false, true);
     batch.End();
-    batch.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp);
+
+    RasterizerState scissorState = new RasterizerState { ScissorTestEnable = true };
+    batch.Begin(
+      SpriteSortMode.FrontToBack,
+      BlendState.NonPremultiplied,
+      SamplerState.PointClamp,
+      null,
+      scissorState
+    );
+
+    Rectangle prevScissor = batch.GraphicsDevice.ScissorRectangle;
+    Rectangle newScissor = new Rectangle(
+      xPositionOnScreen,
+      yPositionOnScreen + Game1.tileSize,
+      width,
+      height - Game1.tileSize * 3 / 2 - 10
+    );
+
+    // Ensure scissor rectangle stays within screen bounds to avoid MonoGame crashes
+    if (newScissor.X < 0)
+      newScissor.X = 0;
+    if (newScissor.Y < 0)
+      newScissor.Y = 0;
+    if (newScissor.Right > batch.GraphicsDevice.Viewport.Width)
+      newScissor.Width = batch.GraphicsDevice.Viewport.Width - newScissor.X;
+    if (newScissor.Bottom > batch.GraphicsDevice.Viewport.Height)
+      newScissor.Height = batch.GraphicsDevice.Viewport.Height - newScissor.Y;
+
+    batch.GraphicsDevice.ScissorRectangle = newScissor;
+
     for (var i = 0; i < _optionSlots.Count; ++i)
     {
       if (_currentItemIndex >= 0 && _currentItemIndex + i < _options.Count)
@@ -456,6 +617,8 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     }
 
     batch.End();
+    batch.GraphicsDevice.ScissorRectangle = prevScissor;
+
     batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
     if (!GameMenu.forcePreventClose)
     {
@@ -487,9 +650,27 @@ public class ModOptionsPage : IClickableMenu, IDisposable
 
   /// <summary>Returns the <see cref="ModOptionsElement" /> that corresponds to the component ID</summary>
   /// <returns>the mod options element, or null if it is invalid</returns>
+  private int GetMaxScrollIndex()
+  {
+    int topY = yPositionOnScreen + Game1.tileSize * 5 / 4 + Game1.pixelZoom;
+    int bottomY = yPositionOnScreen + height - Game1.tileSize;
+    int availableHeight = bottomY - topY;
+
+    int currentHeight = 0;
+    for (int i = _options.Count - 1; i >= 0; i--)
+    {
+      currentHeight += _options[i].Height;
+      if (currentHeight > availableHeight)
+      {
+        return Math.Min(_options.Count - 1, i + 1);
+      }
+    }
+    return 0;
+  }
+
   private ModOptionsElement? GetVisibleOption(int componentId)
   {
-    if (componentId >= visibleSlots)
+    if (componentId >= _optionSlots.Count)
     {
       return null;
     }
@@ -503,6 +684,115 @@ public class ModOptionsPage : IClickableMenu, IDisposable
     return null;
   }
 
+  private void LayoutSlots()
+  {
+    int topY = yPositionOnScreen + Game1.tileSize * 5 / 4 + Game1.pixelZoom;
+    int bottomY = yPositionOnScreen + height - Game1.tileSize;
+    int currentY = topY;
+
+    if (_currentItemIndex >= GetMaxScrollIndex())
+    {
+      int totalHeight = 0;
+      for (int i = _currentItemIndex; i < _options.Count; i++)
+      {
+        totalHeight += _options[i].Height;
+      }
+      int availableHeight = bottomY - topY;
+      if (totalHeight > availableHeight)
+      {
+        currentY = bottomY - totalHeight;
+      }
+    }
+
+    int slotIndex = 0;
+    for (int i = 0; _currentItemIndex + i < _options.Count; i++)
+    {
+      int itemHeight = _options[_currentItemIndex + i].Height;
+
+      if (slotIndex >= _optionSlots.Count)
+      {
+        var component = new ClickableComponent(
+          new Rectangle(
+            xPositionOnScreen + Game1.tileSize / 4,
+            currentY,
+            width - Game1.tileSize / 2,
+            itemHeight
+          ),
+          slotIndex.ToString()
+        )
+        {
+          myID = slotIndex,
+          fullyImmutable = true,
+        };
+        _optionSlots.Add(component);
+        allClickableComponents?.Add(component);
+      }
+      else
+      {
+        _optionSlots[slotIndex].bounds.Y = currentY;
+        _optionSlots[slotIndex].bounds.Height = itemHeight;
+      }
+
+      currentY += itemHeight;
+      slotIndex++;
+
+      if (currentY >= bottomY)
+      {
+        break; // Stop adding once we exceeded the visible area
+      }
+    }
+
+    while (_optionSlots.Count > slotIndex)
+    {
+      allClickableComponents?.Remove(_optionSlots[_optionSlots.Count - 1]);
+      _optionSlots.RemoveAt(_optionSlots.Count - 1);
+    }
+
+    for (int i = 0; i < _optionSlots.Count; i++)
+    {
+      int nextInteractive = -1;
+      for (int j = _currentItemIndex + i + 1; j < _options.Count; j++)
+      {
+        if (_options[j].IsInteractive)
+        {
+          int slotJ = j - _currentItemIndex;
+          nextInteractive =
+            slotJ < _optionSlots.Count ? slotJ : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+          break;
+        }
+      }
+
+      int prevInteractive = -1;
+      for (int j = _currentItemIndex + i - 1; j >= 0; j--)
+      {
+        if (_options[j].IsInteractive)
+        {
+          int slotJ = j - _currentItemIndex;
+          prevInteractive = slotJ >= 0 ? slotJ : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+          break;
+        }
+      }
+
+      _optionSlots[i].downNeighborID =
+        nextInteractive != -1 ? nextInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+      _optionSlots[i].upNeighborID =
+        prevInteractive != -1 ? prevInteractive : ClickableComponent.CUSTOM_SNAP_BEHAVIOR;
+    }
+
+    if (currentlySnappedComponent != null && currentlySnappedComponent.myID >= _optionSlots.Count)
+    {
+      // If we shrank the slots and the cursor is out of bounds, snap it to the last interactive slot
+      for (int i = _optionSlots.Count - 1; i >= 0; i--)
+      {
+        if (_options[_currentItemIndex + i].IsInteractive)
+        {
+          currentlySnappedComponent = _optionSlots[i];
+          break;
+        }
+      }
+    }
+  }
+
   internal void SaveState(ModOptionsPageState state)
   {
     state.currentIndex = _currentItemIndex;
@@ -512,17 +802,11 @@ public class ModOptionsPage : IClickableMenu, IDisposable
   /// <summary>Clamp scroll position after the options list has been modified externally.</summary>
   internal void ClampScrollPosition()
   {
-    if (_options.Count <= visibleSlots)
-    {
-      _currentItemIndex = 0;
-    }
-    else
-    {
-      _currentItemIndex = Math.Min(_currentItemIndex, _options.Count - visibleSlots);
-      _currentItemIndex = Math.Max(0, _currentItemIndex);
-    }
+    _currentItemIndex = Math.Min(_currentItemIndex, GetMaxScrollIndex());
+    _currentItemIndex = Math.Max(0, _currentItemIndex);
 
     SetScrollBarToCurrentItem();
+    LayoutSlots();
   }
 
   internal void LoadState(ModOptionsPageState state)

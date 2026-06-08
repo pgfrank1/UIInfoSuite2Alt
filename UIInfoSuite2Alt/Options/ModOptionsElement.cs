@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
@@ -21,6 +21,8 @@ public class ModOptionsElement
   private readonly bool _isCentered;
   private readonly Color? _textColor;
   private readonly bool _isVertCentered;
+
+  public virtual bool IsInteractive => _whichOption >= 0 && IsEffectivelyEnabled();
 
   public ModOptionsElement(
     string label,
@@ -63,6 +65,48 @@ public class ModOptionsElement
 
   public Rectangle Bounds { get; protected set; }
 
+  public virtual int Height
+  {
+    get
+    {
+      int slotWidth = Game1.activeClickableMenu?.width ?? 800;
+      int slotHeight =
+        Game1.activeClickableMenu != null
+          ? (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom
+          : 68;
+
+      float textHeight = 0;
+
+      if (_isSmallText)
+      {
+        int maxWidth = slotWidth - Bounds.X - Game1.tileSize;
+        string parsedText = Game1.parseText(_label, Game1.smallFont, maxWidth);
+        textHeight = Game1.smallFont.MeasureString(parsedText).Y;
+      }
+      else if (_isSubtitle)
+      {
+        int maxWidth = slotWidth - Bounds.X - Game1.tileSize;
+        string parsedText = Game1.parseText(_label, Game1.dialogueFont, maxWidth);
+        textHeight = Game1.dialogueFont.MeasureString(parsedText).Y;
+      }
+      else if (_whichOption < 0)
+      {
+        int maxWidth = slotWidth - Bounds.X - Game1.tileSize;
+        string parsedText = Game1.parseText(_label, Game1.dialogueFont, maxWidth);
+        textHeight = SpriteText.getHeightOfString(parsedText);
+      }
+      else
+      {
+        int startX = Bounds.X + Bounds.Width + Game1.pixelZoom * 2;
+        int maxWidth = slotWidth - startX - Game1.tileSize;
+        string parsedText = Game1.parseText(_label, Game1.dialogueFont, maxWidth);
+        textHeight = Game1.dialogueFont.MeasureString(parsedText).Y;
+      }
+
+      return System.Math.Max(slotHeight, (int)textHeight + Game1.pixelZoom * 2 + Bounds.Y);
+    }
+  }
+
   protected bool IsEffectivelyEnabled()
   {
     for (ModOptionsElement? node = _parent; node != null; node = node._parent)
@@ -87,11 +131,14 @@ public class ModOptionsElement
   {
     if (_isSmallText)
     {
+      int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+      int maxWidth = slotWidth - Bounds.X - Game1.tileSize;
+      string parsedText = Game1.parseText(_label, Game1.smallFont, maxWidth);
+
       float drawX = slotX + Bounds.X;
       if (_isCentered)
       {
-        float textWidth = Game1.smallFont.MeasureString(_label).X;
-        int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+        float textWidth = Game1.smallFont.MeasureString(parsedText).X;
         drawX = slotX + (slotWidth - Game1.tileSize / 2 - textWidth) / 2f;
       }
 
@@ -100,13 +147,13 @@ public class ModOptionsElement
       {
         int slotHeight =
           (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
-        float textHeight = Game1.smallFont.MeasureString(_label).Y;
+        float textHeight = Game1.smallFont.MeasureString(parsedText).Y;
         drawY = slotY + (slotHeight - textHeight) / 2f;
       }
 
       Utility.drawTextWithShadow(
         batch,
-        _label,
+        parsedText,
         Game1.smallFont,
         new Vector2(drawX, drawY),
         _textColor ?? Game1.textColor,
@@ -116,9 +163,13 @@ public class ModOptionsElement
     }
     else if (_isSubtitle)
     {
+      int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+      int maxWidth = slotWidth - Bounds.X - Game1.tileSize;
+      string parsedText = Game1.parseText(_label, Game1.dialogueFont, maxWidth);
+
       Utility.drawTextWithShadow(
         batch,
-        _label,
+        parsedText,
         Game1.dialogueFont,
         new Vector2(slotX + Bounds.X, slotY + Bounds.Y),
         Game1.textColor,
@@ -129,10 +180,13 @@ public class ModOptionsElement
     else if (_whichOption < 0)
     {
       int drawX = slotX + Bounds.X;
+      int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+      int wrapWidth = slotWidth - Bounds.X - Game1.tileSize;
+      string parsedText = Game1.parseText(_label, Game1.dialogueFont, wrapWidth);
+
       if (_isCentered)
       {
-        int textWidth = SpriteText.getWidthOfString(_label);
-        int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+        int textWidth = SpriteText.getWidthOfString(parsedText);
         drawX = slotX + (slotWidth - Game1.tileSize / 2 - textWidth) / 2;
       }
 
@@ -141,19 +195,24 @@ public class ModOptionsElement
       {
         int slotHeight =
           (Game1.activeClickableMenu.height - Game1.tileSize * 2) / 7 + Game1.pixelZoom;
-        int textHeight = SpriteText.getHeightOfString(_label);
+        int textHeight = SpriteText.getHeightOfString(parsedText);
         drawY = slotY + (slotHeight - textHeight) / 2 + Game1.pixelZoom * 3;
       }
 
-      SpriteText.drawString(batch, _label, drawX, drawY, 999, -1, 999, 1, 0.1f);
+      SpriteText.drawString(batch, parsedText, drawX, drawY, 999, -1, 999, 1, 0.1f);
     }
     else
     {
+      int startX = Bounds.X + Bounds.Width + Game1.pixelZoom * 2;
+      int slotWidth = Game1.activeClickableMenu?.width ?? Game1.uiViewport.Width;
+      int maxWidth = slotWidth - startX - Game1.tileSize;
+      string parsedText = Game1.parseText(_label, Game1.dialogueFont, maxWidth);
+
       Utility.drawTextWithShadow(
         batch,
-        _label,
+        parsedText,
         Game1.dialogueFont,
-        new Vector2(slotX + Bounds.X + Bounds.Width + Game1.pixelZoom * 2, slotY + Bounds.Y),
+        new Vector2(slotX + startX, slotY + Bounds.Y),
         Game1.textColor,
         1f,
         0.1f
