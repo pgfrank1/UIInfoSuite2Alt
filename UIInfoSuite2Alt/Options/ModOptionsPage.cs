@@ -583,7 +583,7 @@ public class ModOptionsPage : IClickableMenu, IDisposable
         xPositionOnScreen, 
         yPositionOnScreen + Game1.tileSize, 
         width, 
-        height - Game1.tileSize * 2
+        height - Game1.tileSize * 3 / 2 - 10
     );
 
     // Ensure scissor rectangle stays within screen bounds to avoid MonoGame crashes
