@@ -374,6 +374,11 @@ public partial class ModEntry
       v => ModConfig.ShowQuestCount = v
     );
     AddBool(
+      nameof(ModConfig.ShowQuestLastDayReminder),
+      () => ModConfig.ShowQuestLastDayReminder,
+      v => ModConfig.ShowQuestLastDayReminder = v
+    );
+    AddBool(
       nameof(ModConfig.ShowGoldenWalnutCount),
       () => ModConfig.ShowGoldenWalnutCount,
       v => ModConfig.ShowGoldenWalnutCount = v

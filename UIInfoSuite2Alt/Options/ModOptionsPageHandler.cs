@@ -214,6 +214,7 @@ internal class ModOptionsPageHandler : IDisposable
     var showSeasonalBerry = new ShowSeasonalBerry(helper);
     var showTodaysGift = new ShowTodaysGifts(helper);
     var showQuestCount = new ShowQuestCount(helper);
+    var showQuestLastDayReminder = new ShowQuestLastDayReminder(helper);
     var showGoldenWalnutCount = new ShowGoldenWalnutCount(helper);
     var showFestivalIcon = new ShowFestivalIcon(helper);
     var showCraneGameAvailable = new ShowCraneGameAvailable(helper);
@@ -247,6 +248,7 @@ internal class ModOptionsPageHandler : IDisposable
       showSeasonalBerry,
       showTodaysGift,
       showQuestCount,
+      showQuestLastDayReminder,
       showGoldenWalnutCount,
       showBuffTimers,
       showFestivalIcon,
@@ -592,6 +594,15 @@ internal class ModOptionsPageHandler : IDisposable
           config.ShowQuestCount = v;
           IconHandler.Handler.ShowQuestCount = v;
         })
+      )
+    );
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.ShowQuestLastDayReminder)),
+        whichOption++,
+        showQuestLastDayReminder.ToggleOption,
+        () => config.ShowQuestLastDayReminder,
+        Set(v => config.ShowQuestLastDayReminder = v)
       )
     );
     var walnutCheckbox = new ModOptionsCheckbox(

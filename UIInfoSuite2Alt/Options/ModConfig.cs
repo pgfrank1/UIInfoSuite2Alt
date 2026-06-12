@@ -126,6 +126,7 @@ public class ModConfig
   public bool UseStackedBirthdayIcons { get; set; } = false;
   public bool ShowUnrevealedBirthdayLoves { get; set; } = true;
   public bool ShowQuestCount { get; set; } = true;
+  public bool ShowQuestLastDayReminder { get; set; } = true;
   public bool ShowGoldenWalnutCount { get; set; } = true;
   public bool ShowGoldenWalnutAnywhere { get; set; } = false;
   public bool GoldenWalnutFadeOut { get; set; } = false;
