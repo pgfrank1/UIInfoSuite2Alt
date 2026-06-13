@@ -405,6 +405,23 @@ public partial class ModEntry
       v => ModConfig.PlayBuffExpireSound = v
     );
     Spacer();
+    string[] buffIconSizes = { "0", "1", "2" };
+    configMenu.AddTextOption(
+      ModManifest,
+      name: () => Helper.SafeGetString(nameof(ModConfig.BuffIconSize)),
+      getValue: () => ModConfig.BuffIconSize.ToString(),
+      setValue: v => ModConfig.BuffIconSize = int.Parse(v),
+      allowedValues: buffIconSizes,
+      formatAllowedValue: v =>
+        int.Parse(v) switch
+        {
+          0 => I18n.BuffIconSize_Normal(),
+          1 => I18n.BuffIconSize_Smaller(),
+          2 => I18n.BuffIconSize_Hidden(),
+          _ => v,
+        }
+    );
+    Spacer();
     AddBool(
       nameof(ModConfig.ShowCustomIcons),
       () => ModConfig.ShowCustomIcons,

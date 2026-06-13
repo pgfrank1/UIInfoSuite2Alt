@@ -63,6 +63,7 @@
 
 - **v2.8.31**
   - Add a flashing clock on the quest log icon when a quest (journal or Special Order) is on its last day
+  - Add a "Buff icon size" option to make the top-right buff icons smaller and more compact, or hide them entirely
 - **v2.8.30**
   - Responsive mod options menu: long translated labels now wrap and expand their slot height instead of being cut off or overlapped ([#2](https://github.com/dazuki/UIInfoSuite2Alt/pull/2)) [@CpdnCristiano](https://github.com/CpdnCristiano)
   - Fix mail counter number alignment and resize for double-digit counts ([#2](https://github.com/dazuki/UIInfoSuite2Alt/pull/2)) [@CpdnCristiano](https://github.com/CpdnCristiano)

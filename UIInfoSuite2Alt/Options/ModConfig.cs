@@ -138,6 +138,7 @@ public class ModConfig
   public bool ShowFishQualityStar { get; set; } = false;
   public bool ShowBuffTimers { get; set; } = true;
   public bool PlayBuffExpireSound { get; set; } = true;
+  public int BuffIconSize { get; set; } = 0; // 0 = Normal, 1 = Smaller, 2 = Hidden
   public bool ShowCustomIcons { get; set; } = true;
   public bool ShowItemQualityOnPickup { get; set; } = true;
   public bool ShowLockedBundleItems { get; set; } = false;

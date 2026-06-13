@@ -651,6 +651,25 @@ internal class ModOptionsPageHandler : IDisposable
         buffTimersCheckbox
       )
     );
+    BuffIconSizePatch.SetMode(config.BuffIconSize);
+    _currentTarget.Add(
+      new ModOptionsDropdown(
+        _helper.SafeGetString(nameof(config.BuffIconSize)),
+        whichOption++,
+        new List<string>
+        {
+          I18n.BuffIconSize_Normal(),
+          I18n.BuffIconSize_Smaller(),
+          I18n.BuffIconSize_Hidden(),
+        },
+        () => config.BuffIconSize,
+        SetInt(v =>
+        {
+          config.BuffIconSize = v;
+          BuffIconSizePatch.SetMode(v);
+        })
+      )
+    );
 
     _currentTarget.Add(
       new ModOptionsCheckbox(

@@ -111,13 +111,14 @@ public partial class ModEntry : Mod
     HideTreesPatch.Initialize(harmony, helper);
     SuppressProbeNoisePatch.Initialize(harmony);
     ShowCalendarAndBillboardOnInventoryPatch.Initialize(harmony);
+    BuffIconSizePatch.Initialize(harmony);
     harmony.Patch(
       AccessTools.Method(typeof(Game1), nameof(Game1.SetWindowSize)),
       prefix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Prefix)),
       postfix: new HarmonyMethod(typeof(ModEntry), nameof(SetWindowSize_Postfix))
     );
     Monitor.Log(
-      "ModEntry: Harmony patches applied - TvChannelWatcher, ShowFishOnCatch, HudMessagePatch, ShowAccurateHearts, ShowItemQualityPatch, HideTreesPatch, SuppressProbeNoisePatch, ShowCalendarAndBillboardOnInventoryPatch, SetWindowSize",
+      "ModEntry: Harmony patches applied - TvChannelWatcher, ShowFishOnCatch, HudMessagePatch, ShowAccurateHearts, ShowItemQualityPatch, HideTreesPatch, SuppressProbeNoisePatch, ShowCalendarAndBillboardOnInventoryPatch, BuffIconSizePatch, SetWindowSize",
       LogLevel.Trace
     );
 
