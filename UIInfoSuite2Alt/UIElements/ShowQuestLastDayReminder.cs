@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Menus;
+using StardewValley.Quests;
+using StardewValley.SpecialOrders;
 using UIInfoSuite2Alt.Infrastructure;
 
 namespace UIInfoSuite2Alt.UIElements;
@@ -86,7 +91,7 @@ internal class ShowQuestLastDayReminder : IDisposable
       0f,
       Vector2.Zero,
       ClockScale,
-      Microsoft.Xna.Framework.Graphics.SpriteEffects.None,
+      SpriteEffects.None,
       0.98f
     );
 
@@ -98,7 +103,7 @@ internal class ShowQuestLastDayReminder : IDisposable
       0f,
       Vector2.Zero,
       ClockScale,
-      Microsoft.Xna.Framework.Graphics.SpriteEffects.None,
+      SpriteEffects.None,
       0.99f
     );
 
@@ -123,6 +128,58 @@ internal class ShowQuestLastDayReminder : IDisposable
       1f,
       Color.White * 0.8f
     );
+
+    // Hover tooltip: list the last-day quest names, one per line.
+    var clockBounds = new Rectangle(
+      (int)clockPos.X,
+      (int)clockPos.Y,
+      (int)(ClockSourceRect.Width * ClockScale),
+      (int)(ClockSourceRect.Height * ClockScale)
+    );
+    if (clockBounds.Contains(Game1.getMouseX(), Game1.getMouseY()))
+    {
+      DrawLastDayTooltip(Game1.spriteBatch, GetLastDayQuestNames());
+    }
+  }
+
+  // Custom tooltip so the header can be drawn in red - drawHoverText colors the whole body uniformly.
+  private static void DrawLastDayTooltip(SpriteBatch b, List<string> questNames)
+  {
+    SpriteFont font = Game1.smallFont;
+    const int padding = 16;
+    string header = I18n.QuestLastDayTooltipHeader();
+    float lineHeight = font.MeasureString("Wq").Y;
+
+    float contentWidth = font.MeasureString(header).X;
+    foreach (string name in questNames)
+    {
+      contentWidth = Math.Max(contentWidth, font.MeasureString(name).X);
+    }
+
+    int boxWidth = (int)contentWidth + padding * 2;
+    int boxHeight = (int)(lineHeight * (questNames.Count + 1)) + padding * 2;
+
+    int x = Math.Min(Game1.getMouseX() + 32, Game1.uiViewport.Width - boxWidth);
+    int y = Math.Min(Game1.getMouseY() + 32, Game1.uiViewport.Height - boxHeight);
+
+    IClickableMenu.drawTextureBox(
+      b,
+      Game1.menuTexture,
+      new Rectangle(0, 256, 60, 60),
+      x,
+      y,
+      boxWidth,
+      boxHeight,
+      Color.White
+    );
+
+    var textPos = new Vector2(x + padding, y + padding);
+    Tools.DrawShadowedText(b, font, header, textPos, Tools.TooltipRed, Game1.textShadowColor);
+    foreach (string name in questNames)
+    {
+      textPos.Y += lineHeight;
+      Tools.DrawShadowedText(b, font, name, textPos, Game1.textColor, Game1.textShadowColor);
+    }
   }
   #endregion
 
@@ -131,15 +188,26 @@ internal class ShowQuestLastDayReminder : IDisposable
   // removed when <= 0; special orders are removed at newDay when GetDaysLeft() <= 0.
   private static int GetLastDayQuestCount()
   {
-    int journal = Game1.player.questLog.Count(q =>
-      q != null && q.IsTimedQuest() && q.daysLeft.Value == 1 && !q.IsHidden()
-    );
-
-    int specialOrders = Game1.player.team.specialOrders.Count(so =>
-      so != null && !so.IsHidden() && so.GetDaysLeft() == 1
-    );
-
-    return journal + specialOrders;
+    return Game1.player.questLog.Count(IsLastDayQuest)
+      + Game1.player.team.specialOrders.Count(IsLastDayOrder);
   }
+
+  private static List<string> GetLastDayQuestNames()
+  {
+    List<string> names = Game1
+      .player.questLog.Where(IsLastDayQuest)
+      .Select(q => q.questTitle)
+      .ToList();
+    names.AddRange(
+      Game1.player.team.specialOrders.Where(IsLastDayOrder).Select(so => so.GetName())
+    );
+    return names;
+  }
+
+  private static bool IsLastDayQuest(Quest quest) =>
+    quest != null && quest.IsTimedQuest() && quest.daysLeft.Value == 1 && !quest.IsHidden();
+
+  private static bool IsLastDayOrder(SpecialOrder order) =>
+    order != null && !order.IsHidden() && order.GetDaysLeft() == 1;
   #endregion
 }

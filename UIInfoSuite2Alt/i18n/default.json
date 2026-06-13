@@ -267,6 +267,7 @@
   "ShowSeasonalBerryHazelnut": "Show hazelnuts on trees",
   "ShowQuestCount": "Show quest counter",
   "ShowQuestLastDayReminder": "Show quest last-day reminder",
+  "QuestLastDayTooltipHeader": "Final Day Quest(s):",
   "ShowGoldenWalnutCount": "Show Golden Walnut counter",
   "ShowGoldenWalnutAnywhere": "Show everywhere",
   "GoldenWalnutFadeOut": "Fade out when not hovering",
