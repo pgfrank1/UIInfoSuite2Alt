@@ -120,6 +120,15 @@ internal class ShowTileTooltips : IDisposable
   private readonly PerScreen<Object?> _currentTile = new();
   private readonly PerScreen<Building?> _currentTileBuilding = new();
 
+  // Tooltip content is built on the throttled tick (see OnUpdateTicked) and cached here so the
+  // per-frame RenderingHud only positions and draws. Anchor is stored in world pixels (pre
+  // GlobalToLocal) because the viewport scrolls every frame as the camera moves.
+  private readonly PerScreen<List<HoverLine>?> _cachedLines = new();
+  private readonly PerScreen<Vector2> _cachedAnchorWorld = new();
+  private readonly PerScreen<Texture2D?> _cachedSprite = new();
+  private readonly PerScreen<Rectangle?> _cachedSpriteRect = new();
+  private readonly PerScreen<int> _cachedQuality = new(() => -1);
+
   private readonly IModHelper _helper;
   private readonly ShowItemEffectRanges _itemEffectRanges;
   private readonly Lazy<Texture2D> _wildTreeTexture;
@@ -210,6 +219,7 @@ internal class ShowTileTooltips : IDisposable
     _currentTileBuilding.Value = null;
     _currentTile.Value = null;
     _currentTerrain.Value = null;
+    _cachedLines.Value = null; // cleared each rebuild; stays null when an early return skips the scan
 
     // Skip scan if nothing can render this tick
     if (!UIElementUtils.IsRenderingNormally() || Game1.activeClickableMenu != null)
@@ -262,23 +272,22 @@ internal class ShowTileTooltips : IDisposable
         _currentTerrain.Value = pot.bush.Value;
       }
     }
+
+    BuildTooltipContent();
   }
 
-  private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
+  // Built on the throttled tick (every 8th) and cached. Holds the heavy work - detail renderers,
+  // drop lists, quality predictions, sprite lookup - off the per-frame render path. Live-input
+  // gates (animal-building keybind, range-tooltip suppression) are sampled here, so they refresh
+  // at the tick cadence rather than every frame.
+  private void BuildTooltipContent()
   {
-    if (!UIElementUtils.IsRenderingNormally() || Game1.activeClickableMenu != null)
-    {
-      return;
-    }
-
     List<HoverLine> lines = new();
-    Vector2 tile = Vector2.Zero;
+    Vector2 anchorWorld = Vector2.Zero;
     Building? currentTileBuilding = _currentTileBuilding.Value;
     Object? currentTile = _currentTile.Value;
     TerrainFeature? terrain = _currentTerrain.Value;
 
-    int overrideX = -1;
-    int overrideY = -1;
     int predictedQuality = -1;
 
     if (
@@ -296,13 +305,9 @@ internal class ShowTileTooltips : IDisposable
           continue;
         }
 
-        Vector2 buildingTile = new(
-          currentTileBuilding.tileX.Value,
-          currentTileBuilding.tileY.Value
-        );
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(buildingTile * Game1.tileSize)
-        );
+        anchorWorld =
+          new Vector2(currentTileBuilding.tileX.Value, currentTileBuilding.tileY.Value)
+          * Game1.tileSize;
       }
     }
 
@@ -310,10 +315,7 @@ internal class ShowTileTooltips : IDisposable
     {
       if (DetailRenderers.FishPondRender(fishPond, lines))
       {
-        Vector2 buildingTile = new(fishPond.tileX.Value, fishPond.tileY.Value);
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(buildingTile * Game1.tileSize)
-        );
+        anchorWorld = new Vector2(fishPond.tileX.Value, fishPond.tileY.Value) * Game1.tileSize;
       }
     }
 
@@ -322,13 +324,9 @@ internal class ShowTileTooltips : IDisposable
       bool holdingKey = ModEntry.ModConfig.AnimalBuildingTooltipKeybind.IsDown();
       if (DetailRenderers.AnimalBuildingRender(currentTileBuilding, animalHouse, holdingKey, lines))
       {
-        Vector2 buildingTile = new(
-          currentTileBuilding.tileX.Value,
-          currentTileBuilding.tileY.Value
-        );
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(buildingTile * Game1.tileSize)
-        );
+        anchorWorld =
+          new Vector2(currentTileBuilding.tileX.Value, currentTileBuilding.tileY.Value)
+          * Game1.tileSize;
       }
     }
 
@@ -349,11 +347,8 @@ internal class ShowTileTooltips : IDisposable
       {
         if (machineDetailRenderer(currentTile, lines))
         {
-          tile = Utility.ModifyCoordinatesForUIScale(
-            Game1.GlobalToLocal(
-              new Vector2(currentTile.TileLocation.X, currentTile.TileLocation.Y) * Game1.tileSize
-            )
-          );
+          anchorWorld =
+            new Vector2(currentTile.TileLocation.X, currentTile.TileLocation.Y) * Game1.tileSize;
         }
       }
 
@@ -374,9 +369,7 @@ internal class ShowTileTooltips : IDisposable
     )
     {
       lines.Add(new HoverLine(currentTile.DisplayName));
-      tile = Utility.ModifyCoordinatesForUIScale(
-        Game1.GlobalToLocal(currentTile.TileLocation * Game1.tileSize)
-      );
+      anchorWorld = currentTile.TileLocation * Game1.tileSize;
       if (ShowHarvestQuality)
       {
         predictedQuality = QualityPrediction.PredictForageableQuality(
@@ -402,9 +395,7 @@ internal class ShowTileTooltips : IDisposable
     )
     {
       lines.Add(new HoverLine(currentTile.DisplayName));
-      tile = Utility.ModifyCoordinatesForUIScale(
-        Game1.GlobalToLocal(currentTile.TileLocation * Game1.tileSize)
-      );
+      anchorWorld = currentTile.TileLocation * Game1.tileSize;
       if (ShowHarvestQuality)
       {
         predictedQuality = QualityPrediction.GetGemologistMineralQuality(Game1.player);
@@ -419,9 +410,7 @@ internal class ShowTileTooltips : IDisposable
       {
         if (cropDetailRenderer(terrain, lines))
         {
-          tile = Utility.ModifyCoordinatesForUIScale(
-            Game1.GlobalToLocal(terrain.Tile * Game1.tileSize)
-          );
+          anchorWorld = terrain.Tile * Game1.tileSize;
           if (ShowHarvestQuality && terrain is HoeDirt cropSoil)
           {
             predictedQuality = QualityPrediction.PredictCropOnTile(
@@ -448,9 +437,7 @@ internal class ShowTileTooltips : IDisposable
         && DetailRenderers.TreeRender(terrain, lines)
       )
       {
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(terrain.Tile * Game1.tileSize)
-        );
+        anchorWorld = terrain.Tile * Game1.tileSize;
       }
 
       if (
@@ -458,28 +445,19 @@ internal class ShowTileTooltips : IDisposable
         && DetailRenderers.FruitTreeRender(terrain, lines)
       )
       {
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(terrain.Tile * Game1.tileSize)
-        );
+        anchorWorld = terrain.Tile * Game1.tileSize;
       }
 
       if (!InformantHelper.IsFeatureEnabled("tea-bush") && DetailRenderers.TeaBush(terrain, lines))
       {
-        tile = Utility.ModifyCoordinatesForUIScale(
-          Game1.GlobalToLocal(terrain.Tile * Game1.tileSize)
-        );
+        anchorWorld = terrain.Tile * Game1.tileSize;
       }
     }
 
     if (lines.Count <= 0)
     {
+      _cachedLines.Value = null;
       return;
-    }
-
-    if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
-    {
-      overrideX = (int)(tile.X + Utility.ModifyCoordinateForUIScale(32));
-      overrideY = (int)(tile.Y + Utility.ModifyCoordinateForUIScale(32));
     }
 
     (Texture2D? spriteTexture, Rectangle? spriteSourceRect) = GetTooltipSprite(
@@ -487,15 +465,48 @@ internal class ShowTileTooltips : IDisposable
       currentTileBuilding,
       terrain
     );
+
+    _cachedLines.Value = lines;
+    _cachedAnchorWorld.Value = anchorWorld;
+    _cachedSprite.Value = spriteTexture;
+    _cachedSpriteRect.Value = spriteSourceRect;
+    _cachedQuality.Value = predictedQuality;
+  }
+
+  // Per-frame: position the cached tooltip (viewport scrolls every frame) and draw it.
+  private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
+  {
+    if (!UIElementUtils.IsRenderingNormally() || Game1.activeClickableMenu != null)
+    {
+      return;
+    }
+
+    List<HoverLine>? lines = _cachedLines.Value;
+    if (lines is null || lines.Count == 0)
+    {
+      return;
+    }
+
+    int overrideX = -1;
+    int overrideY = -1;
+    if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
+    {
+      Vector2 screenTile = Utility.ModifyCoordinatesForUIScale(
+        Game1.GlobalToLocal(_cachedAnchorWorld.Value)
+      );
+      overrideX = (int)(screenTile.X + Utility.ModifyCoordinateForUIScale(32));
+      overrideY = (int)(screenTile.Y + Utility.ModifyCoordinateForUIScale(32));
+    }
+
     DrawColoredHoverText(
       Game1.spriteBatch,
       lines,
       Game1.smallFont,
       overrideX,
       overrideY,
-      spriteTexture,
-      spriteSourceRect,
-      predictedQuality
+      _cachedSprite.Value,
+      _cachedSpriteRect.Value,
+      _cachedQuality.Value
     );
   }
 
@@ -1073,9 +1084,15 @@ internal class ShowTileTooltips : IDisposable
 
   private static class DetailRenderers
   {
-    private static HoverLine GetInfoStringForDrop(PossibleDroppedItem item)
+    // Returns null when the drop's item id can't be resolved (e.g. modded content referencing a
+    // removed item), so callers skip it rather than NRE on the missing display name.
+    private static HoverLine? GetInfoStringForDrop(PossibleDroppedItem item)
     {
       (int nextDayToProduce, ParsedItemData? parsedItemData, float chance, string? _) = item;
+      if (parsedItemData == null)
+      {
+        return null;
+      }
 
       string chanceStr = 1.0f.Equals(chance) ? "" : $" ({chance * 100:2F}%)";
       int daysUntilReady = nextDayToProduce - Game1.dayOfMonth;
@@ -1496,9 +1513,6 @@ internal class ShowTileTooltips : IDisposable
           continue;
         }
 
-        // Iridium uses value 4 but must also skip if current is gold (2) going to iridium (4)
-        // quality <= currentQuality since 4 > 2
-
         int daysUntilThisQuality = (int)Math.Ceiling((daysToMature - threshold) / agingRate);
         if (daysUntilThisQuality <= 0)
         {
@@ -1676,7 +1690,14 @@ internal class ShowTileTooltips : IDisposable
         return true;
       }
 
-      entries.AddRange(treeInfo.Items.Select(GetInfoStringForDrop));
+      foreach (PossibleDroppedItem drop in treeInfo.Items)
+      {
+        if (GetInfoStringForDrop(drop) is { } line)
+        {
+          entries.Add(line);
+        }
+      }
+
       return true;
     }
 
@@ -1689,7 +1710,7 @@ internal class ShowTileTooltips : IDisposable
 
       var ageToMature = 20;
       bool willProduceThisSeason = Game1.season != Season.Winter || bush.IsSheltered();
-      string bushName = ItemRegistry.GetData("(O)251").DisplayName;
+      string bushName = ItemRegistry.GetData("(O)251")?.DisplayName ?? "";
       bool inProductionPeriod = Game1.dayOfMonth >= 22;
       int daysUntilProductionPeriod = inProductionPeriod ? 0 : 22 - Game1.dayOfMonth;
       List<PossibleDroppedItem> droppedItems = new();
@@ -1755,7 +1776,9 @@ internal class ShowTileTooltips : IDisposable
           if (droppedItems.Count == 1)
           {
             string suffix = bush.getAge() >= ageToMature ? "Bush" : "Sapling";
-            bushName = $"{droppedItems[0].Item.DisplayName} {suffix}";
+            bushName = droppedItems[0].Item?.DisplayName is { } dropName
+              ? $"{dropName} {suffix}"
+              : displayName;
           }
           else
           {
@@ -1788,7 +1811,14 @@ internal class ShowTileTooltips : IDisposable
         return true;
       }
 
-      entries.AddRange(droppedItems.Select(GetInfoStringForDrop));
+      foreach (PossibleDroppedItem drop in droppedItems)
+      {
+        if (GetInfoStringForDrop(drop) is { } line)
+        {
+          entries.Add(line);
+        }
+      }
+
       return true;
     }
   }
