@@ -410,7 +410,7 @@ public static class Tools
     return result;
   }
 
-  public static IEnumerable<int> GetDaysFromCondition(
+  private static IEnumerable<int> GetDaysFromCondition(
     GameStateQuery.ParsedGameStateQuery parsedGameStateQuery
   )
   {

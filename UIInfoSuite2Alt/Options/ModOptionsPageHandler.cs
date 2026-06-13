@@ -633,24 +633,6 @@ internal class ModOptionsPageHandler : IDisposable
         walnutCheckbox
       )
     );
-    var buffTimersCheckbox = new ModOptionsCheckbox(
-      _helper.SafeGetString(nameof(config.ShowBuffTimers)),
-      whichOption++,
-      showBuffTimers.ToggleOption,
-      () => config.ShowBuffTimers,
-      Set(v => config.ShowBuffTimers = v)
-    );
-    _currentTarget.Add(buffTimersCheckbox);
-    _currentTarget.Add(
-      new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.PlayBuffExpireSound)),
-        whichOption++,
-        showBuffTimers.ToggleExpireSound,
-        () => config.PlayBuffExpireSound,
-        Set(v => config.PlayBuffExpireSound = v),
-        buffTimersCheckbox
-      )
-    );
     BuffIconSizePatch.SetMode(config.BuffIconSize);
     _currentTarget.Add(
       new ModOptionsDropdown(
@@ -668,6 +650,24 @@ internal class ModOptionsPageHandler : IDisposable
           config.BuffIconSize = v;
           BuffIconSizePatch.SetMode(v);
         })
+      )
+    );
+    var buffTimersCheckbox = new ModOptionsCheckbox(
+      _helper.SafeGetString(nameof(config.ShowBuffTimers)),
+      whichOption++,
+      showBuffTimers.ToggleOption,
+      () => config.ShowBuffTimers,
+      Set(v => config.ShowBuffTimers = v)
+    );
+    _currentTarget.Add(buffTimersCheckbox);
+    _currentTarget.Add(
+      new ModOptionsCheckbox(
+        _helper.SafeGetString(nameof(config.PlayBuffExpireSound)),
+        whichOption++,
+        showBuffTimers.ToggleExpireSound,
+        () => config.PlayBuffExpireSound,
+        Set(v => config.PlayBuffExpireSound = v),
+        buffTimersCheckbox
       )
     );
 

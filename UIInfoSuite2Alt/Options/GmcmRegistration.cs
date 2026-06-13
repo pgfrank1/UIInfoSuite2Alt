@@ -394,17 +394,6 @@ public partial class ModEntry
       v => ModConfig.GoldenWalnutFadeOut = v
     );
     Spacer();
-    AddBool(
-      nameof(ModConfig.ShowBuffTimers),
-      () => ModConfig.ShowBuffTimers,
-      v => ModConfig.ShowBuffTimers = v
-    );
-    AddSubBool(
-      nameof(ModConfig.PlayBuffExpireSound),
-      () => ModConfig.PlayBuffExpireSound,
-      v => ModConfig.PlayBuffExpireSound = v
-    );
-    Spacer();
     string[] buffIconSizes = { "0", "1", "2" };
     configMenu.AddTextOption(
       ModManifest,
@@ -420,6 +409,17 @@ public partial class ModEntry
           2 => I18n.BuffIconSize_Hidden(),
           _ => v,
         }
+    );
+    Spacer();
+    AddBool(
+      nameof(ModConfig.ShowBuffTimers),
+      () => ModConfig.ShowBuffTimers,
+      v => ModConfig.ShowBuffTimers = v
+    );
+    AddSubBool(
+      nameof(ModConfig.PlayBuffExpireSound),
+      () => ModConfig.PlayBuffExpireSound,
+      v => ModConfig.PlayBuffExpireSound = v
     );
     Spacer();
     AddBool(
