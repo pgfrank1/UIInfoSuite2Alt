@@ -15,6 +15,9 @@ internal class ShowQuestLastDayReminder : IDisposable
   private static readonly Rectangle ClockSourceRect = new(434, 475, 9, 9);
   private const float ClockScale = 3f;
 
+  // Tiny digit counter. Keep this an integer so digits stay pixel perfect (3f matches ShowMailboxCount).
+  private const float CounterScale = 2f;
+
   // Slow color flash between normal and a red tint (~2.5s full cycle at this period).
   private static readonly Color FlashColor = new(255, 100, 100);
   private const double FlashPeriodMs = 400.0;
@@ -48,11 +51,13 @@ internal class ShowQuestLastDayReminder : IDisposable
   // Draw after the HUD so the clock renders on top of the quest journal icon.
   private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
   {
-    if (
-      !UIElementUtils.IsRenderingNormally()
-      || !Game1.player.hasVisibleQuests
-      || !HasLastDayQuest()
-    )
+    if (!UIElementUtils.IsRenderingNormally() || !Game1.player.hasVisibleQuests)
+    {
+      return;
+    }
+
+    int count = GetLastDayQuestCount();
+    if (count <= 0)
     {
       return;
     }
@@ -96,23 +101,45 @@ internal class ShowQuestLastDayReminder : IDisposable
       Microsoft.Xna.Framework.Graphics.SpriteEffects.None,
       0.99f
     );
+
+    // Tiny counter over the clock, offset down-right. Drawn last so it sits on top.
+    Vector2 counterPos = clockPos + new Vector2(16, 16);
+
+    // Shadow: 2px down, white at 0.3 alpha, behind the digits.
+    Utility.drawTinyDigits(
+      count,
+      Game1.spriteBatch,
+      counterPos + new Vector2(0, 2),
+      CounterScale,
+      0.99f,
+      Color.White * 0.3f
+    );
+
+    Utility.drawTinyDigits(
+      count,
+      Game1.spriteBatch,
+      counterPos,
+      CounterScale,
+      1f,
+      Color.White * 0.8f
+    );
   }
   #endregion
 
   #region Logic
   // Last day = value == 1 for both systems: journal quests decrement daysLeft at night and are
   // removed when <= 0; special orders are removed at newDay when GetDaysLeft() <= 0.
-  private static bool HasLastDayQuest()
+  private static int GetLastDayQuestCount()
   {
-    bool journalLastDay = Game1.player.questLog.Any(q =>
+    int journal = Game1.player.questLog.Count(q =>
       q != null && q.IsTimedQuest() && q.daysLeft.Value == 1 && !q.IsHidden()
     );
 
-    bool specialOrderLastDay = Game1.player.team.specialOrders.Any(so =>
+    int specialOrders = Game1.player.team.specialOrders.Count(so =>
       so != null && !so.IsHidden() && so.GetDaysLeft() == 1
     );
 
-    return journalLastDay || specialOrderLastDay;
+    return journal + specialOrders;
   }
   #endregion
 }
