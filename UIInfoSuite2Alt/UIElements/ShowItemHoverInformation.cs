@@ -213,7 +213,7 @@ internal class ShowItemHoverInformation : IDisposable
         showArtisan && itemPrice > 0
           ? ArtisanPriceHelper.GetEntries(_hoverItem.Value, filterKnownMachines)
           : [];
-      int artisanRowCount = Math.Min(artisanEntries.Length, config.MaxArtisanRows);
+      int artisanRowCount = Math.Min(artisanEntries.Length, Math.Max(0, config.MaxArtisanRows));
       bool artisanTruncated = artisanRowCount < artisanEntries.Length;
       int artisanMaxTextWidth = 0;
       int hoverStack = _hoverItem.Value.Stack;
