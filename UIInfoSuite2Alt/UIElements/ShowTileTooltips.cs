@@ -1088,9 +1088,13 @@ internal class ShowTileTooltips : IDisposable
     // removed item), so callers skip it rather than NRE on the missing display name.
     private static HoverLine? GetInfoStringForDrop(PossibleDroppedItem item)
     {
-      (int nextDayToProduce, ParsedItemData? parsedItemData, float chance, string? _) = item;
+      (int nextDayToProduce, ParsedItemData? parsedItemData, float chance, string? customId) = item;
       if (parsedItemData == null)
       {
+        ModEntry.MonitorObject.LogOnce(
+          $"ShowTileTooltips: skipped tooltip drop with unresolvable item, customId={customId ?? "none"}",
+          LogLevel.Warn
+        );
         return null;
       }
 
