@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -619,7 +620,7 @@ internal class ShowTileTooltips : IDisposable
         && customBushApi.TryGetBush(bush, out ICustomBushData? customBushData, out string? id)
       )
       {
-        if (customBushApi.TryGetShakeOffItem(bush, out Item? shakeOffItem))
+        if (TryGetCustomBushShakeOffItem(customBushApi, bush, out Item? shakeOffItem))
         {
           return FromItemData(ItemRegistry.GetData(shakeOffItem.QualifiedItemId));
         }
@@ -641,6 +642,28 @@ internal class ShowTileTooltips : IDisposable
     static (Texture2D? Texture, Rectangle? SourceRect) FromItemData(ParsedItemData? data)
     {
       return data != null ? (data.GetTexture(), data.GetSourceRect()) : (null, null);
+    }
+  }
+
+  // CustomBush's API NREs on potted bushes (null Location); guard so it can't bubble up to render.
+  private static bool TryGetCustomBushShakeOffItem(
+    ICustomBushApi api,
+    Bush bush,
+    [NotNullWhen(true)] out Item? shakeOffItem
+  )
+  {
+    try
+    {
+      return api.TryGetShakeOffItem(bush, out shakeOffItem);
+    }
+    catch (Exception ex)
+    {
+      ModEntry.MonitorObject.LogOnce(
+        $"ShowTileTooltips: CustomBush.TryGetShakeOffItem failed for bush at {bush.Tile}: {ex.Message}",
+        LogLevel.Warn
+      );
+      shakeOffItem = null;
+      return false;
     }
   }
 
@@ -1760,7 +1783,7 @@ internal class ShowTileTooltips : IDisposable
             ? 0
             : customBushData.DayToBeginProducing - Game1.dayOfMonth;
 
-          if (customBushApi.TryGetShakeOffItem(bush, out Item? shakeOffItem))
+          if (TryGetCustomBushShakeOffItem(customBushApi, bush, out Item? shakeOffItem))
           {
             droppedItems.Add(
               new PossibleDroppedItem(
