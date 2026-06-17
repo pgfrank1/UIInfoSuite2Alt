@@ -30,7 +30,6 @@ internal class ShowItemEffectRanges : IDisposable
 
   private readonly IModHelper _helper;
   private readonly Lazy<Texture2D> _wildTreeTexture;
-  private readonly PerScreen<bool> _isBombRange = new(() => false);
 
   private int _junimoHutRadius = 8; // default radius
   private bool _showItemEffectRanges;
@@ -159,7 +158,6 @@ internal class ShowItemEffectRanges : IDisposable
     _effectiveAreaOther.Value.Clear();
     _effectiveAreaIntersection.Value.Clear();
     _seenTiles.Value.Clear();
-    _isBombRange.Value = false;
 
     if (Game1.activeClickableMenu == null && UIElementUtils.IsRenderingNormally())
     {
@@ -633,8 +631,8 @@ internal class ShowItemEffectRanges : IDisposable
           {
             string itemName = currentObject.Name;
             arrayToUse = itemName.Contains("eluxe")
-              ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, false, currentObject)
-              : GetDistanceArray(ObjectsWithDistance.Scarecrow, false, currentObject);
+              ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, currentObject)
+              : GetDistanceArray(ObjectsWithDistance.Scarecrow, currentObject);
 
             int tilesBeforeAdd =
               _effectiveAreaOther.Value.Count + _effectiveAreaCurrent.Value.Count;
@@ -669,8 +667,8 @@ internal class ShowItemEffectRanges : IDisposable
                   _rangeTooltipInfo.Value.ObjectCount++;
                   int[][] arrayToUse_ =
                     next.Name.IndexOf("eluxe", StringComparison.OrdinalIgnoreCase) >= 0
-                      ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, false, next)
-                      : GetDistanceArray(ObjectsWithDistance.Scarecrow, false, next);
+                      ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, next)
+                      : GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
                   tilesBeforeAdd = _effectiveAreaOther.Value.Count;
                   AddTilesToHighlightedArea(
                     arrayToUse_,
@@ -820,8 +818,8 @@ internal class ShowItemEffectRanges : IDisposable
         if (itemName.IndexOf("arecrow", StringComparison.OrdinalIgnoreCase) >= 0)
         {
           arrayToUse = itemName.Contains("eluxe")
-            ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, false, currentItem)
-            : GetDistanceArray(ObjectsWithDistance.Scarecrow, false, currentItem);
+            ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, currentItem)
+            : GetDistanceArray(ObjectsWithDistance.Scarecrow, currentItem);
           AddTilesToHighlightedArea(
             arrayToUse,
             true,
@@ -837,8 +835,8 @@ internal class ShowItemEffectRanges : IDisposable
             {
               arrayToUse =
                 next.Name.IndexOf("eluxe", StringComparison.OrdinalIgnoreCase) >= 0
-                  ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, false, next)
-                  : GetDistanceArray(ObjectsWithDistance.Scarecrow, false, next);
+                  ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, next)
+                  : GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
               AddTilesToHighlightedArea(
                 arrayToUse,
                 false,
@@ -907,7 +905,6 @@ internal class ShowItemEffectRanges : IDisposable
         }
 
         AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
-        _isBombRange.Value = true;
       }
     }
   }
@@ -1202,10 +1199,6 @@ internal class ShowItemEffectRanges : IDisposable
     Beehouse,
     Scarecrow,
     DeluxeScarecrow,
-    Sprinkler,
-    QualitySprinkler,
-    IridiumSprinkler,
-    PrismaticSprinkler,
     MushroomLog,
     MossySeed,
     WildTreeSeedSpread,
@@ -1214,11 +1207,7 @@ internal class ShowItemEffectRanges : IDisposable
     MegaBomb,
   }
 
-  private int[][] GetDistanceArray(
-    ObjectsWithDistance type,
-    bool hasPressureNozzle = false,
-    Object? instance = null
-  )
+  private int[][] GetDistanceArray(ObjectsWithDistance type, Object? instance = null)
   {
     return type switch
     {
@@ -1233,16 +1222,6 @@ internal class ShowItemEffectRanges : IDisposable
       ObjectsWithDistance.DeluxeScarecrow => GetCircularMask(
         (instance?.GetRadiusForScarecrow() ?? 17) - 0.01
       ),
-      ObjectsWithDistance.Sprinkler => hasPressureNozzle
-        ? GetCircularMask(100, maxDisplaySquareRadius: 1)
-        : GetCircularMask(1),
-      ObjectsWithDistance.QualitySprinkler => hasPressureNozzle
-        ? GetCircularMask(100, maxDisplaySquareRadius: 2)
-        : GetCircularMask(100, maxDisplaySquareRadius: 1),
-      ObjectsWithDistance.IridiumSprinkler => hasPressureNozzle
-        ? GetCircularMask(100, maxDisplaySquareRadius: 3)
-        : GetCircularMask(100, maxDisplaySquareRadius: 2),
-      ObjectsWithDistance.PrismaticSprinkler => GetCircularMask(3.69, Math.Sqrt(18), false),
       ObjectsWithDistance.MushroomLog => GetCircularMask(100, maxDisplaySquareRadius: 3),
       ObjectsWithDistance.MossySeed => GetCircularMask(100, maxDisplaySquareRadius: 2),
       ObjectsWithDistance.WildTreeSeedSpread => GetCircularMask(100, maxDisplaySquareRadius: 3),
