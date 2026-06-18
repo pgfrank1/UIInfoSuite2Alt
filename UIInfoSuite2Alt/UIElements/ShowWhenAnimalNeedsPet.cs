@@ -238,6 +238,11 @@ internal class ShowWhenAnimalNeedsPet : IDisposable
 
   private void DrawIconForPets()
   {
+    if (Game1.currentLocation == null)
+    {
+      return;
+    }
+
     foreach (NPC? character in Game1.currentLocation.characters)
     {
       if (
@@ -312,9 +317,9 @@ internal class ShowWhenAnimalNeedsPet : IDisposable
     return animalPosition;
   }
 
-  private static NetLongDictionary<FarmAnimal, NetRef<FarmAnimal>> GetAnimalsInCurrentLocation()
+  private static NetLongDictionary<FarmAnimal, NetRef<FarmAnimal>>? GetAnimalsInCurrentLocation()
   {
-    return Game1.currentLocation.animals;
+    return Game1.currentLocation?.animals;
   }
   #endregion
 }
