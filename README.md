@@ -62,7 +62,7 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.32**
-  - Mod authors can now give modded wild trees a custom name in tooltips/range overlays via the `UIIS2Alt/DisplayName` custom field on `Data/WildTrees`
+  - Mod authors can now give modded wild trees a custom name in tooltips/range overlays via the `UIIS2Alt/DisplayName` custom field on `Data/WildTrees` ([documentation](docs/wild-tree-names.md))
 - **v2.8.31**
   - Add a flashing clock on the quest log icon when a quest (journal or Special Order) is on its last day
   - Add a "Buff icon size" option to make the top-right buff icons smaller and more compact, or hide them entirely
