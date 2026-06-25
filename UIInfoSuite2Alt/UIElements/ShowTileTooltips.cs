@@ -1001,14 +1001,20 @@ internal class ShowTileTooltips : IDisposable
       });
   }
 
-  internal const string TreeDisplayNameCustomField = "UIInfoSuite.ExtendedData/DisplayName";
+  internal const string TreeDisplayNameCustomField = "UIIS2Alt/DisplayName";
+
+  // Shared key with the UIIS2 Rework, so a single CP patch works across both mods.
+  internal const string TreeDisplayNameCustomFieldRework = "UIInfoSuite.ExtendedData/DisplayName";
 
   internal static bool TryGetTreeCustomDisplayName(string treeType, out string displayName)
   {
     if (
       Tree.TryGetData(treeType, out var data)
       && data.CustomFields != null
-      && data.CustomFields.TryGetValue(TreeDisplayNameCustomField, out string? value)
+      && (
+        data.CustomFields.TryGetValue(TreeDisplayNameCustomField, out string? value)
+        || data.CustomFields.TryGetValue(TreeDisplayNameCustomFieldRework, out value)
+      )
       && !string.IsNullOrWhiteSpace(value)
     )
     {
