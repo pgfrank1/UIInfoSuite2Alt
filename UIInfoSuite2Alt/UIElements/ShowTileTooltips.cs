@@ -1104,7 +1104,9 @@ internal class ShowTileTooltips : IDisposable
         return I18n.SbvFrillyGilly();
       default:
         ModEntry.MonitorObject.LogOnce(
-          $"ShowTileTooltips: unknown tree type, treeType={treeType}",
+          $"ShowTileTooltips: wild tree has no name; author can set \"{TreeDisplayNameCustomField}\" "
+            + "in Data/WildTrees CustomFields (see "
+            + $"github.com/dazuki/UIInfoSuite2Alt/blob/main/docs/wild-tree-names.md), treeType={treeType}",
           LogLevel.Warn
         );
         return $"Unknown (#{treeType})";
