@@ -25,6 +25,9 @@
 
 <p align="center">
   <img src=".github/assets/make-custom-icons-for-your-content-patcher-mods.png" alt="Custom Icons For Content Patcher" />
+</p>
+
+<p align="center">
   <img src=".github/assets/custom-icons-2.7.0.png" alt="Custom Icons" />
 </p>
 
@@ -40,7 +43,9 @@
 <hr />
 
 <p align="center">
-  <h3 align="center">Wild Tree Tooltips For Content Patcher</h3>
+  <img src=".github/assets/wild-tree-tooltip-header.png" alt="Wild Tree Tooltips For Content Patcher Mods" />
+  <br>
+  (requires v2.8.32 or newer)
 </p>
 
 <p align="center">
