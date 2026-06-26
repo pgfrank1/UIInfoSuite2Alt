@@ -1,6 +1,6 @@
-﻿# Custom Wild Tree Names
+﻿# Wild Tree Tooltips
 
-Give your modded wild trees a proper name in UI Info Suite 2 Alternative's world tooltips and item range overlays using Content Patcher.
+Give your modded wild trees a proper(working) name in UI Info Suite 2 Alternative's world tooltips and item range overlays using Content Patcher.
 
 This requires UI Info Suite 2 Alternative **v2.8.32 or newer**.
 
