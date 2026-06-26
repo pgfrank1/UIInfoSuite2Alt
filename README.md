@@ -33,8 +33,23 @@
 </p>
 
 <p align="center">
-  <b>If you're a Content Patcher mod author take a look at:<br>
-  <a href="docs/custom-icons.md">Custom Icons Documentation</a></b>
+  If you're a Content Patcher mod author and want icons for your mod, take a look at:<br>
+  <b><a href="docs/custom-icons.md">Custom Icons Documentation</a></b>
+</p>
+
+<hr />
+
+<p align="center">
+  <h3 align="center">Wild Tree Tooltips For Content Patcher</h3>
+</p>
+
+<p align="center">
+  <img src=".github/assets/wild-tree-tooltip-example.png" alt="Wild Tree Tooltip" />
+</p>
+
+<p align="center">
+  If your Content Patcher mod adds custom wild trees to <code>Data/WildTrees</code>, take a look at:<br>
+  <b><a href="docs/wild-tree-names.md">Wild Tree Tooltip Documentation</a></b>
 </p>
 
 <hr />
