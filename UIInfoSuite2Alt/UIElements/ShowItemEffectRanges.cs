@@ -28,6 +28,12 @@ internal class ShowItemEffectRanges : IDisposable
 
   private static readonly Rectangle TileSpriteRect = new(194, 388, 16, 16);
 
+  private const string MushroomLogQualifiedId = "(BC)MushroomLog";
+  private const string MossySeedQualifiedId = "(O)MossySeed";
+  private const string CherryBombQualifiedId = "(O)286";
+  private const string BombQualifiedId = "(O)287";
+  private const string MegaBombQualifiedId = "(O)288";
+
   private readonly IModHelper _helper;
   private readonly Lazy<Texture2D> _wildTreeTexture;
 
@@ -627,12 +633,9 @@ internal class ShowItemEffectRanges : IDisposable
             ) / Game1.tileSize;
           Game1.isCheckingNonMousePlacement = false;
 
-          if (currentObject.Name.IndexOf("arecrow", StringComparison.OrdinalIgnoreCase) >= 0)
+          if (currentObject.IsScarecrow())
           {
-            string itemName = currentObject.Name;
-            arrayToUse = itemName.Contains("eluxe")
-              ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, currentObject)
-              : GetDistanceArray(ObjectsWithDistance.Scarecrow, currentObject);
+            arrayToUse = GetDistanceArray(ObjectsWithDistance.Scarecrow, currentObject);
 
             int tilesBeforeAdd =
               _effectiveAreaOther.Value.Count + _effectiveAreaCurrent.Value.Count;
@@ -659,16 +662,13 @@ internal class ShowItemEffectRanges : IDisposable
 
             if (ButtonShowAllRanges)
             {
-              similarObjects = GetSimilarObjectsInLocation("arecrow");
+              similarObjects = GetSimilarObjectsInLocation(static o => o.IsScarecrow());
               foreach (Object next in similarObjects)
               {
                 if (!next.Equals(currentObject))
                 {
                   _rangeTooltipInfo.Value.ObjectCount++;
-                  int[][] arrayToUse_ =
-                    next.Name.IndexOf("eluxe", StringComparison.OrdinalIgnoreCase) >= 0
-                      ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, next)
-                      : GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
+                  int[][] arrayToUse_ = GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
                   tilesBeforeAdd = _effectiveAreaOther.Value.Count;
                   AddTilesToHighlightedArea(
                     arrayToUse_,
@@ -683,7 +683,7 @@ internal class ShowItemEffectRanges : IDisposable
               }
             }
           }
-          else if (currentObject.Name.IndexOf("sprinkler", StringComparison.OrdinalIgnoreCase) >= 0)
+          else if (currentObject.IsSprinkler())
           {
             List<Vector2> sprinklerTilesList = currentObject.GetSprinklerTiles();
 
@@ -717,7 +717,7 @@ internal class ShowItemEffectRanges : IDisposable
 
             if (ButtonShowAllRanges)
             {
-              similarObjects = GetSimilarObjectsInLocation("sprinkler");
+              similarObjects = GetSimilarObjectsInLocation(static o => o.IsSprinkler());
               foreach (Object next in similarObjects)
               {
                 if (!next.Equals(currentObject))
@@ -749,9 +749,7 @@ internal class ShowItemEffectRanges : IDisposable
 
             AddTilesToHighlightedArea(arrayToUse, false, (int)validTile.X, (int)validTile.Y);
           }
-          else if (
-            currentObject.Name.IndexOf("mushroom log", StringComparison.OrdinalIgnoreCase) >= 0
-          )
+          else if (currentObject.QualifiedItemId == MushroomLogQualifiedId)
           {
             arrayToUse = GetDistanceArray(ObjectsWithDistance.MushroomLog);
             _rangeTooltipInfo.Value = new RangeTooltipInfo
@@ -766,9 +764,7 @@ internal class ShowItemEffectRanges : IDisposable
 
             AddTilesToHighlightedArea(arrayToUse, false, (int)validTile.X, (int)validTile.Y);
           }
-          else if (
-            currentObject.Name.IndexOf("mossy seed", StringComparison.OrdinalIgnoreCase) >= 0
-          )
+          else if (currentObject.QualifiedItemId == MossySeedQualifiedId)
           {
             arrayToUse = GetDistanceArray(ObjectsWithDistance.MossySeed);
             _rangeTooltipInfo.Value = new RangeTooltipInfo
@@ -815,11 +811,9 @@ internal class ShowItemEffectRanges : IDisposable
 
       if (_showItemEffectRanges)
       {
-        if (itemName.IndexOf("arecrow", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (currentItem.IsScarecrow())
         {
-          arrayToUse = itemName.Contains("eluxe")
-            ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, currentItem)
-            : GetDistanceArray(ObjectsWithDistance.Scarecrow, currentItem);
+          arrayToUse = GetDistanceArray(ObjectsWithDistance.Scarecrow, currentItem);
           AddTilesToHighlightedArea(
             arrayToUse,
             true,
@@ -830,13 +824,10 @@ internal class ShowItemEffectRanges : IDisposable
 
           if (_showPlacedItemRanges)
           {
-            similarObjects = GetSimilarObjectsInLocation("arecrow");
+            similarObjects = GetSimilarObjectsInLocation(static o => o.IsScarecrow());
             foreach (Object next in similarObjects)
             {
-              arrayToUse =
-                next.Name.IndexOf("eluxe", StringComparison.OrdinalIgnoreCase) >= 0
-                  ? GetDistanceArray(ObjectsWithDistance.DeluxeScarecrow, next)
-                  : GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
+              arrayToUse = GetDistanceArray(ObjectsWithDistance.Scarecrow, next);
               AddTilesToHighlightedArea(
                 arrayToUse,
                 false,
@@ -847,9 +838,9 @@ internal class ShowItemEffectRanges : IDisposable
             }
           }
         }
-        else if (itemName.IndexOf("sprinkler", StringComparison.OrdinalIgnoreCase) >= 0)
+        else if (currentItem.IsSprinkler())
         {
-          // GetSprinklerTiles returns absolute positions in 1.6+ — offset to valid placement tile
+          // GetSprinklerTiles returns absolute positions in 1.6+ - offset to valid placement tile
           IEnumerable<Vector2> unplacedSprinklerTiles = currentItem.GetSprinklerTiles();
           if (currentItem.TileLocation != cursorTile)
           {
@@ -862,7 +853,7 @@ internal class ShowItemEffectRanges : IDisposable
 
           if (_showPlacedItemRanges)
           {
-            similarObjects = GetSimilarObjectsInLocation("sprinkler");
+            similarObjects = GetSimilarObjectsInLocation(static o => o.IsSprinkler());
             foreach (Object next in similarObjects)
             {
               AddTilesToHighlightedArea(next.GetSprinklerTiles(), false, skipNonTillable: true);
@@ -877,34 +868,33 @@ internal class ShowItemEffectRanges : IDisposable
           arrayToUse = GetDistanceArray(ObjectsWithDistance.Beehouse);
           AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
         }
-        else if (itemName.IndexOf("mushroom log", StringComparison.OrdinalIgnoreCase) >= 0)
+        else if (currentItem.QualifiedItemId == MushroomLogQualifiedId)
         {
           arrayToUse = GetDistanceArray(ObjectsWithDistance.MushroomLog);
           AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
         }
-        else if (itemName.IndexOf("mossy seed", StringComparison.OrdinalIgnoreCase) >= 0)
+        else if (currentItem.QualifiedItemId == MossySeedQualifiedId)
         {
           arrayToUse = GetDistanceArray(ObjectsWithDistance.MossySeed);
           AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
         }
       }
 
-      if (ShowBombRange && itemName.IndexOf("Bomb", StringComparison.OrdinalIgnoreCase) >= 0)
+      if (ShowBombRange)
       {
-        if (itemName.Contains("ega"))
+        ObjectsWithDistance? bombType = currentItem.QualifiedItemId switch
         {
-          arrayToUse = GetDistanceArray(ObjectsWithDistance.MegaBomb);
-        }
-        else if (itemName.Contains("herry"))
-        {
-          arrayToUse = GetDistanceArray(ObjectsWithDistance.CherryBomb);
-        }
-        else
-        {
-          arrayToUse = GetDistanceArray(ObjectsWithDistance.Bomb);
-        }
+          MegaBombQualifiedId => ObjectsWithDistance.MegaBomb,
+          CherryBombQualifiedId => ObjectsWithDistance.CherryBomb,
+          BombQualifiedId => ObjectsWithDistance.Bomb,
+          _ => null,
+        };
 
-        AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
+        if (bombType.HasValue)
+        {
+          arrayToUse = GetDistanceArray(bombType.Value);
+          AddTilesToHighlightedArea(arrayToUse, false, (int)cursorTile.X, (int)cursorTile.Y);
+        }
       }
     }
   }
@@ -1136,17 +1126,16 @@ internal class ShowItemEffectRanges : IDisposable
     return false;
   }
 
-  private List<Object> GetSimilarObjectsInLocation(string nameContains)
+  private static List<Object> GetSimilarObjectsInLocation(Func<Object, bool> predicate)
   {
     List<Object> result = [];
 
-    if (!string.IsNullOrEmpty(nameContains))
+    OverlaidDictionary? objects = Game1.currentLocation.Objects;
+    if (objects != null)
     {
-      OverlaidDictionary? objects = Game1.currentLocation.Objects;
-
       foreach (Object? nextThing in objects.Values)
       {
-        if (nextThing.name.Contains(nameContains, StringComparison.OrdinalIgnoreCase))
+        if (nextThing != null && predicate(nextThing))
         {
           result.Add(nextThing);
         }
@@ -1198,7 +1187,6 @@ internal class ShowItemEffectRanges : IDisposable
     JunimoHut,
     Beehouse,
     Scarecrow,
-    DeluxeScarecrow,
     MushroomLog,
     MossySeed,
     WildTreeSeedSpread,
@@ -1218,9 +1206,6 @@ internal class ShowItemEffectRanges : IDisposable
       ObjectsWithDistance.Beehouse => GetCircularMask(4.19, 5, true),
       ObjectsWithDistance.Scarecrow => GetCircularMask(
         (instance?.GetRadiusForScarecrow() ?? 9) - 0.01
-      ),
-      ObjectsWithDistance.DeluxeScarecrow => GetCircularMask(
-        (instance?.GetRadiusForScarecrow() ?? 17) - 0.01
       ),
       ObjectsWithDistance.MushroomLog => GetCircularMask(100, maxDisplaySquareRadius: 3),
       ObjectsWithDistance.MossySeed => GetCircularMask(100, maxDisplaySquareRadius: 2),
