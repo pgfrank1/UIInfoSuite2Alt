@@ -9,7 +9,8 @@ Give your modded wild trees a proper name in UI Info Suite 2 Alternative's world
 | ![Unknown tree tooltip](../.github/assets/wildtree_unknown.png) | ![Named tree tooltip](../.github/assets/wildtree_known.png) |
 | Falls back to `Unknown (#YourModId...)` | Shows your custom name |
 
-_Example shown using [(CP) Cypress Tree for LatteHoln's Italian Town Buildings](https://www.nexusmods.com/stardewvalley/mods/48027)._
+_Example shown using [(CP) Cypress Tree for LatteHoln's Italian Town Buildings](https://www.nexusmods.com/stardewvalley/mods/48027)._\
+_Tree art from [(AT) Cypress Tree (Italian Countryside Tree)](https://www.nexusmods.com/stardewvalley/mods/38505) by Latteholn._
 
 ## Why This Exists
 
