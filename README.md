@@ -63,6 +63,8 @@
 
 - **v2.8.32**
   - Mod authors can now give modded wild trees a custom name in tooltips/range overlays via the `UIIS2Alt/DisplayName` custom field on `Data/WildTrees` ([documentation](docs/wild-tree-names.md))
+  - Effect range overlays now recognize modded scarecrows and sprinklers that follow vanilla conventions (e.g. the `crow_scare` context tag, or a Harmony-patched `GetBaseRadiusForSprinkler`)
+  - Fix bee house honey tooltip and machine icon not updating the flavor when a flower grows or is removed nearby
 - **v2.8.31**
   - Add a flashing clock on the quest log icon when a quest (journal or Special Order) is on its last day
   - Add a "Buff icon size" option to make the top-right buff icons smaller and more compact, or hide them entirely
