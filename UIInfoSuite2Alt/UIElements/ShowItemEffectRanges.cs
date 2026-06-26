@@ -170,8 +170,7 @@ internal class ShowItemEffectRanges : IDisposable
       UpdateEffectiveArea();
       GetOverlapValue();
 
-      // When overlap tracking is off (e.g. wild trees), merge intersection back into
-      // the normal area so all tiles render green instead of red.
+      // Overlap tracking off (e.g. wild trees): merge intersection in so all tiles render green
       if (
         _rangeTooltipInfo.Value is { TrackOverlap: false }
         && _effectiveAreaIntersection.Value.Count > 0
@@ -304,7 +303,6 @@ internal class ShowItemEffectRanges : IDisposable
 
     SpriteFont font = Game1.smallFont;
 
-    // Build tooltip lines
     string header = info.ShowingAll ? $"{info.ObjectName} x{info.ObjectCount}" : info.ObjectName;
 
     List<(string text, Color color)> lines = [(header, Game1.textColor)];
@@ -346,7 +344,6 @@ internal class ShowItemEffectRanges : IDisposable
       : 0;
     int spriteSpace = hasSprite ? renderedSpriteWidth + spritePadding : 0;
 
-    // Calculate dimensions
     float maxWidth = 0;
     bool isFirstLine = true;
     foreach ((string text, Color _) in lines)
@@ -383,7 +380,6 @@ internal class ShowItemEffectRanges : IDisposable
 
     boxWidth += 4;
 
-    // Draw tooltip box
     IClickableMenu.drawTextureBox(
       e.SpriteBatch,
       Game1.menuTexture,
@@ -410,7 +406,7 @@ internal class ShowItemEffectRanges : IDisposable
       var pos = new Vector2(segX, lineY);
       Tools.DrawShadowedText(e.SpriteBatch, font, text, pos, color, shadowColor);
 
-      // Draw sprite on the first line, vertically centered with the text
+      // Sprite on first line, vertically centered with text
       if (isFirst && hasSprite)
       {
         Rectangle sourceRect = info.SpriteSourceRect!.Value;
@@ -450,7 +446,7 @@ internal class ShowItemEffectRanges : IDisposable
 
       if (building is JunimoHut hoveredHut)
       {
-        // get the max radius real time to account for config changes
+        // Re-read max radius live for config changes
         if (ApiManager.GetApi(ModCompat.BetterJunimos, out IBetterJunimosApi? betterJunimosApi))
         {
           _junimoHutRadius = betterJunimosApi.GetJunimoHutMaxRadius();
@@ -497,7 +493,7 @@ internal class ShowItemEffectRanges : IDisposable
       }
     }
 
-    // Wild tree seed spread — seed spread only occurs on Farm locations
+    // Wild tree seed spread (Farm locations only)
     if (ButtonControlShow && (ButtonShowOneRange || ButtonShowAllRanges))
     {
       Vector2 gamepadTile =
@@ -786,8 +782,7 @@ internal class ShowItemEffectRanges : IDisposable
     {
       string itemName = currentItem.Name;
 
-      // Match the game's ghost-preview tile (Object.drawPlacementBounds): raw cursor for mouse,
-      // valid-placement snap for gamepad (else the grid drifts off the actual placement tile).
+      // Match the game's ghost-preview tile: raw cursor for mouse, valid-placement snap for gamepad
       Vector2 grabTile = Game1.GetPlacementGrabTile();
       Vector2 cursorTile;
       if (Game1.IsPerformingMousePlacement())
@@ -1055,8 +1050,7 @@ internal class ShowItemEffectRanges : IDisposable
   }
 
   /// <summary>
-  /// Checks if a tile is blocked by objects, buildings, furniture, characters, or large terrain features.
-  /// Ignores farmers and HoeDirt (tilled soil with or without crops).
+  /// Whether a tile is blocked. Ignores farmers and HoeDirt (tilled soil, with or without crops).
   /// </summary>
   private static bool IsTileBlocked(GameLocation location, Vector2 tile)
   {
@@ -1082,13 +1076,11 @@ internal class ShowItemEffectRanges : IDisposable
       return true;
     }
 
-    // Furniture
     if (location.GetFurnitureAt(tile) is { } furniture && !furniture.isPassable())
     {
       return true;
     }
 
-    // Buildings
     if (location.IsTileOccupiedBy(tile, CollisionMask.Buildings))
     {
       return true;
@@ -1157,8 +1149,7 @@ internal class ShowItemEffectRanges : IDisposable
       }
       else
       {
-        // Held-item mode but all tiles were filtered (e.g. pointing at flooring).
-        // The _seenTiles intersections between placed items are not meaningful here.
+        // Held-item mode, all tiles filtered (e.g. flooring); placed-item intersections not meaningful
         _effectiveAreaIntersection.Value.Clear();
       }
 

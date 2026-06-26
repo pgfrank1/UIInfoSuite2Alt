@@ -1454,6 +1454,27 @@ internal class ShowTileTooltips : IDisposable
       return true;
     }
 
+    private const string BeeHouseQualifiedId = "(BC)10";
+
+    /// <summary>
+    /// Display name of a machine's current output. Bee houses re-evaluate honey flavor from the nearest
+    /// flower at collect (RecalculateOnCollect), so predict it live instead of the stale held value.
+    /// </summary>
+    private static string GetMachineOutputDisplayName(Object tileObject)
+    {
+      if (tileObject.QualifiedItemId == BeeHouseQualifiedId)
+      {
+        string? flowerId = MachineDataUtility.GetNearbyFlowerItemId(tileObject);
+        Item? honey = Utility.CreateFlavoredItem("Honey", flowerId ?? "-1");
+        if (honey != null)
+        {
+          return honey.DisplayName;
+        }
+      }
+
+      return tileObject.heldObject.Value!.DisplayName;
+    }
+
     public static bool MachineTime(Object? tileObject, List<HoverLine> entries)
     {
       if (
@@ -1467,7 +1488,7 @@ internal class ShowTileTooltips : IDisposable
         return false;
       }
 
-      entries.Add(tileObject.heldObject.Value.DisplayName);
+      entries.Add(GetMachineOutputDisplayName(tileObject));
       if (tileObject is Cask cask)
       {
         AddCaskAgingLines(cask, entries);

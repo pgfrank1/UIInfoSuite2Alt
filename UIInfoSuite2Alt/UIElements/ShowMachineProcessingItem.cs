@@ -20,6 +20,8 @@ internal class ShowMachineProcessingItem : IDisposable
     ["Cask"] = new Vector2(0f, -20f),
   };
 
+  private const string BeeHouseQualifiedId = "(BC)10";
+
   private readonly PerScreen<List<MachineIconData>> _visibleMachines = new(() => []);
   private readonly PerScreen<List<FishPondIconData>> _visibleFishPonds = new(() => []);
 
@@ -167,6 +169,13 @@ internal class ShowMachineProcessingItem : IDisposable
         // For machines without a preserved parent (Furnace, etc.), fall back to the output item.
         Object heldObject = obj.heldObject.Value;
         string? preservedId = heldObject.preservedParentSheetIndex.Value;
+
+        // Bee house re-evaluates honey flavor from the nearest flower at collect (RecalculateOnCollect),
+        // so recompute the flower live. No flower gives "-1" (wild honey), which falls through to no icon.
+        if (obj.QualifiedItemId == BeeHouseQualifiedId)
+        {
+          preservedId = MachineDataUtility.GetNearbyFlowerItemId(obj) ?? "-1";
+        }
 
         ParsedItemData? itemData = !string.IsNullOrEmpty(preservedId)
           ? ItemRegistry.GetData("(O)" + preservedId) ?? ItemRegistry.GetData(preservedId)
