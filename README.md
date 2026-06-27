@@ -44,12 +44,12 @@
 
 <p align="center">
   <img src=".github/assets/wild-tree-tooltip-header.png" alt="Wild Tree Tooltips For Content Patcher Mods" />
-  <br>
-  (requires v2.8.32 or newer)
 </p>
 
 <p align="center">
   <img src=".github/assets/wild-tree-tooltip-example.png" alt="Wild Tree Tooltip" />
+  <br>
+  (requires v2.8.32 or newer)
 </p>
 
 <p align="center">
