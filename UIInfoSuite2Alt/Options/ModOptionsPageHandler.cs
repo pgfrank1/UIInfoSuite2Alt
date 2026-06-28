@@ -285,7 +285,7 @@ internal class ModOptionsPageHandler : IDisposable
           new ModOptionsSmallButton(
             I18n.Button_OpenGmcmOptions(),
             whichOption++,
-            () => gmcm.OpenModMenu(modInfo.Manifest),
+            () => gmcm.OpenModMenuAsChildMenu(modInfo.Manifest),
             isCentered: true
           )
         );
