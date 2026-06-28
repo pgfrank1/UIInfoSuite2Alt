@@ -82,6 +82,7 @@
 > Most new features can be toggled on/off in the mod's in-game options menu.
 
 - **v2.8.33**
+  - Added [Launcher Drawer](https://www.nexusmods.com/stardewvalley/mods/48269) compatibility and a "UIIS2Alt" entry that opens the settings is added to the drawer (when GMCM is installed)
   - Birthday tooltips now show the first 6 loved gifts with a "+X more" hint; hold a keybind (default: Left Shift) to expand the full list
 - **v2.8.32**
   - Mod authors can now give modded wild trees a custom name in tooltips/range overlays via the `UIIS2Alt/DisplayName` custom field on `Data/WildTrees` ([documentation](docs/wild-tree-names.md))
@@ -430,6 +431,7 @@ The compatability ranges from small fixes to bigger integration with mod provide
 - [Binning Skill](https://www.nexusmods.com/stardewvalley/mods/14073)
 - [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204)
 - [Custom Museum Framework](https://www.nexusmods.com/stardewvalley/mods/34530)
+- [Launcher Drawer](https://www.nexusmods.com/stardewvalley/mods/48269)
 
 <p align="center">
   <a href="https://ko-fi.com/dazuki89" target="_BLANK">

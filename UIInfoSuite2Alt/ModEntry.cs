@@ -34,6 +34,8 @@ public partial class ModEntry : Mod
 
   internal const string CustomIconsAssetName = "Mods/DazUki.UIInfoSuite2Alt/CustomIcons";
 
+  private const string LauncherDrawerDictAssetName = "aedenthorn.LauncherDrawer/dict";
+
   public static IMonitor MonitorObject { get; private set; } = null!;
 
   /// <summary>Save the global config.json to disk.</summary>
@@ -284,10 +286,41 @@ public partial class ModEntry : Mod
     {
       e.LoadFrom(() => new Dictionary<string, CustomIconData>(), AssetLoadPriority.Low);
     }
+
+    // Add our settings as a Launcher Drawer entry. Gated on GMCM since the action opens our GMCM page.
+    if (
+      e.NameWithoutLocale.IsEquivalentTo(LauncherDrawerDictAssetName)
+      && Helper.ModRegistry.IsLoaded(ModCompat.LauncherDrawer)
+      && Helper.ModRegistry.IsLoaded(ModCompat.Gmcm)
+    )
+    {
+      e.Edit(data =>
+      {
+        var dict = data.AsDictionary<string, Dictionary<string, object>>().Data;
+        dict[ModManifest.UniqueID] = new Dictionary<string, object>
+        {
+          { "Name", I18n.LauncherDrawer_EntryName() },
+          { "Description", I18n.LauncherDrawer_EntryDescription() },
+          {
+            "Action",
+            new Action(() =>
+              Helper
+                .ModRegistry.GetApi<IGenericModConfigMenuApi>(ModCompat.Gmcm)
+                ?.OpenModMenuAsChildMenu(ModManifest)
+            )
+          },
+        };
+      });
+    }
   }
 
   private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
   {
+    // Slide icons left of the Launcher Drawer column while it's open (no-op when LD is absent).
+    IconHandler.Handler.ExtraXOffset = LauncherDrawerHelper.ShouldShiftIcons
+      ? -LauncherDrawerHelper.DrawerClearance
+      : 0;
+
     IconHandler.Handler.DrawQueuedIcons(e.SpriteBatch);
 
     if (

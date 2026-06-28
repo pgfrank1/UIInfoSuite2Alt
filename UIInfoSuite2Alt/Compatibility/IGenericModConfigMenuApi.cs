@@ -256,6 +256,10 @@ public interface IGenericModConfigMenuApi
   /// <param name="mod">The mod's manifest.</param>
   void OpenModMenu(IManifest mod);
 
+  /// <summary>Open the config UI for a specific mod, as a child of the current menu.</summary>
+  /// <param name="mod">The mod's manifest.</param>
+  void OpenModMenuAsChildMenu(IManifest mod);
+
   /// <summary>Get the currently-displayed mod config menu, if any.</summary>
   /// <param name="mod">The manifest of the mod whose config menu is being shown, or <c>null</c> if not applicable.</param>
   /// <param name="page">

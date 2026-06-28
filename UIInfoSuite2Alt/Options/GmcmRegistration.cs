@@ -36,6 +36,11 @@ public partial class ModEntry
 
     InformantHelper.Initialize(Helper);
 
+    if (Helper.ModRegistry.IsLoaded(ModCompat.LauncherDrawer))
+    {
+      LauncherDrawerHelper.Initialize(Monitor);
+    }
+
     LogModRecommendations(Helper);
 
     if (configMenu is null)

@@ -51,6 +51,9 @@ public sealed class IconHandler
   /// <summary>Extra vertical offset (pixels) to avoid overlapping icons from other mods.</summary>
   public int ExtraYOffset { get; set; }
 
+  /// <summary>Extra horizontal offset (pixels); negative shifts the icon row left. Used for Launcher Drawer.</summary>
+  public int ExtraXOffset { get; set; }
+
   /// <summary>When true, icons stack vertically downward instead of horizontally to the left.</summary>
   public bool UseVerticalLayout { get; set; }
 
@@ -102,7 +105,7 @@ public sealed class IconHandler
     }
 
     int yPos = (Game1.options.zoomButtons ? 290 : 260) + ExtraYOffset;
-    int xBase = Tools.GetWidthInPlayArea() - 70;
+    int xBase = Tools.GetWidthInPlayArea() - 70 + ExtraXOffset;
 
     if (IsQuestLogPermanent || Game1.player.hasVisibleQuests)
     {
