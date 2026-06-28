@@ -30,6 +30,8 @@
   "Keybinds.ShowAllRange.Tooltip": "When the mouse moves over the item you want to show, all ranges are show.",
   "Keybinds.AnimalBuildingTooltipKeybind.DisplayedName": "Animal building detail keybind",
   "Keybinds.AnimalBuildingTooltipKeybind.Tooltip": "Hold this key while hovering over a Coop or Barn to show detailed animal information.",
+  "Keybinds.ExpandBirthdayLovesKeybind.DisplayedName": "Birthday loved gifts keybind",
+  "Keybinds.ExpandBirthdayLovesKeybind.Tooltip": "Hold this key while a birthday tooltip is shown to list all loved gifts you own, instead of just the first few.",
   //GUI - Billboard
   "Billboard": "Billboard",
   "Calendar": "Calendar",
@@ -151,6 +153,7 @@
   "ToolIsFinishedBeingUpgraded": "{0} is finished!",
   "NpcBirthday": "{0}'s birthday",
   "BirthdaysToday": "Birthday(s) today!",
+  "BirthdayLovesMore": "+{{count}} more, hold {{key}}",
   "RobinBuildingStatus": "Robin will finish your new building in {0} day(s)",
   "RobinHouseUpgradeStatus": "Robin will finish upgrading your house in {0} day(s)",
   // Display icons - Foragables

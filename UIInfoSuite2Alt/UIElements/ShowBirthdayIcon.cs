@@ -554,6 +554,7 @@ internal class ShowBirthdayIcon : IDisposable
   }
 
   private const int GiftsPerLine = 3;
+  private const int GiftRowCap = 2;
   private const float GiftCakeScale = 2f;
   private const float GiftHeartOverlayScale = 2f;
 
@@ -585,6 +586,21 @@ internal class ShowBirthdayIcon : IDisposable
         i < loved.Count - 1 ? loved[i].Item.DisplayName + "," : loved[i].Item.DisplayName;
       Color color = loved[i].InInventory ? Tools.TooltipGreen : Game1.textColor;
       segments.Add((text, color));
+    }
+
+    // Cap the displayed gifts so a large owned-loved list can't fill the screen;
+    // holding the expand keybind reveals the full list.
+    bool expandLoves = ModEntry.ModConfig.ExpandBirthdayLovesKeybind.IsDown();
+    int maxShownGifts = GiftRowCap * GiftsPerLine;
+    string? moreText = null;
+    if (!expandLoves && segments.Count > maxShownGifts)
+    {
+      int hidden = segments.Count - maxShownGifts;
+      segments.RemoveRange(maxShownGifts, hidden);
+      moreText = I18n.BirthdayLovesMore(
+        count: hidden,
+        key: ModEntry.ModConfig.ExpandBirthdayLovesKeybind.ToString()
+      );
     }
 
     List<List<(string Text, Color Color)>> giftRows = new();
@@ -621,13 +637,17 @@ internal class ShowBirthdayIcon : IDisposable
 
       maxGiftLineWidth = Math.Max(maxGiftLineWidth, w);
     }
+    float moreTextWidth = moreText != null ? font.MeasureString(moreText).X : 0f;
     bool showGiftSection = ShowUnrevealedLoves && loved.Count > 0;
-    float giftSectionWidth = showGiftSection ? giftTextIndent + maxGiftLineWidth : 0f;
+    float giftSectionWidth = showGiftSection
+      ? giftTextIndent + Math.Max(maxGiftLineWidth, moreTextWidth)
+      : 0f;
 
     float innerWidth = Math.Max(Math.Max(titleWidth, heartsRowWidth), giftSectionWidth);
 
     int tooltipWidth = (int)innerWidth + padding * 2;
-    int giftSectionHeight = showGiftSection ? (int)(giftRows.Count * giftLineHeight) : 0;
+    int giftLineCount = giftRows.Count + (moreText != null ? 1 : 0);
+    int giftSectionHeight = showGiftSection ? (int)(giftLineCount * giftLineHeight) : 0;
     int tooltipHeight =
       padding * 2
       + font.LineSpacing
@@ -765,6 +785,20 @@ internal class ShowBirthdayIcon : IDisposable
           segX += spaceWidth;
         }
       }
+    }
+
+    if (moreText != null)
+    {
+      float moreLineY = textY + giftRows.Count * giftLineHeight;
+      float moreTextY = moreLineY + (giftLineHeight - font.LineSpacing) / 2f;
+      Tools.DrawShadowedText(
+        batch,
+        font,
+        moreText,
+        new Vector2(textX + giftTextIndent, moreTextY),
+        Tools.TooltipYellow,
+        Game1.textShadowColor
+      );
     }
   }
 

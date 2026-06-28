@@ -150,6 +150,13 @@ public partial class ModEntry
       getValue: () => ModConfig.AnimalBuildingTooltipKeybind,
       setValue: value => ModConfig.AnimalBuildingTooltipKeybind = value
     );
+    configMenu.AddKeybindList(
+      ModManifest,
+      name: () => I18n.Keybinds_ExpandBirthdayLovesKeybind_DisplayedName(),
+      tooltip: () => I18n.Keybinds_ExpandBirthdayLovesKeybind_Tooltip(),
+      getValue: () => ModConfig.ExpandBirthdayLovesKeybind,
+      setValue: value => ModConfig.ExpandBirthdayLovesKeybind = value
+    );
     RegisterGmcmFeatureToggles(configMenu);
   }
 
