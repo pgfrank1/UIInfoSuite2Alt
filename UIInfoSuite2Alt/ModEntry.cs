@@ -317,9 +317,10 @@ public partial class ModEntry : Mod
   private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
   {
     // Slide icons left of the Launcher Drawer column while it's open (no-op when LD is absent).
-    IconHandler.Handler.ExtraXOffset = LauncherDrawerHelper.ShouldShiftIcons
-      ? -LauncherDrawerHelper.DrawerClearance
-      : 0;
+    // Vertical layout sits further right, so it needs extra clearance.
+    int clearance =
+      LauncherDrawerHelper.DrawerClearance + (IconHandler.Handler.UseVerticalLayout ? 50 : 0);
+    IconHandler.Handler.ExtraXOffset = LauncherDrawerHelper.ShouldShiftIcons ? -clearance : 0;
 
     IconHandler.Handler.DrawQueuedIcons(e.SpriteBatch);
 

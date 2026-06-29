@@ -15,7 +15,7 @@ namespace UIInfoSuite2Alt.Compatibility.Helpers;
 public static class LauncherDrawerHelper
 {
   /// <summary>How far left (px) to push the icon row to clear the ~220px-wide drawer column.</summary>
-  public const int DrawerClearance = 204;
+  public const int DrawerClearance = 194;
 
   private static bool _initialized;
   private static object? _drawerStatePerScreen;
