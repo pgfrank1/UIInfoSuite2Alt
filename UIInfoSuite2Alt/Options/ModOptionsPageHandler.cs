@@ -212,7 +212,6 @@ internal class ModOptionsPageHandler : IDisposable
     var showToolUpgradeStatus = new ShowToolUpgradeStatus(helper);
     var showRobinBuildingStatusIcon = new ShowRobinBuildingStatusIcon(helper);
     var showSeasonalBerry = new ShowSeasonalBerry(helper);
-    var showTodaysGift = new ShowTodaysGifts(helper);
     var showQuestCount = new ShowQuestCount(helper);
     var showQuestLastDayReminder = new ShowQuestLastDayReminder(helper);
     var showGoldenWalnutCount = new ShowGoldenWalnutCount(helper);
@@ -246,7 +245,6 @@ internal class ModOptionsPageHandler : IDisposable
       showToolUpgradeStatus,
       showRobinBuildingStatusIcon,
       showSeasonalBerry,
-      showTodaysGift,
       showQuestCount,
       showQuestLastDayReminder,
       showGoldenWalnutCount,
@@ -572,15 +570,6 @@ internal class ModOptionsPageHandler : IDisposable
         () => config.ShowSeasonalBerryHazelnut,
         Set(v => config.ShowSeasonalBerryHazelnut = v),
         seasonalBerryIcon
-      )
-    );
-    _currentTarget.Add(
-      new ModOptionsCheckbox(
-        _helper.SafeGetString(nameof(config.ShowTodaysGifts)),
-        whichOption++,
-        showTodaysGift.ToggleOption,
-        () => config.ShowTodaysGifts,
-        Set(v => config.ShowTodaysGifts = v)
       )
     );
     _currentTarget.Add(

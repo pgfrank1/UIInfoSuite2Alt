@@ -376,11 +376,6 @@ public partial class ModEntry
     );
     Spacer();
     AddBool(
-      nameof(ModConfig.ShowTodaysGifts),
-      () => ModConfig.ShowTodaysGifts,
-      v => ModConfig.ShowTodaysGifts = v
-    );
-    AddBool(
       nameof(ModConfig.ShowQuestCount),
       () => ModConfig.ShowQuestCount,
       v => ModConfig.ShowQuestCount = v

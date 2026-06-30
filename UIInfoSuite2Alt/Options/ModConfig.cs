@@ -121,7 +121,6 @@ public class ModConfig
   public bool ShowRobinBuildingStatusIcon { get; set; } = true;
   public bool ShowSeasonalBerry { get; set; } = true;
   public bool ShowSeasonalBerryHazelnut { get; set; } = true;
-  public bool ShowTodaysGifts { get; set; } = true;
   public bool HideBirthdayIfFullFriendShip { get; set; } = true;
   public bool UseStackedBirthdayIcons { get; set; } = false;
   public bool ShowUnrevealedBirthdayLoves { get; set; } = true;
